@@ -1,0 +1,266 @@
+---
+title: "2nd pass annotations for the PIPAC Xenium data"
+author: "heinin"
+date: "2025-02-10"
+output:
+  workflowr::wflow_html:
+    code_folding: hide
+  html_notebook: default
+editor_options:
+  chunk_output_type: console
+---
+
+### Packages and environment variables
+
+```{r, warning=F, message=F}
+
+suppressPackageStartupMessages({
+  library(workflowr)
+  library(arrow)
+  library(Seurat)
+  library(SeuratObject)
+  library(SeuratDisk)
+  library(tidyverse)
+  library(tibble)
+  library(ggplot2)
+  library(ggpubr)
+  library(ggrepel)
+  library(googlesheets4)
+  library(workflowr)})
+
+```
+
+### Environment variables and helper functions
+
+```{r, message = F, warning = F}
+
+setwd("/home/hnatri/PIPAC_spatial/")
+set.seed(9999)
+options(scipen = 99999)
+options(ggrepel.max.overlaps = Inf)
+
+source("/home/hnatri/PIPAC_spatial/code/PIPAC_colors_themes.R")
+source("/home/hnatri/PIPAC_spatial/code/plot_functions.R")
+
+```
+
+### Import data
+
+```{r, message = F, warning = F, fig.width = 8, fig.height = 4}
+
+nonimmune <- readRDS("/scratch/hnatri/PIPAC/nonimmune_complete_subset_clustered_NC50_NN20_PC20_Seurat.rds")
+nonimmune <- NormalizeData(nonimmune)
+
+immune <- readRDS("/scratch/hnatri/PIPAC/immune_complete_subset_clustered_NC50_NN20_PC20_Seurat.rds")
+immune <- NormalizeData(immune)
+
+p1 <- DimPlot(immune,
+        group.by = "leiden_res0.5",
+        cols = pipac_immune_cluster_col,
+        reduction = "umap",
+        raster = T,
+        label = T) +
+  coord_fixed(ratio = 1) +
+  theme_bw() +
+  NoLegend()
+
+p2 <- DimPlot(nonimmune,
+        group.by = "leiden_res0.5",
+        cols = pipac_nonimmune_cluster_col,
+        reduction = "umap",
+        raster = T,
+        label = T) +
+  coord_fixed(ratio = 1) +
+  theme_bw() +
+  NoLegend()
+
+p1 + p2
+
+```
+
+### Marker information
+
+```{r, message = F, warning = F, fig.width = 6, fig.height = 4}
+
+gs4_deauth()
+metadata  <- gs4_get("https://docs.google.com/spreadsheets/d/1sXXwOreLxjMSUoPt79c6jmaQpluWkaxA5P5HfDsed3I/edit?usp=sharing")
+markers <- read_sheet(metadata, sheet = "Markers")
+second_pass_nonimmune <- read_sheet(metadata, sheet = "Tumor 2nd pass")
+second_pass_immune <- read_sheet(metadata, sheet = "Immune 2nd pass")
+
+```
+
+### Top cluster markers
+
+```{r, message = F, warning = F, fig.width = 5, fig.height = 4}
+
+Idents(immune) <- immune$leiden_res0.5
+immune_markers <- FindAllMarkers(immune,
+                                  return.thresh = 0.01,
+                                  logfc.threshold = 0.5,
+                                  min.pct = 0.20,
+                                  verbose = F)
+
+table(immune_markers$cluster)
+
+top_immune_markers <- immune_markers %>%
+  arrange(dplyr::desc(avg_log2FC)) %>%
+  group_by(cluster) %>%
+  dplyr::slice(1:10)
+
+Idents(nonimmune) <- nonimmune$leiden_res0.5
+nonimmune_markers <- FindAllMarkers(nonimmune,
+                                    return.thresh = 0.01,
+                                    logfc.threshold = 0.5,
+                                    min.pct = 0.20,
+                                    verbose = F)
+
+table(nonimmune_markers$cluster)
+
+top_nonimmune_markers <- nonimmune_markers %>%
+  arrange(dplyr::desc(avg_log2FC)) %>%
+  group_by(cluster) %>%
+  dplyr::slice(1:10)
+
+```
+
+### Saving top markers and annotations
+
+```{r, message = F, warning = F, fig.width = 6, fig.height = 6, eval = F}
+
+output_immune_markers <- immune_markers %>%
+  arrange(dplyr::desc(avg_log2FC)) %>%
+  group_by(cluster) %>%
+  dplyr::slice(1:30)
+
+output_cluster_markers <- merge(output_immune_markers, markers, by.x = "gene", by.y = "Gene")
+
+write.table(output_cluster_markers, "/home/hnatri/PIPAC_spatial/immune_cluster_marker_annotations_2ndpass.tsv",
+            quote = F, row.names = F, sep = "\t")
+
+output_nonimmune_markers <- nonimmune_markers %>%
+  arrange(dplyr::desc(avg_log2FC)) %>%
+  group_by(cluster) %>%
+  dplyr::slice(1:30)
+
+output_nonimmune_markers <- merge(output_nonimmune_markers, markers, by.x = "gene", by.y = "Gene")
+
+write.table(output_nonimmune_markers, "/home/hnatri/PIPAC_spatial/nonimmune_cluster_marker_annotations_2ndpass.tsv",
+            quote = F, row.names = F, sep = "\t")
+
+```
+
+### Lineage markers
+
+```{r, message = F, warning = F, fig.width = 10, fig.height = 6}
+
+plot_features <- c("PTPRC",
+                   "CD3D", "CD3E", "CD4", "CD8A", # T cells
+                   "STAT4", "STAT3", "TIGIT", "GZMB",
+                   "SELL", "CD19", # B cells
+                   "CD68", "CD44", "MARCO", "APOE", # Macrophages
+                   "C1QB", "C1QBP",
+                   "MUC5AC", "NOTCH3", "MS4A1", "PGA5", # Lineage markers
+                   "FN1", "DCN", "LUM", # Fibroblasts
+                   "EGR3", "TP53", "JUN", "KIT", # Tumor
+                   "SOX9", "RNF43", "EPCAM")
+
+DotPlot(immune,
+        group.by = "leiden_res0.5",
+        features = plot_features,
+        cols = c("azure", "tomato3")) +
+  RotatedAxis() +
+  ggtitle("Immune")
+
+```
+
+```{r, message = F, warning = F, fig.width = 10, fig.height = 4}
+
+DotPlot(nonimmune,
+        group.by = "leiden_res0.5",
+        features = plot_features,
+        cols = c("azure", "tomato3")) +
+  RotatedAxis() +
+  ggtitle("Non-immune")
+
+```
+
+### Adding annotations to the full object
+
+```{r, message = F, warning = F, fig.width = 10, fig.height = 4, eval = F}
+
+immune$annot2 <- mapvalues(x = immune$leiden_res0.5,
+                           from = second_pass_immune$leiden_res0.5,
+                           to = second_pass_immune$Annotation)
+
+nonimmune$annot2 <- mapvalues(x = nonimmune$leiden_res0.5,
+                              from = second_pass_nonimmune$leiden_res0.5,
+                              to = second_pass_nonimmune$Annotation)
+
+immune_nonimmune <- merge(immune, nonimmune)
+
+seurat_data <- readRDS("/tgen_labs/banovich/PIPAC/Seurat/merged_spatial_filtered_split_clustered_NC50_NN20_PC20_Seurat.rds")
+
+seurat_data$Annotation <- mapvalues(x = colnames(seurat_data),
+                                    from = colnames(immune_nonimmune),
+                                    to = immune_nonimmune$annot2)
+
+unique(seurat_data$Annotation)
+
+saveRDS(seurat_data, "/tgen_labs/banovich/PIPAC/Seurat/PIPAC_NC50_NN20_PC20_Seurat_annotated.rds")
+
+```
+
+### Saving markers one more time
+
+```{r, message = F, warning = F, fig.width = 10, fig.height = 4}
+
+seurat_data <- readRDS("/tgen_labs/banovich/PIPAC/Seurat/PIPAC_NC50_NN20_PC20_Seurat_annotated.rds")
+
+Idents(seurat_data) <- seurat_data$Annotation
+celltype_markers <- FindAllMarkers(seurat_data,
+                                   return.thresh = 0.01,
+                                   logfc.threshold = 0.5,
+                                   min.pct = 0.20,
+                                   verbose = F)
+
+output_celltype_markers <- celltype_markers %>%
+  arrange(dplyr::desc(avg_log2FC)) %>%
+  group_by(cluster) %>%
+  dplyr::slice(1:30)
+
+output_celltype_markers <- merge(output_celltype_markers, markers, by.x = "gene", by.y = "Gene")
+
+write.table(output_celltype_markers, "/home/hnatri/PIPAC_spatial/celltype_markers.tsv",
+            quote = F, row.names = F, sep = "\t")
+
+```
+
+```{r, message = F, warning = F, fig.width = 6, fig.height = 6, eval = F}
+
+DimPlot(seurat_data,
+        reduction = "sp",
+        group.by = "Sample",
+        split.by = "TMA",
+        ncol = 3,
+        raster = T) +
+    coord_fixed(ratio = 1) +
+    theme_minimal() +
+    NoLegend() +
+    ggtitle("")
+
+```
+
+```{r, message = F, warning = F, fig.width = 6, fig.height = 6, eval = F}
+
+DimPlot(seurat_data,
+        group.by = "leiden_res0.5",
+        cols = pipac_nonimmune_cluster_col,
+        reduction = "umap",
+        raster = T,
+        label = T) +
+  coord_fixed(ratio = 1) +
+  theme_bw() +
+  NoLegend()
+
+```

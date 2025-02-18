@@ -1,0 +1,300 @@
+---
+title: "Splitting samples on each TMA"
+author: "heinin"
+date: "2025-01-30"
+output:
+  workflowr::wflow_html:
+    code_folding: hide
+  html_notebook: default
+editor_options:
+  chunk_output_type: console
+---
+
+### Packages and environment variables
+
+```{r, warning=F, message=F}
+
+suppressPackageStartupMessages({
+  library(workflowr)
+  library(arrow)
+  library(Seurat)
+  library(SeuratObject)
+  library(SeuratDisk)
+  library(tidyverse)
+  library(tibble)
+  library(ggplot2)
+  library(ggpubr)
+  library(ggrepel)
+  library(googlesheets4)
+  library(workflowr)})
+
+```
+
+### Environment variables and helper functions
+
+```{r, message = F, warning = F}
+
+setwd("/home/hnatri/PIPAC_spatial/")
+set.seed(9999)
+options(scipen = 99999)
+options(ggrepel.max.overlaps = Inf)
+
+source("/home/hnatri/PIPAC_spatial/code/PIPAC_colors_themes.R")
+source("/home/hnatri/PIPAC_spatial/code/plot_functions.R")
+
+```
+
+### Import data
+
+```{r, message = F, warning = F, fig.width = 6, fig.height = 4}
+
+seurat_data <- readRDS("/scratch/hnatri/PIPAC/merged_spatial_filtered.rds")
+
+seurat_data@meta.data %>%
+  ggplot(aes(x = rev(TMA))) +
+  geom_bar(stat = "count") +
+  xlab("") +
+  theme_bw() +
+  RotatedAxis()
+
+# Metadata
+gs4_deauth()
+metadata  <- gs4_get("https://docs.google.com/spreadsheets/d/1Oq09oGVTst_X-oC6-TGnteuSxtmsr_t6pQa0fklx6lk/edit?usp=sharing")
+sheet_names(metadata)
+metadata <- read_sheet(metadata, sheet = "All TMAs")
+
+seurat_data$TMA <- gsub("-Rerun", "", seurat_data$TMA)
+seurat_data$TMA <- gsub("PIPACTMA", "PIPAC-TMA", seurat_data$TMA)
+
+intersect(seurat_data$TMA, metadata$TMA)
+setdiff(seurat_data$TMA, metadata$TMA)
+setdiff(metadata$TMA, seurat_data$TMA)
+
+length(metadata$`Block ID`)
+length(unique(metadata$`Block ID`))
+metadata$`Block ID`[duplicated(metadata$`Block ID`)]
+
+```
+
+```{r, message = F, warning = F, fig.width = 8, fig.height = 8}
+
+DimPlot(seurat_data,
+        group.by = "TMA",
+        split.by = "TMA",
+        ncol = 3,
+        #cols = cluster_col,
+        reduction = "sp",
+        raster = T,
+        label = F) +
+  coord_fixed(ratio = 1) +
+  theme_minimal() +
+  NoLegend() +
+  RotatedAxis()
+
+DimPlot(seurat_data,
+        group.by = "TMA",
+        split.by = "TMA",
+        ncol = 3,
+        #cols = cluster_col,
+        reduction = "sp",
+        raster = T,
+        label = F) +
+  coord_fixed(ratio = 1) +
+  theme_void() +
+  NoLegend() +
+  RotatedAxis() +
+  NoAxes()
+  #ggtitle("20 PCs")
+
+```
+
+### Splitting the samples
+
+#### Adding sample info
+
+```{r, message = F, warning = F, fig.width = 6, fig.height = 14}
+
+# Xenium output directories
+xenium_path <- "/tgen_labs/banovich/xenium_run_folders/PIPACTMA/"
+xenium_paths <- list("MR_PIPAC-TMA1" = "output-XETG00048__0034123__MR_PIPACTMA1__20240911__210055/",
+                     "MR_PIPAC-TMA2" = "output-XETG00048__0034221__MR_PIPACTMA2-Rerun__20241107__213721",
+                     "MR_PIPAC-TMA3" = "output-XETG00048__0024823__MR_PIPACTMA3-Rerun__20241115__191438",
+                     "MR_PIPAC-TMA4" = "output-XETG00048__0033982__MR_PIPACTMA4__20240920__231140",
+                     "MR_PIPAC-TMA5" = "output-XETG00048__0033981__MR_PIPACTMA5__20240920__231140",
+                     "MR_PIPAC-TMA6" = "output-XETG00048__0034149__MR_PIPACTMA6__20240923__231239",
+                     "MR_PIPAC-TMA7" = "output-XETG00048__0034152__MR_PIPACTMA7__20240923__231239",
+                     "MR_PIPAC-TMA8" = "output-XETG00048__0033448__MR_PIPACTMA8__20241224__204450",
+                     "MR_PIPAC-TMA9" = "output-XETG00048__0041382__MR_PIPACTMA9__20250109__205856")
+
+# Cell stats
+cellstat_path <- "/tgen_labs/banovich/PIPAC/"
+
+seurat_data_list <- lapply(names(xenium_paths), function(tma){
+  # Subsetting data
+  seurat_data_tma <- subset(seurat_data, subset = TMA == tma)
+  
+  # Read in cell metadata
+  xenium_output <- paste0(xenium_path, xenium_paths[[tma]])
+  cell_meta <- read.csv(paste(xenium_output, "/cells.csv.gz", sep = ""),
+                        header = T)
+  cell_meta$cell_id <- paste0(strsplit(tma, "-")[[1]][2], "_", cell_meta$cell_id)
+  # Will want to join on cell id (cell_id) for this file
+  
+  # Which cells correspond to which sample
+  # This will need to be done in a for loop because each sample has their own file
+  # ls *_cells_stats.csv | cut -f1,2 -d'_' | awk '{ print "\""$1"\"\," }'
+  smpls <- metadata %>%
+    filter(TMA == tma) %>%
+    dplyr::select(`Block ID`) %>%
+    unlist()
+  
+  smpls <- gsub(" ", "_", smpls)
+  smpls <- gsub("\\/", "_", smpls)
+  smpls <- setdiff(smpls, c("S20-08332-B1")) # No tissue
+  
+  smpl_cell_ids_all <- c()
+  for (smpl in smpls) {
+    print(smpl)
+    smpl_cell_ids <- read.csv(paste(cellstat_path, smpl, "_cells_stats.csv", sep = ""),
+                              header = T, comment.char = "#")
+    smpl_cell_ids$Cell.ID <- paste0(strsplit(tma, "-")[[1]][2], "_", smpl_cell_ids$Cell.ID)
+    # add sample 
+    smpl_cell_ids$Sample <- smpl
+    smpl_cell_ids_sub <- smpl_cell_ids %>% 
+      dplyr::select(Cell.ID, Sample)
+    smpl_cell_ids_all <- rbind(smpl_cell_ids_all, smpl_cell_ids_sub)
+  }
+  
+  # Join the two files
+  cell_meta_merge <- merge(cell_meta, smpl_cell_ids_all, 
+                           by.x = "cell_id",
+                           by.y = "Cell.ID")
+  
+  # Filter out cells that were not assigned to a sample
+  # Since some of the samples overlap they will not be included
+  seurat_data_tma@meta.data$cell_id <- rownames(seurat_data_tma@meta.data)
+  cells_to_keep <- cell_meta_merge$cell_id
+  #cells_to_keep <- paste0(strsplit(tma, "-")[[1]][2], "_", cells_to_keep)
+  seurat_data_tma_sub <- subset(seurat_data_tma, subset = cell_id %in% cells_to_keep)
+  
+  # Add metadata to filtered object
+  seurat_data_tma_sub_meta <- seurat_data_tma_sub@meta.data
+  seurat_data_tma_sub_meta_cell_meta <- merge(seurat_data_tma_sub_meta,
+                                              cell_meta_merge)
+  
+  seurat_data_tma_sub@meta.data <- seurat_data_tma_sub_meta_cell_meta
+  seurat_data_tma_sub@meta.data$TMA <- tma
+  # Fixing cell names
+  rownames(seurat_data_tma_sub@meta.data) <- seurat_data_tma_sub$cell_id
+  seurat_data_tma_sub <- RenameCells(seurat_data_tma_sub,
+                                     new.names = seurat_data_tma_sub$cell_id)
+  
+  # Make SP reduction
+  # Add spatial dimension reduction object separately
+  position_xy <- cbind((seurat_data_tma_sub@meta.data$x_centroid), (seurat_data_tma_sub@meta.data$y_centroid)*-1)
+  rownames(position_xy) <- rownames(seurat_data_tma_sub@meta.data)
+  colnames(position_xy) <- c("SP_1", "SP_2")
+  seurat_data_tma_sub[["sp"]] <- CreateDimReducObject(
+    embeddings = position_xy, key = "SP_", assay = DefaultAssay(seurat_data_tma_sub))
+  
+  seurat_data_tma_sub
+})
+
+# Merge objects
+merged_spatial <- merge(x = seurat_data_list[[1]], y = seurat_data_list[1:length(seurat_data_list)])
+# Warning message:
+# Key 'Xenium_' taken, using 'fov2_' instead 
+
+# Renaming cells
+merged_spatial <- RenameCells(merged_spatial,
+                              new.names = paste0(merged_spatial$Sample, "_",
+                                                 colnames(merged_spatial)))
+## Updating the cell id
+merged_spatial@meta.data$cell_id <- colnames(merged_spatial)
+
+```
+
+```{r, message = F, warning = F, fig.width = 8, fig.height = 8}
+# Add spatial dimension reduction object separately
+position_xy <- cbind((merged_spatial$x_centroid)*-1,
+                     (merged_spatial$y_centroid))
+row.names(position_xy) <- row.names(merged_spatial@meta.data)
+colnames(position_xy) <- c("SP_1", "SP_2")
+merged_spatial[["sp"]] <- CreateDimReducObject(
+  embeddings = position_xy, key = "SP_", assay = DefaultAssay(merged_spatial))
+
+DimPlot(merged_spatial,
+        group.by = "TMA",
+        split.by = "TMA",
+        ncol = 3,
+        #cols = cluster_col,
+        reduction = "sp",
+        raster = T,
+        label = F) +
+  coord_fixed(ratio = 1) +
+  theme_minimal() +
+  NoLegend() +
+  RotatedAxis()
+
+# Saving the object for clustering with ScanPy
+#merged_spatial <- JoinLayers(merged_spatial)
+#saveRDS(merged_spatial, "/scratch/hnatri/PIPAC/merged_spatial_filtered_split.rds")
+
+```
+
+#### Spatial plots by TMA and sample
+
+```{r, message = F, warning = F, fig.width = 3, fig.height = 7}
+
+merged_spatial <- readRDS("/scratch/hnatri/PIPAC/merged_spatial_filtered_split.rds")
+
+sp_plots <- lapply(unique(merged_spatial$TMA), function(tma){
+  sample_subset <- subset(merged_spatial, subset = TMA == tma)
+
+  DimPlot(sample_subset,
+          reduction = "sp",
+          group.by = "Sample",
+          raster = T) +
+    coord_fixed(ratio = 1) +
+    theme_minimal() +
+    NoLegend() +
+    ggtitle(tma)
+})
+
+sp_plots
+
+```
+
+```{r, message = F, warning = F, fig.width = 6, fig.height = 14}
+
+DimPlot(merged_spatial,
+        reduction = "sp",
+        group.by = "Sample",
+        split.by = "TMA",
+        ncol = 3,
+        raster = T) +
+    coord_fixed(ratio = 1) +
+    theme_minimal() +
+    NoLegend() +
+    ggtitle("")
+
+```
+
+### Cell numbers by sample
+
+```{r, message = F, warning = F, fig.width = 6, fig.height = 20}
+
+table(merged_spatial$Sample) %>%
+  as.data.frame() %>%
+  ggplot(aes(x = reorder(Var1, -Freq), y = Freq)) +
+  geom_bar(stat = "identity") +
+  xlab("") +
+  theme_bw() +
+  RotatedAxis() +
+  coord_flip()
+
+
+```
+
+
+

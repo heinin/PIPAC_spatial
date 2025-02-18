@@ -1,0 +1,119 @@
+---
+title: "Niche construction and analysis of PIPAC Xenium data"
+author: "heinin"
+date: "2025-02-11"
+output:
+  workflowr::wflow_html:
+    code_folding: hide
+  html_notebook: default
+editor_options:
+  chunk_output_type: console
+---
+
+### Packages and environment variables
+
+```{r, warning=F, message=F}
+
+suppressPackageStartupMessages({
+  library(workflowr)
+  library(arrow)
+  library(Seurat)
+  library(SeuratObject)
+  library(SeuratDisk)
+  library(tidyverse)
+  library(tibble)
+  library(ggplot2)
+  library(ggpubr)
+  library(ggrepel)
+  library(googlesheets4)
+  library(workflowr)
+  library(patchwork)})
+
+```
+
+### Environment variables and helper functions
+
+```{r, message = F, warning = F}
+
+setwd("/home/hnatri/PIPAC_spatial/")
+set.seed(9999)
+options(future.globals.maxSize = 30000 * 1024^2)
+options(scipen = 99999)
+options(ggrepel.max.overlaps = Inf)
+
+source("/home/hnatri/PIPAC_spatial/code/PIPAC_colors_themes.R")
+source("/home/hnatri/PIPAC_spatial/code/plot_functions.R")
+
+```
+
+### Import data
+
+```{r, message = F, warning = F, fig.width = 8, fig.height = 4}
+
+seurat_data <- readRDS("/tgen_labs/banovich/PIPAC/Seurat/PIPAC_NC50_NN20_PC20_Seurat_annotated_metadata.rds")
+
+```
+
+### Niche construction
+
+```{r, message = F, warning = F, fig.width = 8, fig.height = 4, eval = F}
+
+# Create FOV
+coords <- seurat_data@meta.data[, c("x_centroid", "y_centroid")]
+seurat_data[["fov"]]  <- CreateFOV(coords,
+                                   assay = "RNA",
+                                   type = "centroids")
+
+# TODO: Running with different k and n values
+seurat_data <- BuildNicheAssay(object = seurat_data,
+                               fov = "fov",
+                               group.by = "Annotation",
+                               niches.k = 5, neighbors.k = 30)
+seurat_data$niche_k5_n30 <- seurat_data$niches
+
+saveRDS(seurat_data, "/tgen_labs/banovich/PIPAC/Seurat/PIPAC_NC50_NN20_PC20_Seurat_annotated_metadata.rds")
+
+```
+
+### Plotting niche composition
+
+```{r, message = F, warning = F, fig.width = 8, fig.height = 4}
+
+create_barplot(seurat_data,
+               group_var = "niche_k5_n30",
+               plot_var = "Annotation",
+               plot_levels = sort((unique(seurat_data$Annotation))),
+               group_levels = sort(unique(seurat_data$niche_k5_n30)),
+               plot_colors = pipac_celltype_cols,
+               var_names =  c("Frequency (%)", ""),
+               legend_title = "Celltype")
+
+```
+
+```{r, message = F, warning = F, fig.width = 5, fig.height = 5}
+
+table(seurat_data$niche_k5_n30, seurat_data$Tissue)
+
+ct_table <- as.data.frame(table(seurat_data$niche_k5_n30, seurat_data$Tissue))
+colnames(ct_table) <- c("niche_k5_n30", "Tissue", "Freq")
+ct_table <- spread(ct_table, niche_k5_n30, Freq)
+# Converting to percetange
+#ct_table[,2:length(ct_table)] <- (ct_table[,2:length(ct_table)]/rowSums(ct_table[,2:length(ct_table)]))*100
+ct_table <- gather(ct_table, niche_k5_n30, Freq, names(ct_table)[2:length(names(ct_table))], factor_key=TRUE)
+    
+ct_table$Tissue <- factor(ct_table$Tissue, levels = c("Normal", "Tumor"))
+
+niches <- seq(1, 5)
+niches <- sort(unique(seurat_data$niche_k5_n30))
+niche_col <- colorRampPalette(brewer.pal(10, "Paired"))(nb.cols <- length(niches))
+names(niche_col) <- levels(niches)
+
+ggplot(ct_table, aes(x = Tissue, y = Freq, fill = niche_k5_n30)) +
+       geom_bar(stat="identity", position='stack', width = 0.8) +
+       scale_fill_manual(name = "Celltype", values = niche_col) +
+       xlab("") +
+       ylab("Cell count") +
+       theme_classic() +
+       theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1))
+
+```

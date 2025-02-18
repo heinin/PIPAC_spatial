@@ -1,0 +1,113 @@
+---
+title: "Adding metadata to the PIPAC Xenium data"
+author: "heinin"
+date: "2025-02-10"
+output:
+  workflowr::wflow_html:
+    code_folding: hide
+  html_notebook: default
+editor_options:
+  chunk_output_type: console
+---
+
+### Packages and environment variables
+
+```{r, warning=F, message=F}
+
+suppressPackageStartupMessages({
+  library(workflowr)
+  library(arrow)
+  library(Seurat)
+  library(SeuratObject)
+  library(SeuratDisk)
+  library(tidyverse)
+  library(tibble)
+  library(ggplot2)
+  library(ggpubr)
+  library(ggrepel)
+  library(googlesheets4)
+  library(workflowr)
+  library(patchwork)
+  library(stringr)})
+
+```
+
+### Environment variables and helper functions
+
+```{r, message = F, warning = F}
+
+setwd("/home/hnatri/PIPAC_spatial/")
+set.seed(9999)
+options(scipen = 99999)
+options(ggrepel.max.overlaps = Inf)
+
+source("/home/hnatri/PIPAC_spatial/code/PIPAC_colors_themes.R")
+source("/home/hnatri/PIPAC_spatial/code/plot_functions.R")
+
+```
+
+### Import data
+
+```{r, message = F, warning = F, fig.width = 6, fig.height = 6}
+
+seurat_data <- readRDS("/tgen_labs/banovich/PIPAC/Seurat/PIPAC_NC50_NN20_PC20_Seurat_annotated.rds")
+
+DimPlot(seurat_data,
+        group.by = "Annotation",
+        cols = pipac_celltype_cols,
+        reduction = "umap",
+        raster = T,
+        label = T,
+        repel = T) +
+  coord_fixed(ratio = 1) +
+  theme_bw() +
+  NoLegend() +
+  ggtitle("Celltype")
+
+```
+
+### Adding metadata
+
+```{r, message = F, warning = F, fig.width = 8, fig.height = 4, eval = F}
+
+gs4_deauth()
+metadata  <- gs4_get("https://docs.google.com/spreadsheets/d/1sXXwOreLxjMSUoPt79c6jmaQpluWkaxA5P5HfDsed3I/edit?usp=sharing")
+arm2_metadata <- read_sheet(metadata, sheet = "Arm 2 metadata")
+arm3_metadata <- read_sheet(metadata, sheet = "Arm 3 metadata")
+
+intersect(colnames(arm2_metadata), colnames(arm3_metadata))
+setdiff(colnames(arm2_metadata), colnames(arm3_metadata))
+intersect(colnames(arm3_metadata), colnames(arm2_metadata))
+
+arm2_metadata$Arm <- "Arm2"
+arm3_metadata$Arm <- "Arm3"
+
+all_metadata <- rbindlist(list(arm2_metadata, arm3_metadata), fill = TRUE)
+
+# Adding patient ID
+all_metadata$Site_abbr <- ifelse(all_metadata$STUDY_SITE == "Northwell Health Cancer Institute", "S21-NWH",
+                                 ifelse(all_metadata$STUDY_SITE == "Mayo Clinic (Florida)", "MFL", "COH"))
+
+seurat_data$Patient_ID <- gsub("Mayo", "MFL", seurat_data$Patient_ID)
+
+all_metadata$RPN <- str_pad(all_metadata$RPN, 3, pad = "0")
+all_metadata$Patient_ID <- paste0(all_metadata$Site_abbr, "-", all_metadata$RPN)
+
+intersect(seurat_data$Patient_ID, all_metadata$Patient_ID)
+setdiff(seurat_data$Patient_ID, all_metadata$Patient_ID)
+setdiff(all_metadata$Patient_ID, seurat_data$Patient_ID)
+
+# Adding all metadata
+for (m in setdiff(colnames(all_metadata), c("Obs"))){
+  seurat_data@meta.data[[m]] = plyr::mapvalues(x = seurat_data@meta.data$Patient_ID,
+                                               from = all_metadata$Patient_ID,
+                                               to = all_metadata[[m]])
+  
+  seurat_data@meta.data[[m]][-which(seurat_data@meta.data$Patient_ID %in% all_metadata$Patient_ID)] <- NA
+}
+
+saveRDS(seurat_data, "/tgen_labs/banovich/PIPAC/Seurat/PIPAC_NC50_NN20_PC20_Seurat_annotated_metadata.rds")
+
+```
+
+

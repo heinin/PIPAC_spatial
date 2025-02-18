@@ -1,0 +1,199 @@
+---
+title: "Post-clustering visualization"
+author: "heinin"
+date: "2025-01-16"
+output:
+  workflowr::wflow_html:
+    code_folding: hide
+  html_notebook: default
+editor_options:
+  chunk_output_type: console
+---
+
+### Packages and environment variables
+
+```{r, warning=F, message=F}
+
+suppressPackageStartupMessages({
+  library(workflowr)
+  library(arrow)
+  library(Seurat)
+  library(SeuratObject)
+  library(SeuratDisk)
+  library(tidyverse)
+  library(tibble)
+  library(ggplot2)
+  library(ggpubr)
+  library(ggrepel)
+  library(googlesheets4)
+  library(workflowr)})
+
+```
+
+### Environment variables and helper functions
+
+```{r, message = F, warning = F}
+
+setwd("/home/hnatri/PIPAC_spatial/")
+set.seed(9999)
+options(scipen = 99999)
+options(ggrepel.max.overlaps = Inf)
+
+source("/home/hnatri/PIPAC_spatial/code/PIPAC_colors_themes.R")
+source("/home/hnatri/PIPAC_spatial/code/plot_functions.R")
+
+```
+
+### Import data, add metadata
+
+```{r, message = F, warning = F, fig.width = 6, fig.height = 4}
+
+seurat_data <- readRDS("/scratch/hnatri/PIPAC/merged_spatial_filtered_split_clustered_NC50_NN20_PC20_Seurat.rds")
+head(seurat_data@meta.data)
+unique(seurat_data$leiden_res0.5)
+
+```
+
+```{r, message = F, warning = F, fig.width = 6, fig.height = 4, eval = F}
+
+# Metadata
+gs4_deauth()
+metadata  <- gs4_get("https://docs.google.com/spreadsheets/d/1Oq09oGVTst_X-oC6-TGnteuSxtmsr_t6pQa0fklx6lk/edit?usp=sharing")
+sheet_names(metadata)
+metadata <- read_sheet(metadata, sheet = "All TMAs")
+
+intersect(seurat_data$TMA, metadata$TMA)
+setdiff(seurat_data$TMA, metadata$TMA)
+setdiff(metadata$TMA, seurat_data$TMA)
+
+colnames(metadata) <- gsub(" ", "_", colnames(metadata))
+colnames(metadata) <- gsub("_-_", "_", colnames(metadata))
+
+metadata$Block_ID <- gsub(" ", "_", metadata$Block_ID)
+metadata$Block_ID <- gsub("\\/", "_", metadata$Block_ID)
+  
+intersect(seurat_data$Sample, metadata$Block_ID)
+setdiff(seurat_data$Sample, metadata$Block_ID)
+setdiff(metadata$Block_ID, seurat_data$Sample)
+
+for(column in c("Institution", "Patient_ID", "Timepoint", "Tissue", "Location_Quadrant")){
+  message(column)
+  seurat_data[[column]] <- mapvalues(x = seurat_data$Sample,
+                                     from = metadata$Block_ID,
+                                     to = unlist(metadata[,column]))
+}
+
+# Normalizing
+seurat_data <- NormalizeData(seurat_data)
+
+#saveRDS(seurat_data, "/scratch/hnatri/PIPAC/merged_spatial_filtered_split_clustered_NC50_NN20_PC20_Seurat.rds")
+
+```
+
+```{r, message = F, warning = F, fig.width = 4, fig.height = 4}
+
+DimPlot(seurat_data,
+        group.by = "leiden_res0.5",
+        #cols = cluster_col,
+        reduction = "umap",
+        raster = T,
+        label = T) +
+  coord_fixed(ratio = 1) +
+  theme_minimal() +
+  NoLegend()
+  #ggtitle("20 PCs")
+
+```
+
+```{r, message = F, warning = F, fig.width = 8, fig.height = 8}
+
+DimPlot(seurat_data,
+        group.by = "leiden_res0.5",
+        split.by = "TMA",
+        ncol = 3,
+        #cols = cluster_col,
+        reduction = "sp",
+        raster = T,
+        label = F) +
+  coord_fixed(ratio = 1) +
+  theme_minimal() +
+  NoLegend() +
+  RotatedAxis()
+
+DimPlot(seurat_data,
+        group.by = "leiden_res0.5",
+        split.by = "TMA",
+        ncol = 3,
+        #cols = cluster_col,
+        reduction = "sp",
+        raster = T,
+        label = F) +
+  coord_fixed(ratio = 1) +
+  theme_void() +
+  NoLegend() +
+  RotatedAxis() +
+  NoAxes()
+  #ggtitle("20 PCs")
+
+```
+
+### Cell numbers and cluster proportions by sample
+
+```{r, message = F, warning = F, fig.width = 10, fig.height = 20}
+
+p1 <- table(seurat_data$Sample) %>%
+  as.data.frame() %>%
+  ggplot(aes(x = reorder(Var1, -Freq), y = Freq)) +
+  geom_bar(stat = "identity") +
+  xlab("") +
+  ylab("# cells") +
+  theme_bw() +
+  RotatedAxis() +
+  coord_flip()
+
+sample_order <- table(seurat_data$Sample) %>%
+  as.data.frame() %>%
+  arrange(-Freq) %>%
+  dplyr::select(Var1) %>%
+  unlist()
+
+p2 <- create_barplot(seurat_data,
+                     group_var = "Sample",
+                     plot_var = "leiden_res0.5",
+                     plot_levels = sort((unique(seurat_data$leiden_res0.5))),
+                     group_levels = sample_order,
+                     plot_colors = pipac_cluster_col,
+                     var_names =  c("Frequency (%)", ""),
+                     legend_title = "Cluster") +
+  coord_flip()
+
+p1 + p2
+
+```
+
+### Cell numbers and cluster proportions by sample type
+
+```{r, message = F, warning = F, fig.width = 2, fig.height = 3}
+
+table(seurat_data$Tissue) %>%
+  as.data.frame() %>%
+  ggplot(aes(x = reorder(Var1, -Freq), y = Freq)) +
+  geom_bar(stat = "identity") +
+  xlab("") +
+  theme_bw() +
+  RotatedAxis()
+
+```
+
+```{r, message = F, warning = F, fig.width = 4, fig.height = 4}
+
+create_clusterpropplot(seurat_object = seurat_data,
+                       group_var = "Tissue",
+                       group1 = "Tumor",
+                       group2 = "Normal",
+                       plot_var = "leiden_res0.5",
+                       plot_colors = pipac_cluster_col,
+                       var_names = c("Tumor", "Normal"),
+                       legend_title = "")
+
+```

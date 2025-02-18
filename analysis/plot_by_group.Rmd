@@ -1,0 +1,200 @@
+---
+title: "Plotting the PIPAC data by patient/group"
+author: "heinin"
+date: "2025-02-11"
+output:
+  workflowr::wflow_html:
+    code_folding: hide
+  html_notebook: default
+editor_options:
+  chunk_output_type: console
+---
+
+### Packages and environment variables
+
+```{r, warning=F, message=F}
+
+suppressPackageStartupMessages({
+  library(workflowr)
+  library(arrow)
+  library(Seurat)
+  library(SeuratObject)
+  library(SeuratDisk)
+  library(tidyverse)
+  library(tibble)
+  library(ggplot2)
+  library(ggpubr)
+  library(ggrepel)
+  library(googlesheets4)
+  library(workflowr)
+  library(patchwork)})
+
+```
+
+### Environment variables and helper functions
+
+```{r, message = F, warning = F}
+
+setwd("/home/hnatri/PIPAC_spatial/")
+set.seed(9999)
+options(scipen = 99999)
+options(ggrepel.max.overlaps = Inf)
+
+source("/home/hnatri/PIPAC_spatial/code/PIPAC_colors_themes.R")
+source("/home/hnatri/PIPAC_spatial/code/plot_functions.R")
+
+```
+
+### Import data
+
+```{r, message = F, warning = F, fig.width = 8, fig.height = 4}
+
+seurat_data <- readRDS("/tgen_labs/banovich/PIPAC/Seurat/PIPAC_NC50_NN20_PC20_Seurat_annotated_metadata.rds")
+
+```
+
+```{r, message = F, warning = F, fig.width = 6, fig.height = 6}
+
+DimPlot(seurat_data,
+        group.by = "Annotation",
+        cols = pipac_celltype_cols,
+        reduction = "umap",
+        raster = T,
+        label = T,
+        repel = T) +
+  coord_fixed(ratio = 1) +
+  theme_bw() +
+  NoLegend() +
+  ggtitle("Celltype")
+
+```
+
+### Plotting by sample
+
+```{r, message = F, warning = F, fig.width = 12, fig.height = 24, eval = F}
+
+sample_dimplots <- lapply(sort(unique(seurat_data$Sample)), function(sample){
+  message(sample)
+  
+  DimPlot(subset(seurat_data, subset = Sample == sample),
+        reduction = "sp",
+        group.by = "Annotation",
+        #split.by = "Sample",
+        cols = pipac_celltype_cols,
+        raster = T,
+        pt.size = 3) +
+    coord_fixed(ratio = 1) +
+    theme_bw() +
+    NoLegend() +
+    ggtitle(sample)
+})
+
+#wrap_plots(sample_dimplots, ncol = 6)
+
+#saveRDS(sample_dimplots, "/scratch/hnatri/PIPAC/sample_dimplots.rds")
+
+```
+
+### Plotting each sample for each patient
+
+```{r, message = F, warning = F, fig.width = 12, fig.height = 4, eval = F}
+
+patient_dimplots <- lapply(sort(levels(seurat_data$Patient_ID)), function(patient){
+  message(patient)
+  
+  # Finding all samples for the patient
+  samples <- seurat_data@meta.data %>%
+    filter(Patient_ID == patient) %>%
+    dplyr::select("Patient_ID", "Sample", "Tissue", "Timepoint", "Location_Quadrant") %>%
+    distinct() %>%
+    arrange(Timepoint, Tissue)
+  
+  patient_dimplots <- lapply(samples$Sample, function(sample){
+    titlerow <- samples %>% filter(Sample == sample)
+    titlestr <- paste0(unlist(titlerow[c(1, 3, 4, 5)]), collapse = ", ")
+    
+    DimPlot(subset(seurat_data, subset = Sample == sample),
+          reduction = "sp",
+          group.by = "Annotation",
+          cols = pipac_celltype_cols,
+          raster = T,
+          pt.size = 3,) +
+      coord_fixed(ratio = 1) +
+      theme_bw() +
+      NoLegend() +
+      ggtitle(titlestr) +
+      plot_theme +
+      theme(plot.title = element_text(size=14))
+    
+  })
+})
+
+
+names(patient_dimplots) <- sort(levels(seurat_data$Patient_ID))
+
+saveRDS(patient_dimplots, "/scratch/hnatri/PIPAC/patient_dimplots.rds")
+
+```
+
+```{r, message = F, warning = F, fig.width = 20, fig.height = 20}
+
+#sample_dimplots <- readRDS("/scratch/hnatri/PIPAC/sample_dimplots.rds")
+#
+#sample_dimplots
+
+patient_dimplots <- readRDS("/scratch/hnatri/PIPAC/patient_dimplots.rds")
+
+lapply(names(patient_dimplots), function(patient){
+  
+  wrap_plots(patient_dimplots[[patient]],
+             ncol = 4)
+
+})
+
+```
+
+### Cell type proportions by sample and sample type
+
+```{r, message = F, warning = F, fig.width = 24, fig.height = 6}
+
+create_barplot(seurat_data,
+               group_var = "Sample",
+               plot_var = "Annotation",
+               plot_levels = sort((unique(seurat_data$Annotation))),
+               group_levels = sort(unique(seurat_data$Sample)),
+               plot_colors = pipac_celltype_cols,
+               var_names =  c("Frequency (%)", ""),
+               legend_title = "Celltype")
+
+```
+
+### Cell numbers in tumor and normal
+
+```{r, message = F, warning = F, fig.width = 5, fig.height = 5}
+
+table(seurat_data$Annotation, seurat_data$Tissue)
+
+ct_table <- as.data.frame(table(seurat_data$Annotation, seurat_data$Tissue))
+colnames(ct_table) <- c("Celltype", "Tissue", "Freq")
+ct_table <- spread(ct_table, Celltype, Freq)
+# Converting to percetange
+#ct_table[,2:length(ct_table)] <- (ct_table[,2:length(ct_table)]/rowSums(ct_table[,2:length(ct_table)]))*100
+ct_table <- gather(ct_table, Celltype, Freq, names(ct_table)[2:length(names(ct_table))], factor_key=TRUE)
+    
+ct_table$Tissue <- factor(ct_table$Tissue, levels = c("Normal", "Tumor"))
+
+ggplot(ct_table, aes(x = Tissue, y = Freq, fill = Celltype)) +
+       geom_bar(stat="identity", position='stack', width = 0.8) +
+       scale_fill_manual(name = "Celltype", values = pipac_celltype_cols) +
+       xlab("") +
+       ylab("Cell count") +
+       theme_classic() +
+       theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1))
+
+```
+
+### Cell type proportions by response
+
+#### In baseline tumor
+
+#### After treatment tumor
