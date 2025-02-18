@@ -11,9 +11,9 @@
 
 <meta name="author" content="heinin" />
 
-<meta name="date" content="2025-02-10" />
+<meta name="date" content="2025-02-11" />
 
-<title>Adding metadata to the PIPAC Xenium data</title>
+<title>Niche construction and analysis of PIPAC Xenium data</title>
 
 <script src="site_libs/header-attrs-2.22/header-attrs.js"></script>
 <script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
@@ -363,10 +363,10 @@ div.tocify {
 
 
 
-<h1 class="title toc-ignore">Adding metadata to the PIPAC Xenium
-data</h1>
+<h1 class="title toc-ignore">Niche construction and analysis of PIPAC
+Xenium data</h1>
 <h4 class="author">heinin</h4>
-<h4 class="date">2025-02-10</h4>
+<h4 class="date">2025-02-11</h4>
 
 </div>
 
@@ -610,6 +610,7 @@ Ignored files:
 
 Unstaged changes:
     Modified:   analysis/add_metadata.Rmd
+    Modified:   analysis/niche_construction.Rmd
 
 </code></pre>
 <p>
@@ -627,11 +628,11 @@ have uncommitted changes.
 
 <p>
 These are the previous versions of the repository in which changes were
-made to the R Markdown (<code>analysis/add_metadata.Rmd</code>) and HTML
-(<code>docs/add_metadata.html</code>) files. If you’ve configured a
-remote Git repository (see <code>?wflow_git_remote</code>), click on the
-hyperlinks in the table below to view the files as they were in that
-past version.
+made to the R Markdown (<code>analysis/niche_construction.Rmd</code>)
+and HTML (<code>docs/niche_construction.html</code>) files. If you’ve
+configured a remote Git repository (see <code>?wflow_git_remote</code>),
+click on the hyperlinks in the table below to view the files as they
+were in that past version.
 </p>
 <div class="table-responsive">
 <table class="table table-condensed table-hover">
@@ -672,23 +673,6 @@ heinin
 Added annotations
 </td>
 </tr>
-<tr>
-<td>
-html
-</td>
-<td>
-6448204
-</td>
-<td>
-heinin
-</td>
-<td>
-2025-02-18
-</td>
-<td>
-Added annotations
-</td>
-</tr>
 </tbody>
 </table>
 </div>
@@ -711,14 +695,14 @@ Added annotations
   library(ggrepel)
   library(googlesheets4)
   library(workflowr)
-  library(patchwork)
-  library(stringr)})</code></pre>
+  library(patchwork)})</code></pre>
 </div>
 <div id="environment-variables-and-helper-functions"
 class="section level3">
 <h3>Environment variables and helper functions</h3>
 <pre class="r"><code>setwd(&quot;/home/hnatri/PIPAC_spatial/&quot;)
 set.seed(9999)
+options(future.globals.maxSize = 30000 * 1024^2)
 options(scipen = 99999)
 options(ggrepel.max.overlaps = Inf)
 
@@ -727,97 +711,66 @@ source(&quot;/home/hnatri/PIPAC_spatial/code/plot_functions.R&quot;)</code></pre
 </div>
 <div id="import-data" class="section level3">
 <h3>Import data</h3>
-<pre class="r"><code>seurat_data &lt;- readRDS(&quot;/tgen_labs/banovich/PIPAC/Seurat/PIPAC_NC50_NN20_PC20_Seurat_annotated.rds&quot;)
-
-DimPlot(seurat_data,
-        group.by = &quot;Annotation&quot;,
-        cols = pipac_celltype_col,
-        reduction = &quot;umap&quot;,
-        raster = T,
-        label = T,
-        repel = T) +
-  coord_fixed(ratio = 1) +
-  theme_bw() +
-  NoLegend() +
-  ggtitle(&quot;Celltype&quot;)</code></pre>
-<p><img src="figure/add_metadata.Rmd/unnamed-chunk-3-1.png" width="576" style="display: block; margin: auto;" /></p>
-<p>
-<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-3-1">
-Past versions of unnamed-chunk-3-1.png
-</button>
-</p>
-<div id="fig-unnamed-chunk-3-1" class="collapse">
-<div class="table-responsive">
-<table class="table table-condensed table-hover">
-<thead>
-<tr>
-<th>
-Version
-</th>
-<th>
-Author
-</th>
-<th>
-Date
-</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>
-6448204
-</td>
-<td>
-heinin
-</td>
-<td>
-2025-02-18
-</td>
-</tr>
-</tbody>
-</table>
+<pre class="r"><code>seurat_data &lt;- readRDS(&quot;/tgen_labs/banovich/PIPAC/Seurat/PIPAC_NC50_NN20_PC20_Seurat_annotated_metadata.rds&quot;)</code></pre>
 </div>
-</div>
-</div>
-<div id="adding-metadata" class="section level3">
-<h3>Adding metadata</h3>
-<pre class="r"><code>gs4_deauth()
-metadata  &lt;- gs4_get(&quot;https://docs.google.com/spreadsheets/d/1sXXwOreLxjMSUoPt79c6jmaQpluWkaxA5P5HfDsed3I/edit?usp=sharing&quot;)
-arm2_metadata &lt;- read_sheet(metadata, sheet = &quot;Arm 2 metadata&quot;)
-arm3_metadata &lt;- read_sheet(metadata, sheet = &quot;Arm 3 metadata&quot;)
+<div id="niche-construction" class="section level3">
+<h3>Niche construction</h3>
+<pre class="r"><code># Create FOV
+coords &lt;- seurat_data@meta.data[, c(&quot;x_centroid&quot;, &quot;y_centroid&quot;)]
+seurat_data[[&quot;fov&quot;]]  &lt;- CreateFOV(coords,
+                                   assay = &quot;RNA&quot;,
+                                   type = &quot;centroids&quot;)
 
-intersect(colnames(arm2_metadata), colnames(arm3_metadata))
-setdiff(colnames(arm2_metadata), colnames(arm3_metadata))
-intersect(colnames(arm3_metadata), colnames(arm2_metadata))
-
-arm2_metadata$Arm &lt;- &quot;Arm2&quot;
-arm3_metadata$Arm &lt;- &quot;Arm3&quot;
-
-all_metadata &lt;- rbindlist(list(arm2_metadata, arm3_metadata), fill = TRUE)
-
-# Adding patient ID
-all_metadata$Site_abbr &lt;- ifelse(all_metadata$STUDY_SITE == &quot;Northwell Health Cancer Institute&quot;, &quot;S21-NWH&quot;,
-                                 ifelse(all_metadata$STUDY_SITE == &quot;Mayo Clinic (Florida)&quot;, &quot;MFL&quot;, &quot;COH&quot;))
-
-seurat_data$Patient_ID &lt;- gsub(&quot;Mayo&quot;, &quot;MFL&quot;, seurat_data$Patient_ID)
-
-all_metadata$RPN &lt;- str_pad(all_metadata$RPN, 3, pad = &quot;0&quot;)
-all_metadata$Patient_ID &lt;- paste0(all_metadata$Site_abbr, &quot;-&quot;, all_metadata$RPN)
-
-intersect(seurat_data$Patient_ID, all_metadata$Patient_ID)
-setdiff(seurat_data$Patient_ID, all_metadata$Patient_ID)
-setdiff(all_metadata$Patient_ID, seurat_data$Patient_ID)
-
-# Adding all metadata
-for (m in setdiff(colnames(all_metadata), c(&quot;Obs&quot;))){
-  seurat_data@meta.data[[m]] = plyr::mapvalues(x = seurat_data@meta.data$Patient_ID,
-                                               from = all_metadata$Patient_ID,
-                                               to = all_metadata[[m]])
-  
-  seurat_data@meta.data[[m]][-which(seurat_data@meta.data$Patient_ID %in% all_metadata$Patient_ID)] &lt;- NA
-}
+# TODO: Running with different k and n values
+seurat_data &lt;- BuildNicheAssay(object = seurat_data,
+                               fov = &quot;fov&quot;,
+                               group.by = &quot;Annotation&quot;,
+                               niches.k = 5, neighbors.k = 30)
+seurat_data$niche_k5_n30 &lt;- seurat_data$niches
 
 saveRDS(seurat_data, &quot;/tgen_labs/banovich/PIPAC/Seurat/PIPAC_NC50_NN20_PC20_Seurat_annotated_metadata.rds&quot;)</code></pre>
+</div>
+<div id="plotting-niche-composition" class="section level3">
+<h3>Plotting niche composition</h3>
+<pre class="r"><code>create_barplot(seurat_data,
+               group_var = &quot;niche_k5_n30&quot;,
+               plot_var = &quot;Annotation&quot;,
+               plot_levels = sort((unique(seurat_data$Annotation))),
+               group_levels = sort(unique(seurat_data$niche_k5_n30)),
+               plot_colors = pipac_celltype_col,
+               var_names =  c(&quot;Frequency (%)&quot;, &quot;&quot;),
+               legend_title = &quot;Celltype&quot;)</code></pre>
+<p><img src="figure/niche_construction.Rmd/unnamed-chunk-5-1.png" width="768" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>table(seurat_data$niche_k5_n30, seurat_data$Tissue)</code></pre>
+<pre><code>   
+    Normal  Tumor
+  1   7129  79143
+  2  66976 252652
+  3  12480 154604
+  4   6229  55797
+  5  55189 471405</code></pre>
+<pre class="r"><code>ct_table &lt;- as.data.frame(table(seurat_data$niche_k5_n30, seurat_data$Tissue))
+colnames(ct_table) &lt;- c(&quot;niche_k5_n30&quot;, &quot;Tissue&quot;, &quot;Freq&quot;)
+ct_table &lt;- spread(ct_table, niche_k5_n30, Freq)
+# Converting to percetange
+#ct_table[,2:length(ct_table)] &lt;- (ct_table[,2:length(ct_table)]/rowSums(ct_table[,2:length(ct_table)]))*100
+ct_table &lt;- gather(ct_table, niche_k5_n30, Freq, names(ct_table)[2:length(names(ct_table))], factor_key=TRUE)
+    
+ct_table$Tissue &lt;- factor(ct_table$Tissue, levels = c(&quot;Normal&quot;, &quot;Tumor&quot;))
+
+niches &lt;- seq(1, 5)
+niches &lt;- sort(unique(seurat_data$niche_k5_n30))
+niche_col &lt;- colorRampPalette(brewer.pal(10, &quot;Paired&quot;))(nb.cols &lt;- length(niches))
+names(niche_col) &lt;- levels(niches)
+
+ggplot(ct_table, aes(x = Tissue, y = Freq, fill = niche_k5_n30)) +
+       geom_bar(stat=&quot;identity&quot;, position=&#39;stack&#39;, width = 0.8) +
+       scale_fill_manual(name = &quot;Celltype&quot;, values = niche_col) +
+       xlab(&quot;&quot;) +
+       ylab(&quot;Cell count&quot;) +
+       theme_classic() +
+       theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1))</code></pre>
+<p><img src="figure/niche_construction.Rmd/unnamed-chunk-6-1.png" width="480" style="display: block; margin: auto;" /></p>
 <br>
 <p>
 <button type="button" class="btn btn-default btn-workflowr btn-workflowr-sessioninfo" data-toggle="collapse" data-target="#workflowr-sessioninfo" style="display: block;">

@@ -84,7 +84,7 @@ create_barplot(seurat_data,
                plot_var = "Annotation",
                plot_levels = sort((unique(seurat_data$Annotation))),
                group_levels = sort(unique(seurat_data$niche_k5_n30)),
-               plot_colors = pipac_celltype_cols,
+               plot_colors = pipac_celltype_col,
                var_names =  c("Frequency (%)", ""),
                legend_title = "Celltype")
 

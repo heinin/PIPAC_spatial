@@ -54,7 +54,7 @@ seurat_data <- readRDS("/tgen_labs/banovich/PIPAC/Seurat/PIPAC_NC50_NN20_PC20_Se
 
 DimPlot(seurat_data,
         group.by = "Annotation",
-        cols = pipac_celltype_cols,
+        cols = pipac_celltype_col,
         reduction = "umap",
         raster = T,
         label = T,
