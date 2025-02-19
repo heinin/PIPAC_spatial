@@ -19,9 +19,6 @@ source activate rpy2
 
 jupyter lab --ip 0.0.0.0 --port 6120 --no-browser # Don't forget to add .rc.tgen.org before the colon
 
-# http://g-h-1-8-13.rc.tgen.org:6120/lab?token=44e2ac756510406f5f1cc2248c9b2543987bf94ae378d420
-# http://g-h-1-9-31.rc.tgen.org:6120:lab?token=c5bb0149f21d1df93f4d04392d67d347ff08c244e2f579af
-
 # Start in the notebook called seurat_to_anndata.ipynb. This should be using the rpy2 kernel.
 
 # Next move to the clustering.ipynb notebook. This should be using the rapids kernel.

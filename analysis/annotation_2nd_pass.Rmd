@@ -208,6 +208,20 @@ DotPlot(immune,
 
 ```
 
+```{r, message = F, warning = F, fig.width = 12, fig.height = 22}
+
+FeaturePlot(immune,
+            features = plot_features,
+            cols = c("gray89", "tomato3"),
+            order = T,
+            ncol = 4) &
+  coord_fixed(ratio = 1) &
+  theme_bw() &
+  plot_theme #ggtitle("Immune")
+
+```
+
+
 ```{r, message = F, warning = F, fig.width = 10, fig.height = 4}
 
 DotPlot(nonimmune,
@@ -216,6 +230,19 @@ DotPlot(nonimmune,
         cols = c("azure", "tomato3")) +
   RotatedAxis() +
   ggtitle("Non-immune")
+
+```
+
+```{r, message = F, warning = F, fig.width = 12, fig.height = 24}
+
+FeaturePlot(nonimmune,
+            features = plot_features,
+            cols = c("gray89", "tomato3"),
+            order = T,
+            ncol = 4) &
+  coord_fixed(ratio = 1) &
+  theme_bw() &
+  plot_theme #ggtitle("Non-immune")
 
 ```
 
