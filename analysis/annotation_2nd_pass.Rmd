@@ -124,7 +124,41 @@ top_nonimmune_markers <- nonimmune_markers %>%
 
 ```
 
-### Saving top markers and annotations
+### Dotplots of top cluster markers
+
+#### Immune
+
+```{r, message = F, warning = F, fig.width = 6, fig.height = 18}
+
+create_dotplot_heatmap(seurat_object = immune,
+                       plot_features = unique(top_immune_markers$gene),
+                       group_var = "leiden_res0.5",
+                       group_colors = pipac_immune_cluster_col,
+                       column_title = "",
+                       row_km = 5,
+                       col_km = 5,
+                       row.order = NULL,
+                       col.order = NULL)
+
+```
+
+#### Non-immune
+
+```{r, message = F, warning = F, fig.width = 6, fig.height = 18}
+
+create_dotplot_heatmap(seurat_object = nonimmune,
+                       plot_features = unique(top_nonimmune_markers$gene),
+                       group_var = "leiden_res0.5",
+                       group_colors = pipac_nonimmune_cluster_col,
+                       column_title = "",
+                       row_km = 5,
+                       col_km = 5,
+                       row.order = NULL,
+                       col.order = NULL)
+
+```
+
+### Saving top markers and marker annotations
 
 ```{r, message = F, warning = F, fig.width = 6, fig.height = 6, eval = F}
 

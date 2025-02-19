@@ -395,7 +395,7 @@ aria-hidden="true"></span> </a>
 <div class="tab-content">
 <div id="summary" class="tab-pane fade in active">
 <p>
-<strong>Last updated:</strong> 2025-02-10
+<strong>Last updated:</strong> 2025-02-18
 </p>
 <p>
 <strong>Checks:</strong> <span
@@ -433,10 +433,10 @@ changes </a>
 <div id="strongRMarkdownfilestronguncommittedchanges"
 class="panel-collapse collapse">
 <div class="panel-body">
-<p>The R Markdown is untracked by Git. To know which version of the R
-Markdown file created these results, you’ll want to first commit it to
-the Git repo. If you’re still working on the analysis, you can ignore
-this warning. When you’re finished, you can run
+<p>The R Markdown file has unstaged changes. To know which version of
+the R Markdown file created these results, you’ll want to first commit
+it to the Git repo. If you’re still working on the analysis, you can
+ignore this warning. When you’re finished, you can run
 <code>wflow_publish</code> to commit the R Markdown file and build the
 HTML.</p>
 </div>
@@ -579,6 +579,14 @@ immune_cluster_marker_annotations_2ndpass.tsv
 nonimmune_cluster_marker_annotations_2ndpass.tsv
 </td>
 </tr>
+<tr>
+<td style="text-align:left;">
+/home/hnatri/PIPAC_spatial/celltype_markers.tsv
+</td>
+<td style="text-align:left;">
+celltype_markers.tsv
+</td>
+</tr>
 </tbody>
 </table>
 </div>
@@ -587,13 +595,15 @@ nonimmune_cluster_marker_annotations_2ndpass.tsv
 <div class="panel panel-default">
 <div class="panel-heading">
 <p class="panel-title">
-<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrong668678e">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomheininPIPACspatialtreefae8c8af3477efbf96ebf511e3ef86eeba3f2d56targetblankfae8c8aa">
 <span class="glyphicon glyphicon-ok text-success"
-aria-hidden="true"></span> <strong>Repository version:</strong> 668678e
+aria-hidden="true"></span> <strong>Repository version:</strong>
+<a href="https://github.com/heinin/PIPAC_spatial/tree/fae8c8af3477efbf96ebf511e3ef86eeba3f2d56" target="_blank">fae8c8a</a>
 </a>
 </p>
 </div>
-<div id="strongRepositoryversionstrong668678e"
+<div
+id="strongRepositoryversionstrongahrefhttpsgithubcomheininPIPACspatialtreefae8c8af3477efbf96ebf511e3ef86eeba3f2d56targetblankfae8c8aa"
 class="panel-collapse collapse">
 <div class="panel-body">
 <p>
@@ -602,7 +612,8 @@ and connecting the code version to the results is critical for
 reproducibility.
 </p>
 <p>
-The results in this page were generated with repository version 668678e.
+The results in this page were generated with repository version
+<a href="https://github.com/heinin/PIPAC_spatial/tree/fae8c8af3477efbf96ebf511e3ef86eeba3f2d56" target="_blank">fae8c8a</a>.
 See the <em>Past versions</em> tab to see a history of the changes made
 to the R Markdown and HTML files.
 </p>
@@ -616,23 +627,17 @@ depends on. Below is the status of the Git repository when the results
 were generated:
 </p>
 <pre><code>
-Untracked files:
-    Untracked:  analysis/Xenium_processing.Rmd
-    Untracked:  analysis/annotation.Rmd
-    Untracked:  analysis/annotation_2nd_pass.Rmd
-    Untracked:  analysis/immune_annotation.Rmd
-    Untracked:  analysis/nonimmune_annotation.Rmd
-    Untracked:  analysis/post_clustering.Rmd
-    Untracked:  analysis/splitting_samples.Rmd
-    Untracked:  code/PIPAC_colors_themes.R
-    Untracked:  code/anndata_to_seurat.R
-    Untracked:  code/plot_functions.R
-    Untracked:  code/rapids_pipeline/
-    Untracked:  immune_cluster_marker_annotations.tsv
-    Untracked:  immune_cluster_marker_annotations_2ndpass.tsv
-    Untracked:  main_cluster_marker_annotations.tsv
-    Untracked:  nonimmune_cluster_marker_annotations.tsv
-    Untracked:  nonimmune_cluster_marker_annotations_2ndpass.tsv
+Ignored files:
+    Ignored:    analysis/figure/
+    Ignored:    celltype_markers.tsv
+    Ignored:    immune_cluster_marker_annotations.tsv
+    Ignored:    immune_cluster_marker_annotations_2ndpass.tsv
+    Ignored:    main_cluster_marker_annotations.tsv
+    Ignored:    nonimmune_cluster_marker_annotations.tsv
+    Ignored:    nonimmune_cluster_marker_annotations_2ndpass.tsv
+
+Unstaged changes:
+    Modified:   analysis/annotation_2nd_pass.Rmd
 
 </code></pre>
 <p>
@@ -647,10 +652,74 @@ have uncommitted changes.
 <hr>
 </div>
 <div id="versions" class="tab-pane fade">
+
 <p>
-There are no past versions. Publish this analysis with
-<code>wflow_publish()</code> to start tracking its development.
+These are the previous versions of the repository in which changes were
+made to the R Markdown (<code>analysis/annotation_2nd_pass.Rmd</code>)
+and HTML (<code>docs/annotation_2nd_pass.html</code>) files. If you’ve
+configured a remote Git repository (see <code>?wflow_git_remote</code>),
+click on the hyperlinks in the table below to view the files as they
+were in that past version.
 </p>
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+File
+</th>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+<th>
+Message
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+Rmd
+</td>
+<td>
+<a href="https://github.com/heinin/PIPAC_spatial/blob/64482047ae9660d08678b8cd1d99c7695b427aaa/analysis/annotation_2nd_pass.Rmd" target="_blank">6448204</a>
+</td>
+<td>
+heinin
+</td>
+<td>
+2025-02-18
+</td>
+<td>
+Added annotations
+</td>
+</tr>
+<tr>
+<td>
+html
+</td>
+<td>
+<a href="https://rawcdn.githack.com/heinin/PIPAC_spatial/64482047ae9660d08678b8cd1d99c7695b427aaa/docs/annotation_2nd_pass.html" target="_blank">6448204</a>
+</td>
+<td>
+heinin
+</td>
+<td>
+2025-02-18
+</td>
+<td>
+Added annotations
+</td>
+</tr>
+</tbody>
+</table>
+</div>
 <hr>
 </div>
 </div>
@@ -712,57 +781,51 @@ p2 &lt;- DimPlot(nonimmune,
 
 p1 + p2</code></pre>
 <p><img src="figure/annotation_2nd_pass.Rmd/unnamed-chunk-3-1.png" width="768" style="display: block; margin: auto;" /></p>
-<pre class="r"><code>table(immune$annot1, immune$leiden_res0.5)</code></pre>
-<pre><code>        
-             0     1     2     3     4     5     6     7     8     9    10
-  DC1        0     0    24     0     0     1     4     3     5     0     0
-  L1         0     2    15     0     0     3    21     1     2     6     0
-  L2      2636  5065   252     4     0  8817 26660    13    15   116     9
-  L3      4103 16189     0     2     0   836  1483     1     0    30     5
-  L4         0     0     0     0     0     1     0     0     0     0     0
-  L5         0    48     9     0     0     6   131     2     0  8935     0
-  L6        12    13     0     0     0    40     4     0     0     0   283
-  L7       180  2499     0     0     0   899  1926     0    10    81     3
-  L8         2    74     0     0     0  9751     0     0     1     1     3
-  M1         0     0   160 16867     0     4     0     1  1385     0     0
-  M2         4    22  2425   154    18     3     9    50  2703     0     0
-  M3         7    22  6387  2668     0    55    11    19 39261     3     0
-  M4         2     0   681     3     0     3    14     1   386     0     0
-  M5         2     5  2588    91     0     2     4    79   164     1     0
-  M6         0     0   126     0     0     0     1 10672     4     0     0
-  M7         1     0 52693    26     0     0   118  1623  5690    13     0
-  M8         2     0    85    23     0     0     0     0    49     0     0
-  M9         0     1    92     3     0     1     2     0  1245     1     0
-  Plasma    19   187   195     0     0    17   244    29   235   129     0
-        
-            11    12    13    14    15    16    17    18    19    20    21
-  DC1       18     0     3     0     0     1   127    26  1619  2658  7641
-  L1         6     3     0   804     0     0    29     2     1     0     0
-  L2        38    10     2    28     0     1   335    73   311    44    15
-  L3         0    21     0     5     1     0     0    20    13     4     0
-  L4         0     0     0   275     0     0     0     0     0     0     0
-  L5         1     6     1     0     0    16    49    32     2     2     2
-  L6         0     0     0     0     0     0     0     0     0     0     0
-  L7         1    12     0    45     0    14   157    95    22     2     0
-  L8         0     0     0     0     0     0     0     0     0     0     0
-  M1       244   118     9     0    55     0     0     0     0     0     0
-  M2     12301   578    81     0   242     0   115    74    13    33    39
-  M3       307   754    72     0  9876     0     1     0     0     3    11
-  M4         5   531     0     1     0     0     0     0     1     1     0
-  M5         4  9800    20     2     0     2    73     0     0     1     0
-  M6        28    61     0     0     0     0     1     0     6     5     9
-  M7       119    56     7     0   653     1   249     0    15     5    66
-  M8         2    70  2132     0     4     0     0     0     0     0     0
-  M9        29    10     2     0    61     2   154    21     0     0     0
-  Plasma    32    52     1    33     0 11132 31100 12040   148    15    49</code></pre>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-3-1">
+Past versions of unnamed-chunk-3-1.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-3-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/heinin/PIPAC_spatial/blob/64482047ae9660d08678b8cd1d99c7695b427aaa/docs/figure/annotation_2nd_pass.Rmd/unnamed-chunk-3-1.png" target="_blank">6448204</a>
+</td>
+<td>
+heinin
+</td>
+<td>
+2025-02-18
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 </div>
 <div id="marker-information" class="section level3">
 <h3>Marker information</h3>
 <pre class="r"><code>gs4_deauth()
 metadata  &lt;- gs4_get(&quot;https://docs.google.com/spreadsheets/d/1sXXwOreLxjMSUoPt79c6jmaQpluWkaxA5P5HfDsed3I/edit?usp=sharing&quot;)
 markers &lt;- read_sheet(metadata, sheet = &quot;Markers&quot;)
-#second_pass_nonimmune &lt;- read_sheet(metadata, sheet = &quot;Tumor annotations 2st pass&quot;)
-#second_pass_immune &lt;- read_sheet(metadata, sheet = &quot;Immune annotations 2st pass&quot;)</code></pre>
+second_pass_nonimmune &lt;- read_sheet(metadata, sheet = &quot;Tumor 2nd pass&quot;)
+second_pass_immune &lt;- read_sheet(metadata, sheet = &quot;Immune 2nd pass&quot;)</code></pre>
 </div>
 <div id="top-cluster-markers" class="section level3">
 <h3>Top cluster markers</h3>
@@ -800,8 +863,113 @@ table(nonimmune_markers$cluster)</code></pre>
   group_by(cluster) %&gt;%
   dplyr::slice(1:10)</code></pre>
 </div>
-<div id="saving-top-markers-and-annotations" class="section level3">
-<h3>Saving top markers and annotations</h3>
+<div id="dotplots-of-top-cluster-markers" class="section level3">
+<h3>Dotplots of top cluster markers</h3>
+<div id="immune" class="section level4">
+<h4>Immune</h4>
+<pre class="r"><code>create_dotplot_heatmap(seurat_object = immune,
+                       plot_features = unique(top_immune_markers$gene),
+                       group_var = &quot;leiden_res0.5&quot;,
+                       group_colors = pipac_immune_cluster_col,
+                       column_title = &quot;&quot;,
+                       row_km = 5,
+                       col_km = 5,
+                       row.order = NULL,
+                       col.order = NULL)</code></pre>
+<p><img src="figure/annotation_2nd_pass.Rmd/unnamed-chunk-6-1.png" width="576" style="display: block; margin: auto;" /><img src="figure/annotation_2nd_pass.Rmd/unnamed-chunk-6-2.png" width="576" style="display: block; margin: auto;" /></p>
+</div>
+<div id="non-immune" class="section level4">
+<h4>Non-immune</h4>
+<pre class="r"><code>create_dotplot_heatmap(seurat_object = nonimmune,
+                       plot_features = unique(top_nonimmune_markers$gene),
+                       group_var = &quot;leiden_res0.5&quot;,
+                       group_colors = pipac_nonimmune_cluster_col,
+                       column_title = &quot;&quot;,
+                       row_km = 5,
+                       col_km = 5,
+                       row.order = NULL,
+                       col.order = NULL)</code></pre>
+<p><img src="figure/annotation_2nd_pass.Rmd/unnamed-chunk-7-1.png" width="576" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-7-1">
+Past versions of unnamed-chunk-7-1.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-7-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/heinin/PIPAC_spatial/blob/64482047ae9660d08678b8cd1d99c7695b427aaa/docs/figure/annotation_2nd_pass.Rmd/unnamed-chunk-7-1.png" target="_blank">6448204</a>
+</td>
+<td>
+heinin
+</td>
+<td>
+2025-02-18
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<p><img src="figure/annotation_2nd_pass.Rmd/unnamed-chunk-7-2.png" width="576" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-7-2">
+Past versions of unnamed-chunk-7-2.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-7-2" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/heinin/PIPAC_spatial/blob/64482047ae9660d08678b8cd1d99c7695b427aaa/docs/figure/annotation_2nd_pass.Rmd/unnamed-chunk-7-2.png" target="_blank">6448204</a>
+</td>
+<td>
+heinin
+</td>
+<td>
+2025-02-18
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+</div>
+<div id="saving-top-markers-and-marker-annotations"
+class="section level3">
+<h3>Saving top markers and marker annotations</h3>
 <pre class="r"><code>output_immune_markers &lt;- immune_markers %&gt;%
   arrange(dplyr::desc(avg_log2FC)) %&gt;%
   group_by(cluster) %&gt;%
@@ -841,14 +1009,76 @@ DotPlot(immune,
         cols = c(&quot;azure&quot;, &quot;tomato3&quot;)) +
   RotatedAxis() +
   ggtitle(&quot;Immune&quot;)</code></pre>
-<p><img src="figure/annotation_2nd_pass.Rmd/unnamed-chunk-7-1.png" width="960" style="display: block; margin: auto;" /></p>
+<p><img src="figure/annotation_2nd_pass.Rmd/unnamed-chunk-9-1.png" width="960" style="display: block; margin: auto;" /></p>
 <pre class="r"><code>DotPlot(nonimmune,
         group.by = &quot;leiden_res0.5&quot;,
         features = plot_features,
         cols = c(&quot;azure&quot;, &quot;tomato3&quot;)) +
   RotatedAxis() +
   ggtitle(&quot;Non-immune&quot;)</code></pre>
-<p><img src="figure/annotation_2nd_pass.Rmd/unnamed-chunk-8-1.png" width="960" style="display: block; margin: auto;" /></p>
+<p><img src="figure/annotation_2nd_pass.Rmd/unnamed-chunk-10-1.png" width="960" style="display: block; margin: auto;" /></p>
+</div>
+<div id="adding-annotations-to-the-full-object" class="section level3">
+<h3>Adding annotations to the full object</h3>
+<pre class="r"><code>immune$annot2 &lt;- mapvalues(x = immune$leiden_res0.5,
+                           from = second_pass_immune$leiden_res0.5,
+                           to = second_pass_immune$Annotation)
+
+nonimmune$annot2 &lt;- mapvalues(x = nonimmune$leiden_res0.5,
+                              from = second_pass_nonimmune$leiden_res0.5,
+                              to = second_pass_nonimmune$Annotation)
+
+immune_nonimmune &lt;- merge(immune, nonimmune)
+
+seurat_data &lt;- readRDS(&quot;/tgen_labs/banovich/PIPAC/Seurat/merged_spatial_filtered_split_clustered_NC50_NN20_PC20_Seurat.rds&quot;)
+
+seurat_data$Annotation &lt;- mapvalues(x = colnames(seurat_data),
+                                    from = colnames(immune_nonimmune),
+                                    to = immune_nonimmune$annot2)
+
+unique(seurat_data$Annotation)
+
+saveRDS(seurat_data, &quot;/tgen_labs/banovich/PIPAC/Seurat/PIPAC_NC50_NN20_PC20_Seurat_annotated.rds&quot;)</code></pre>
+</div>
+<div id="saving-markers-one-more-time" class="section level3">
+<h3>Saving markers one more time</h3>
+<pre class="r"><code>seurat_data &lt;- readRDS(&quot;/tgen_labs/banovich/PIPAC/Seurat/PIPAC_NC50_NN20_PC20_Seurat_annotated.rds&quot;)
+
+Idents(seurat_data) &lt;- seurat_data$Annotation
+celltype_markers &lt;- FindAllMarkers(seurat_data,
+                                   return.thresh = 0.01,
+                                   logfc.threshold = 0.5,
+                                   min.pct = 0.20,
+                                   verbose = F)
+
+output_celltype_markers &lt;- celltype_markers %&gt;%
+  arrange(dplyr::desc(avg_log2FC)) %&gt;%
+  group_by(cluster) %&gt;%
+  dplyr::slice(1:30)
+
+output_celltype_markers &lt;- merge(output_celltype_markers, markers, by.x = &quot;gene&quot;, by.y = &quot;Gene&quot;)
+
+write.table(output_celltype_markers, &quot;/home/hnatri/PIPAC_spatial/celltype_markers.tsv&quot;,
+            quote = F, row.names = F, sep = &quot;\t&quot;)</code></pre>
+<pre class="r"><code>DimPlot(seurat_data,
+        reduction = &quot;sp&quot;,
+        group.by = &quot;Sample&quot;,
+        split.by = &quot;TMA&quot;,
+        ncol = 3,
+        raster = T) +
+    coord_fixed(ratio = 1) +
+    theme_minimal() +
+    NoLegend() +
+    ggtitle(&quot;&quot;)</code></pre>
+<pre class="r"><code>DimPlot(seurat_data,
+        group.by = &quot;leiden_res0.5&quot;,
+        cols = pipac_nonimmune_cluster_col,
+        reduction = &quot;umap&quot;,
+        raster = T,
+        label = T) +
+  coord_fixed(ratio = 1) +
+  theme_bw() +
+  NoLegend()</code></pre>
 <br>
 <p>
 <button type="button" class="btn btn-default btn-workflowr btn-workflowr-sessioninfo" data-toggle="collapse" data-target="#workflowr-sessioninfo" style="display: block;">
@@ -918,31 +1148,31 @@ loaded via a namespace (and not attached):
  [67] gridExtra_2.3          xfun_0.39              withr_2.5.0           
  [70] fastmap_1.1.1          fansi_1.0.4            callr_3.7.3           
  [73] digest_0.6.31          timechange_0.2.0       R6_2.5.1              
- [76] mime_0.12              colorspace_2.1-0       scattermore_1.2       
- [79] tensor_1.5             spatstat.data_3.0-1    utf8_1.2.3            
- [82] generics_0.1.3         data.table_1.14.8      httr_1.4.6            
- [85] htmlwidgets_1.6.2      whisker_0.4.1          uwot_0.1.14           
- [88] pkgconfig_2.0.3        gtable_0.3.3           lmtest_0.9-40         
- [91] htmltools_0.5.5        carData_3.0-5          dotCall64_1.0-2       
- [94] clue_0.3-64            scales_1.2.1           png_0.1-8             
- [97] knitr_1.43             rstudioapi_0.14        rjson_0.2.21          
-[100] tzdb_0.4.0             reshape2_1.4.4         curl_5.0.1            
-[103] nlme_3.1-162           cachem_1.0.8           zoo_1.8-12            
-[106] GlobalOptions_0.1.2    KernSmooth_2.23-21     parallel_4.3.0        
-[109] miniUI_0.1.1.1         pillar_1.9.0           vctrs_0.6.5           
-[112] RANN_2.6.1             promises_1.2.0.1       car_3.1-2             
-[115] xtable_1.8-4           cluster_2.1.4          evaluate_0.21         
-[118] cli_3.6.1              compiler_4.3.0         rlang_1.1.1           
-[121] crayon_1.5.2           future.apply_1.11.0    ggsignif_0.6.4        
-[124] labeling_0.4.2         ps_1.7.5               getPass_0.2-4         
-[127] fs_1.6.2               stringi_1.7.12         deldir_1.0-9          
-[130] assertthat_0.2.1       munsell_0.5.0          lazyeval_0.2.2        
-[133] spatstat.geom_3.2-1    Matrix_1.6-5           RcppHNSW_0.5.0        
-[136] hms_1.1.3              patchwork_1.1.2        bit64_4.0.5           
-[139] future_1.32.0          statmod_1.5.0          shiny_1.7.4           
-[142] highr_0.10             ROCR_1.0-11            gargle_1.4.0          
-[145] igraph_1.4.3           broom_1.0.4            bslib_0.4.2           
-[148] bit_4.0.5             </code></pre>
+ [76] mime_0.12              colorspace_2.1-0       Cairo_1.6-0           
+ [79] scattermore_1.2        tensor_1.5             spatstat.data_3.0-1   
+ [82] utf8_1.2.3             generics_0.1.3         data.table_1.14.8     
+ [85] httr_1.4.6             htmlwidgets_1.6.2      whisker_0.4.1         
+ [88] uwot_0.1.14            pkgconfig_2.0.3        gtable_0.3.3          
+ [91] lmtest_0.9-40          htmltools_0.5.5        carData_3.0-5         
+ [94] dotCall64_1.0-2        clue_0.3-64            scales_1.2.1          
+ [97] png_0.1-8              knitr_1.43             rstudioapi_0.14       
+[100] rjson_0.2.21           tzdb_0.4.0             reshape2_1.4.4        
+[103] nlme_3.1-162           curl_5.0.1             cachem_1.0.8          
+[106] zoo_1.8-12             GlobalOptions_0.1.2    KernSmooth_2.23-21    
+[109] parallel_4.3.0         miniUI_0.1.1.1         pillar_1.9.0          
+[112] vctrs_0.6.5            RANN_2.6.1             promises_1.2.0.1      
+[115] car_3.1-2              xtable_1.8-4           cluster_2.1.4         
+[118] evaluate_0.21          magick_2.7.4           cli_3.6.1             
+[121] compiler_4.3.0         rlang_1.1.1            crayon_1.5.2          
+[124] future.apply_1.11.0    ggsignif_0.6.4         labeling_0.4.2        
+[127] ps_1.7.5               getPass_0.2-4          fs_1.6.2              
+[130] stringi_1.7.12         deldir_1.0-9           assertthat_0.2.1      
+[133] munsell_0.5.0          lazyeval_0.2.2         spatstat.geom_3.2-1   
+[136] Matrix_1.6-5           RcppHNSW_0.5.0         hms_1.1.3             
+[139] patchwork_1.1.2        bit64_4.0.5            future_1.32.0         
+[142] statmod_1.5.0          shiny_1.7.4            highr_0.10            
+[145] ROCR_1.0-11            gargle_1.4.0           igraph_1.4.3          
+[148] broom_1.0.4            bslib_0.4.2            bit_4.0.5             </code></pre>
 </div>
 </div>
 
