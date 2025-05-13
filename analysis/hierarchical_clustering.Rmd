@@ -1,0 +1,248 @@
+---
+title: "hierarchical_clustering"
+author: "heinin"
+date: "2025-04-16"
+output:
+  workflowr::wflow_html:
+    code_folding: hide
+  html_notebook: default
+editor_options:
+  chunk_output_type: console
+---
+
+## Packages and environment variables
+
+```{r, warning=F, message=F}
+
+suppressPackageStartupMessages({
+  library(workflowr)
+  library(arrow)
+  library(Seurat)
+  library(SeuratObject)
+  library(SeuratDisk)
+  library(tidyverse)
+  library(tibble)
+  library(ggplot2)
+  library(ggpubr)
+  library(ggrepel)
+  library(googlesheets4)
+  library(workflowr)
+  library(dittoSeq)})
+
+```
+
+## Environment variables and helper functions
+
+```{r, message = F, warning = F}
+
+setwd("/home/hnatri/PIPAC_spatial/")
+set.seed(9999)
+options(scipen = 99999)
+options(ggrepel.max.overlaps = Inf)
+
+source("/home/hnatri/PIPAC_spatial/code/PIPAC_colors_themes.R")
+source("/home/hnatri/PIPAC_spatial/code/plot_functions.R")
+
+```
+
+## Import data
+
+```{r, message = F, warning = F, fig.width = 8, fig.height = 4}
+
+seurat_data <- readRDS("/tgen_labs/banovich/PIPAC/Seurat/PIPAC_NC50_NN20_PC20_Seurat_annotated_metadata.rds")
+seurat_data$Tissue <- as.character(seurat_data$Tissue)
+seurat_data$Sample <- as.character(seurat_data$Sample)
+seurat_data$Timepoint <- as.character(seurat_data$Timepoint)
+seurat_data$Location_Quadrant <- as.character(seurat_data$Location_Quadrant)
+
+```
+
+## DotPlot heatmap
+
+```{r, message = F, warning = F, fig.width = 10, fig.height = 24}
+
+Idents(seurat_data) <- seurat_data$Annotation
+markers <- FindAllMarkers(seurat_data,
+                          return.thresh = 0.01,
+                          logfc.threshold = 0.5,
+                          min.pct = 0.20,
+                          only.pos = T,
+                          verbose = F)
+
+table(markers$cluster)
+
+top_markers <- markers %>%
+  arrange(dplyr::desc(abs(avg_log2FC))) %>%
+  group_by(cluster) %>%
+  dplyr::slice(1:20)
+
+create_dotplot_heatmap(seurat_object = seurat_data,
+                       plot_features = unique(top_markers$gene),
+                       group_var = "Annotation",
+                       group_colors = pipac_celltype_col,
+                       column_title = "",
+                       row_km = 5,
+                       col_km = 5,
+                       row.order = NULL,
+                       col.order = NULL)
+
+```
+
+## Cluster cells
+
+```{r, message = F, warning = F, fig.width = 10, fig.height = 24}
+
+seurat_data_downsample <- subset(seurat_data, downsample = 30000/length(unique(seurat_data$Annotation)))
+
+seurat_data_downsample <- ScaleData(seurat_data_downsample)
+
+table(seurat_data_downsample$Annotation)
+
+DoHeatmap(seurat_data_downsample,
+          features = unique(top_markers$gene),
+          group.by = "Annotation",
+          group.colors = pipac_celltype_col)
+
+# To build on command line, run Rscript -e "rmarkdown::render('/home/hnatri/PIPAC_spatial/analysis/hierarchical_clustering.Rmd')"
+# Then "mv *.html /home/hnatri/PIPAC_spatial/docs/"
+
+```
+
+```{r, message = F, warning = F, fig.width = 10, fig.height = 24}
+
+# Gene expression data from the RNA assay
+heatmap_data <- GetAssayData(seurat_data_downsample, slot = "scale.data", assay = "RNA")
+dim(heatmap_data)
+
+# Order by cluster, then by response
+cellpop_cells_metadata <- data.frame("cell" = rownames(seurat_data_downsample@meta.data),
+                                     "celltype" = seurat_data_downsample@meta.data$Annotation,
+                                     "tissue" = seurat_data_downsample@meta.data$Tissue,
+                                     "sample" = seurat_data_downsample@meta.data$Sample)
+
+# Colum annotations
+col <- list()
+col$celltype <- pipac_celltype_col
+col_ha <- HeatmapAnnotation(
+  df = data.frame(celltype = cellpop_cells_metadata$celltype),
+  annotation_height = unit(4, "mm"),
+  col = col
+)
+
+# Quantile-normalizing rows for plotting
+heatmap_data_qqnorm <- t(apply(heatmap_data, 1, function(xx){qqnorm(rank(xx, ties.method = "random"), plot = F)$x}))
+colnames(heatmap_data_qqnorm) <- colnames(heatmap_data)
+rownames(heatmap_data_qqnorm) <- rownames(heatmap_data)
+
+# Heatmap colors
+#col_fun2 <- colorRamp2(quantile(as.matrix(heatmap_data_qqnorm), seq(0, 1, by = 0.25)), viridis(5))
+
+plot_func <- function(){
+  hm_rna  <- Heatmap(as.matrix(heatmap_data_qqnorm), 
+                     name = "Gene exp", # Title of legend
+                     #col = col_fun2,
+                     col = viridis(100),
+                     use_raster = T,
+                     #column_title = "Cells", row_title = "Gene expression",
+                     column_title = NULL,
+                     row_title = NULL,
+                     #column_split = cellpop_cells_metadata$cluster,
+                     #row_split = all_markers_rna_sct$Marker_type,
+                     #use_raster = TRUE,
+                     show_column_names = FALSE,
+                     show_row_names = FALSE,
+                     cluster_rows = TRUE,
+                     row_km = 10,
+                     cluster_columns = TRUE,
+                     column_km = 10,
+                     top_annotation = col_ha,
+                     #right_annotation = row_ha_labels,
+                     height = nrow(heatmap_data)*unit(1, "mm"))
+                     #bottom_annotation = bottom_ha,
+                     #row_names_gp = gpar(fontsize = 7),  # Text size for row names
+                     #row_names_side = "right")
+      
+  heatmap <- draw(hm_rna)
+}
+
+p <- plot_func()
+
+# Extracting clusters
+cl_list <- column_order(p)
+
+for (i in 1:length(column_order(p))){
+  if (i == 1) {
+  clu <- t(t(colnames(heatmap_data_qqnorm[,column_order(p)[[i]]])))
+  out <- cbind(clu, paste("cluster", i, sep=""))
+  colnames(out) <- c("ID", "Cluster")
+  } else {
+  clu <- t(t(colnames(heatmap_data_qqnorm[,column_order(p)[[i]]])))
+  clu <- cbind(clu, paste("cluster", i, sep=""))
+  out <- rbind(out, clu)
+  }
+}
+
+write.csv(out, "/scratch/hnatri/PIPAC_clustering_cols.csv")
+
+out <- read.csv("/scratch/hnatri/PIPAC_clustering_cols.csv")
+
+
+
+out$celltype <- mapvalues(x = out$ID,
+                          from = colnames(seurat_data),
+                          to = seurat_data$Annotation)
+
+unique(out$Cluster)
+unique(out$celltype)
+
+out %>% filter(Cluster == "cluster1") %>%
+  dplyr::select(celltype) %>%
+  unlist() %>%
+  table()
+
+out %>% filter(Cluster == "cluster2") %>%
+  dplyr::select(celltype) %>%
+  unlist() %>%
+  table()
+
+out %>% filter(Cluster == "cluster3") %>%
+  dplyr::select(celltype) %>%
+  unlist() %>%
+  table()
+
+out %>% filter(Cluster == "cluster4") %>%
+  dplyr::select(celltype) %>%
+  unlist() %>%
+  table()
+
+out %>% filter(Cluster == "cluster5") %>%
+  dplyr::select(celltype) %>%
+  unlist() %>%
+  table()
+
+out %>% filter(Cluster == "cluster6") %>%
+  dplyr::select(celltype) %>%
+  unlist() %>%
+  table()
+
+out %>% filter(Cluster == "cluster7") %>%
+  dplyr::select(celltype) %>%
+  unlist() %>%
+  table()
+
+out %>% filter(Cluster == "cluster8") %>%
+  dplyr::select(celltype) %>%
+  unlist() %>%
+  table()
+
+out %>% filter(Cluster == "cluster9") %>%
+  dplyr::select(celltype) %>%
+  unlist() %>%
+  table()
+
+out %>% filter(Cluster == "cluster10") %>%
+  dplyr::select(celltype) %>%
+  unlist() %>%
+  table()
+
+```

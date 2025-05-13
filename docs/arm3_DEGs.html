@@ -1,0 +1,1471 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+
+<meta name="author" content="heinin" />
+
+<meta name="date" content="2025-03-25" />
+
+<title>PIPAC Arm 3 differential expression analysis</title>
+
+<script src="site_libs/header-attrs-2.22/header-attrs.js"></script>
+<script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="site_libs/bootstrap-3.3.5/css/cosmo.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<style>h1 {font-size: 34px;}
+       h1.title {font-size: 38px;}
+       h2 {font-size: 30px;}
+       h3 {font-size: 24px;}
+       h4 {font-size: 18px;}
+       h5 {font-size: 16px;}
+       h6 {font-size: 12px;}
+       code {color: inherit; background-color: rgba(0, 0, 0, 0.04);}
+       pre:not([class]) { background-color: white }</style>
+<script src="site_libs/jqueryui-1.13.2/jquery-ui.min.js"></script>
+<link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
+<script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
+<script src="site_libs/navigation-1.1/tabsets.js"></script>
+<script src="site_libs/navigation-1.1/codefolding.js"></script>
+<link href="site_libs/highlightjs-9.12.0/textmate.css" rel="stylesheet" />
+<script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
+
+<link rel="icon" href="https://github.com/workflowr/workflowr-assets/raw/main/img/reproducible.png">
+<!-- Add a small amount of space between sections. -->
+<style type="text/css">
+div.section {
+  padding-top: 12px;
+}
+</style>
+
+
+
+<style type="text/css">
+  code{white-space: pre-wrap;}
+  span.smallcaps{font-variant: small-caps;}
+  span.underline{text-decoration: underline;}
+  div.column{display: inline-block; vertical-align: top; width: 50%;}
+  div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+  ul.task-list{list-style: none;}
+    </style>
+
+<style type="text/css">code{white-space: pre;}</style>
+<script type="text/javascript">
+if (window.hljs) {
+  hljs.configure({languages: []});
+  hljs.initHighlightingOnLoad();
+  if (document.readyState && document.readyState === "complete") {
+    window.setTimeout(function() { hljs.initHighlighting(); }, 0);
+  }
+}
+</script>
+
+
+
+
+
+
+
+
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+img {
+  max-width:100%;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+.html-widget {
+  margin-bottom: 20px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+summary {
+  display: list-item;
+}
+details > summary > p:only-child {
+  display: inline;
+}
+pre code {
+  padding: 0;
+}
+</style>
+
+
+<style type="text/css">
+.dropdown-submenu {
+  position: relative;
+}
+.dropdown-submenu>.dropdown-menu {
+  top: 0;
+  left: 100%;
+  margin-top: -6px;
+  margin-left: -1px;
+  border-radius: 0 6px 6px 6px;
+}
+.dropdown-submenu:hover>.dropdown-menu {
+  display: block;
+}
+.dropdown-submenu>a:after {
+  display: block;
+  content: " ";
+  float: right;
+  width: 0;
+  height: 0;
+  border-color: transparent;
+  border-style: solid;
+  border-width: 5px 0 5px 5px;
+  border-left-color: #cccccc;
+  margin-top: 5px;
+  margin-right: -10px;
+}
+.dropdown-submenu:hover>a:after {
+  border-left-color: #adb5bd;
+}
+.dropdown-submenu.pull-left {
+  float: none;
+}
+.dropdown-submenu.pull-left>.dropdown-menu {
+  left: -100%;
+  margin-left: 10px;
+  border-radius: 6px 0 6px 6px;
+}
+</style>
+
+<script type="text/javascript">
+// manage active state of menu based on current page
+$(document).ready(function () {
+  // active menu anchor
+  href = window.location.pathname
+  href = href.substr(href.lastIndexOf('/') + 1)
+  if (href === "")
+    href = "index.html";
+  var menuAnchor = $('a[href="' + href + '"]');
+
+  // mark the anchor link active (and if it's in a dropdown, also mark that active)
+  var dropdown = menuAnchor.closest('li.dropdown');
+  if (window.bootstrap) { // Bootstrap 4+
+    menuAnchor.addClass('active');
+    dropdown.find('> .dropdown-toggle').addClass('active');
+  } else { // Bootstrap 3
+    menuAnchor.parent().addClass('active');
+    dropdown.addClass('active');
+  }
+
+  // Navbar adjustments
+  var navHeight = $(".navbar").first().height() + 15;
+  var style = document.createElement('style');
+  var pt = "padding-top: " + navHeight + "px; ";
+  var mt = "margin-top: -" + navHeight + "px; ";
+  var css = "";
+  // offset scroll position for anchor links (for fixed navbar)
+  for (var i = 1; i <= 6; i++) {
+    css += ".section h" + i + "{ " + pt + mt + "}\n";
+  }
+  style.innerHTML = "body {" + pt + "padding-bottom: 40px; }\n" + css;
+  document.head.appendChild(style);
+});
+</script>
+
+<!-- tabsets -->
+
+<style type="text/css">
+.tabset-dropdown > .nav-tabs {
+  display: inline-table;
+  max-height: 500px;
+  min-height: 44px;
+  overflow-y: auto;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs > li.active:before, .tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "\e259";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
+  content: "\e258";
+  font-family: 'Glyphicons Halflings';
+  border: none;
+}
+
+.tabset-dropdown > .nav-tabs > li.active {
+  display: block;
+}
+
+.tabset-dropdown > .nav-tabs > li > a,
+.tabset-dropdown > .nav-tabs > li > a:focus,
+.tabset-dropdown > .nav-tabs > li > a:hover {
+  border: none;
+  display: inline-block;
+  border-radius: 4px;
+  background-color: transparent;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li {
+  display: block;
+  float: none;
+}
+
+.tabset-dropdown > .nav-tabs > li {
+  display: none;
+}
+</style>
+
+<!-- code folding -->
+<style type="text/css">
+.code-folding-btn { margin-bottom: 4px; }
+</style>
+
+
+
+<style type="text/css">
+
+#TOC {
+  margin: 25px 0px 20px 0px;
+}
+@media (max-width: 768px) {
+#TOC {
+  position: relative;
+  width: 100%;
+}
+}
+
+@media print {
+.toc-content {
+  /* see https://github.com/w3c/csswg-drafts/issues/4434 */
+  float: right;
+}
+}
+
+.toc-content {
+  padding-left: 30px;
+  padding-right: 40px;
+}
+
+div.main-container {
+  max-width: 1200px;
+}
+
+div.tocify {
+  width: 20%;
+  max-width: 260px;
+  max-height: 85%;
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+  div.tocify {
+    width: 25%;
+  }
+}
+
+@media (max-width: 767px) {
+  div.tocify {
+    width: 100%;
+    max-width: none;
+  }
+}
+
+.tocify ul, .tocify li {
+  line-height: 20px;
+}
+
+.tocify-subheader .tocify-item {
+  font-size: 0.90em;
+}
+
+.tocify .list-group-item {
+  border-radius: 0px;
+}
+
+
+</style>
+
+
+
+</head>
+
+<body>
+
+
+<div class="container-fluid main-container">
+
+
+<!-- setup 3col/9col grid for toc_float and main content  -->
+<div class="row">
+<div class="col-xs-12 col-sm-4 col-md-3">
+<div id="TOC" class="tocify">
+</div>
+</div>
+
+<div class="toc-content col-xs-12 col-sm-8 col-md-9">
+
+
+
+
+<div class="navbar navbar-default  navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-bs-toggle="collapse" data-target="#navbar" data-bs-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="index.html">PIPAC_spatial</a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        <li>
+  <a href="index.html">Home</a>
+</li>
+<li>
+  <a href="about.html">About</a>
+</li>
+<li>
+  <a href="license.html">License</a>
+</li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div><!--/.container -->
+</div><!--/.navbar -->
+
+<div id="header">
+
+<div class="btn-group pull-right float-right">
+<button type="button" class="btn btn-default btn-xs btn-secondary btn-sm dropdown-toggle" data-toggle="dropdown" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><span>Code</span> <span class="caret"></span></button>
+<ul class="dropdown-menu dropdown-menu-right" style="min-width: 50px;">
+<li><a id="rmd-show-all-code" href="#">Show All Code</a></li>
+<li><a id="rmd-hide-all-code" href="#">Hide All Code</a></li>
+</ul>
+</div>
+
+
+
+<h1 class="title toc-ignore">PIPAC Arm 3 differential expression
+analysis</h1>
+<h4 class="author">heinin</h4>
+<h4 class="date">2025-03-25</h4>
+
+</div>
+
+
+<p>
+<button type="button" class="btn btn-default btn-workflowr btn-workflowr-report" data-toggle="collapse" data-target="#workflowr-report">
+<span class="glyphicon glyphicon-list" aria-hidden="true"></span>
+workflowr <span class="glyphicon glyphicon-exclamation-sign text-danger"
+aria-hidden="true"></span>
+</button>
+</p>
+<div id="workflowr-report" class="collapse">
+<ul class="nav nav-tabs">
+<li class="active">
+<a data-toggle="tab" href="#summary">Summary</a>
+</li>
+<li>
+<a data-toggle="tab" href="#checks"> Checks <span
+class="glyphicon glyphicon-exclamation-sign text-danger"
+aria-hidden="true"></span> </a>
+</li>
+<li>
+<a data-toggle="tab" href="#versions">Past versions</a>
+</li>
+</ul>
+<div class="tab-content">
+<div id="summary" class="tab-pane fade in active">
+<p>
+<strong>Last updated:</strong> 2025-04-07
+</p>
+<p>
+<strong>Checks:</strong> <span
+class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> 5
+<span class="glyphicon glyphicon-exclamation-sign text-danger"
+aria-hidden="true"></span> 2
+</p>
+<p>
+<strong>Knit directory:</strong> <code>PIPAC_spatial/</code> <span
+class="glyphicon glyphicon-question-sign" aria-hidden="true"
+title="This is the local directory in which the code in this file was executed.">
+</span>
+</p>
+<p>
+This reproducible <a href="https://rmarkdown.rstudio.com">R Markdown</a>
+analysis was created with <a
+  href="https://github.com/workflowr/workflowr">workflowr</a> (version
+1.7.1). The <em>Checks</em> tab describes the reproducibility checks
+that were applied when the results were created. The <em>Past
+versions</em> tab lists the development history.
+</p>
+<hr>
+</div>
+<div id="checks" class="tab-pane fade">
+<div id="workflowr-checks" class="panel-group">
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRMarkdownfilestronguncommittedchanges">
+<span class="glyphicon glyphicon-exclamation-sign text-danger"
+aria-hidden="true"></span> <strong>R Markdown file:</strong> uncommitted
+changes </a>
+</p>
+</div>
+<div id="strongRMarkdownfilestronguncommittedchanges"
+class="panel-collapse collapse">
+<div class="panel-body">
+<p>The R Markdown is untracked by Git. To know which version of the R
+Markdown file created these results, you’ll want to first commit it to
+the Git repo. If you’re still working on the analysis, you can ignore
+this warning. When you’re finished, you can run
+<code>wflow_publish</code> to commit the R Markdown file and build the
+HTML.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongEnvironmentstrongempty">
+<span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span> <strong>Environment:</strong> empty </a>
+</p>
+</div>
+<div id="strongEnvironmentstrongempty" class="panel-collapse collapse">
+<div class="panel-body">
+<p>Great job! The global environment was empty. Objects defined in the
+global environment can affect the analysis in your R Markdown file in
+unknown ways. For reproduciblity it’s best to always run the code in an
+empty environment.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongSeedstrongcodesetseed20240917code">
+<span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span> <strong>Seed:</strong>
+<code>set.seed(20240917)</code> </a>
+</p>
+</div>
+<div id="strongSeedstrongcodesetseed20240917code"
+class="panel-collapse collapse">
+<div class="panel-body">
+<p>The command <code>set.seed(20240917)</code> was run prior to running
+the code in the R Markdown file. Setting a seed ensures that any results
+that rely on randomness, e.g. subsampling or permutations, are
+reproducible.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongSessioninformationstrongrecorded">
+<span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span> <strong>Session information:</strong>
+recorded </a>
+</p>
+</div>
+<div id="strongSessioninformationstrongrecorded"
+class="panel-collapse collapse">
+<div class="panel-body">
+<p>Great job! Recording the operating system, R version, and package
+versions is critical for reproducibility.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongCachestrongnone">
+<span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span> <strong>Cache:</strong> none </a>
+</p>
+</div>
+<div id="strongCachestrongnone" class="panel-collapse collapse">
+<div class="panel-body">
+<p>Nice! There were no cached chunks for this analysis, so you can be
+confident that you successfully produced the results during this
+run.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongFilepathsstrongabsolute">
+<span class="glyphicon glyphicon-exclamation-sign text-danger"
+aria-hidden="true"></span> <strong>File paths:</strong> absolute </a>
+</p>
+</div>
+<div id="strongFilepathsstrongabsolute" class="panel-collapse collapse">
+<div class="panel-body">
+<p>
+Using absolute paths to the files within your workflowr project makes it
+difficult for you and others to run your code on a different machine.
+Change the absolute path(s) below to the suggested relative path(s) to
+make your code more reproducible.
+</p>
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th style="text-align:left;">
+absolute
+</th>
+<th style="text-align:left;">
+relative
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+/home/hnatri/PIPAC_spatial/
+</td>
+<td style="text-align:left;">
+.
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+/home/hnatri/PIPAC_spatial/code/PIPAC_colors_themes.R
+</td>
+<td style="text-align:left;">
+code/PIPAC_colors_themes.R
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+/home/hnatri/PIPAC_spatial/code/plot_functions.R
+</td>
+<td style="text-align:left;">
+code/plot_functions.R
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomheininPIPACspatialtree281c5e5063f3db18ffb2b23cc0dfc784422dfc6btargetblank281c5e5a">
+<span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span> <strong>Repository version:</strong>
+<a href="https://github.com/heinin/PIPAC_spatial/tree/281c5e5063f3db18ffb2b23cc0dfc784422dfc6b" target="_blank">281c5e5</a>
+</a>
+</p>
+</div>
+<div
+id="strongRepositoryversionstrongahrefhttpsgithubcomheininPIPACspatialtree281c5e5063f3db18ffb2b23cc0dfc784422dfc6btargetblank281c5e5a"
+class="panel-collapse collapse">
+<div class="panel-body">
+<p>
+Great! You are using Git for version control. Tracking code development
+and connecting the code version to the results is critical for
+reproducibility.
+</p>
+<p>
+The results in this page were generated with repository version
+<a href="https://github.com/heinin/PIPAC_spatial/tree/281c5e5063f3db18ffb2b23cc0dfc784422dfc6b" target="_blank">281c5e5</a>.
+See the <em>Past versions</em> tab to see a history of the changes made
+to the R Markdown and HTML files.
+</p>
+<p>
+Note that you need to be careful to ensure that all relevant files for
+the analysis have been committed to Git prior to generating the results
+(you can use <code>wflow_publish</code> or
+<code>wflow_git_commit</code>). workflowr only checks the R Markdown
+file, but you know if there are other scripts or data files that it
+depends on. Below is the status of the Git repository when the results
+were generated:
+</p>
+<pre><code>
+Ignored files:
+    Ignored:    .RData
+    Ignored:    analysis/figure/
+    Ignored:    celltype_markers.tsv
+    Ignored:    immune_cluster_marker_annotations.tsv
+    Ignored:    immune_cluster_marker_annotations_2ndpass.tsv
+    Ignored:    main_cluster_marker_annotations.tsv
+    Ignored:    nonimmune_cluster_marker_annotations.tsv
+    Ignored:    nonimmune_cluster_marker_annotations_2ndpass.tsv
+
+Untracked files:
+    Untracked:  MR_PIPACTMA3-Rerun_highres.png
+    Untracked:  Rplots.pdf
+    Untracked:  analysis/arm2_comparative_analysis.Rmd
+    Untracked:  analysis/arm3_DEGs.Rmd
+    Untracked:  analysis/arm3_comparative_analysis.Rmd
+    Untracked:  analysis/arm3_niche_comparison.Rmd
+    Untracked:  analysis/feature_expression.Rmd
+    Untracked:  analysis/niche_construction_n20.Rmd
+    Untracked:  analysis/pca_variance_decomp.Rmd
+    Untracked:  annotation_dimplot.pdf
+    Untracked:  code/construct_niches.R
+    Untracked:  code/construct_niches.Rout
+    Untracked:  code/plot_metadata.R
+    Untracked:  code/plot_save_pdf.R
+    Untracked:  code/run_rscript.sh
+    Untracked:  code/slurm.19006190.err
+    Untracked:  code/slurm.19006190.out
+    Untracked:  code/update_metadata.R
+    Untracked:  code/vardecomp.R
+    Untracked:  coh004.pdf
+    Untracked:  demographics_grid.pdf
+    Untracked:  output/outputFile-Meanplot.pdf
+    Untracked:  output/outputFile-Variance.csv
+    Untracked:  output/outputFile-VarianceExplained-Boxplot.pdf
+    Untracked:  output/scrna-Meanplot.pdf
+    Untracked:  output/scrna-Variance.csv
+    Untracked:  output/scrna-VarianceExplained-Boxplot.pdf
+    Untracked:  output/vardecomp.tsv
+    Untracked:  tissue_celltypeprop_scatter.pdf
+
+Unstaged changes:
+    Modified:   analysis/add_metadata.Rmd
+    Modified:   analysis/annotation_2nd_pass.Rmd
+    Modified:   analysis/index.Rmd
+    Modified:   analysis/niche_construction.Rmd
+    Modified:   analysis/plot_by_group.Rmd
+    Modified:   analysis/splitting_samples.Rmd
+    Modified:   code/PIPAC_colors_themes.R
+
+</code></pre>
+<p>
+Note that any generated files, e.g. HTML, png, CSS, etc., are not
+included in this status report because it is ok for generated content to
+have uncommitted changes.
+</p>
+</div>
+</div>
+</div>
+</div>
+<hr>
+</div>
+<div id="versions" class="tab-pane fade">
+<p>
+There are no past versions. Publish this analysis with
+<code>wflow_publish()</code> to start tracking its development.
+</p>
+<hr>
+</div>
+</div>
+</div>
+<div id="load-packages" class="section level3">
+<h3>Load packages</h3>
+<pre class="r"><code>suppressPackageStartupMessages({
+  library(workflowr)
+  library(Seurat)
+  library(SeuratObject)
+  library(SeuratDisk)
+  library(tidyverse)
+  library(tibble)
+  library(ggplot2)
+  library(ggpubr)
+  library(ggrepel)
+  library(googlesheets4)
+  library(workflowr)
+  library(patchwork)
+  library(ggpmisc)})</code></pre>
+</div>
+<div id="environment-variables-and-helper-functions"
+class="section level3">
+<h3>Environment variables and helper functions</h3>
+<pre class="r"><code>setwd(&quot;/home/hnatri/PIPAC_spatial/&quot;)
+set.seed(9999)
+options(scipen = 99999)
+options(ggrepel.max.overlaps = Inf)
+
+source(&quot;/home/hnatri/PIPAC_spatial/code/PIPAC_colors_themes.R&quot;)
+source(&quot;/home/hnatri/PIPAC_spatial/code/plot_functions.R&quot;)
+
+# Calling DEGs between two groups for each cell type
+get_DEGs &lt;- function(seuratdata, celltypes, groupvar, group1, group2){
+  #message(xx)
+  DEGlist &lt;- lapply(celltypes, function(xx){
+    data_subset &lt;- subset(seuratdata, subset = Annotation == xx)
+    Idents(data_subset) &lt;- as.character(unlist(data_subset[[groupvar]]))
+    
+    if (min(table(unlist(data_subset[[groupvar]])))&lt;20){
+      return(NULL)
+    }
+    
+    if (all((c(group1, group2) %in% unlist(data_subset[[groupvar]]) == c(T, T)))){
+      markers &lt;- FindMarkers(data_subset,
+                             ident.1 = group1,
+                             ident.2 = group2,
+                             assay = &quot;RNA&quot;,
+                             verbose = F)
+      markers$feature &lt;- rownames(markers)
+      markers$celltype &lt;- xx
+      
+      return(markers)
+    } else {
+      return(NULL)
+    }
+    })
+  
+  as.data.frame(do.call(rbind, DEGlist))
+}</code></pre>
+</div>
+<div id="marker-information" class="section level3">
+<h3>Marker information</h3>
+<pre class="r"><code>gs4_deauth()
+metadata  &lt;- gs4_get(&quot;https://docs.google.com/spreadsheets/d/1sXXwOreLxjMSUoPt79c6jmaQpluWkaxA5P5HfDsed3I/edit?usp=sharing&quot;)
+markers &lt;- read_sheet(metadata, sheet = &quot;Markers&quot;)
+second_pass_nonimmune &lt;- read_sheet(metadata, sheet = &quot;Tumor 2nd pass&quot;)
+second_pass_immune &lt;- read_sheet(metadata, sheet = &quot;Immune 2nd pass&quot;)
+
+# Cell type markers by group
+gs4_deauth()
+markers_by_group  &lt;- gs4_get(&quot;https://docs.google.com/spreadsheets/d/1w0wrL-5KwNEWi_VpmriN7YmfwpBPlEYX0MKlwI2ZQu8/edit?usp=sharing&quot;)
+markers_by_group &lt;- read_sheet(markers_by_group, sheet = &quot;Markers by group&quot;)</code></pre>
+</div>
+<div id="import-and-subset-data" class="section level3">
+<h3>Import and subset data</h3>
+<pre class="r"><code>seurat_data &lt;- readRDS(&quot;/tgen_labs/banovich/PIPAC/Seurat/PIPAC_NC50_NN20_PC20_Seurat_annotated_metadata_niches.rds&quot;)
+DefaultAssay(seurat_data) &lt;- &quot;RNA&quot;
+seurat_data &lt;- seurat_data %&gt;%
+  NormalizeData() %&gt;%
+  ScaleData()
+
+seurat_arm3 &lt;- subset(seurat_data, subset = Arm == &quot;Arm3&quot;)
+seurat_arm3 &lt;- seurat_arm3 %&gt;%
+  NormalizeData() %&gt;%
+  ScaleData()</code></pre>
+</div>
+<div id="degs-by-response-all-tumors" class="section level3">
+<h3>DEGs by response, all tumors</h3>
+<pre class="r"><code>response_DEGs &lt;- get_DEGs(seuratdata = seurat_arm3,
+                          celltypes = unique(seurat_arm3$Annotation),
+                          groupvar = &quot;BestResponse&quot;,
+                          group1 = &quot;SD&quot;,
+                          group2 = &quot;PR&quot;)
+
+# Distribution of p-values and log2FC
+hist(response_DEGs$p_val)</code></pre>
+<p><img src="figure/arm3_DEGs.Rmd/unnamed-chunk-5-1.png" width="768" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>hist(response_DEGs$p_val_adj)</code></pre>
+<p><img src="figure/arm3_DEGs.Rmd/unnamed-chunk-5-2.png" width="768" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>hist(response_DEGs$avg_log2FC)</code></pre>
+<p><img src="figure/arm3_DEGs.Rmd/unnamed-chunk-5-3.png" width="768" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>response_DEGs_sig &lt;- response_DEGs %&gt;%
+  filter(p_val_adj &lt; 0.01,
+         abs(avg_log2FC) &gt; 1.5)
+
+table(response_DEGs_sig$celltype)</code></pre>
+<pre><code>
+       B1     Endo1     Endo2     Endo3 EpiTumor1        F1        F2        F3 
+       12        11         3         1        43         2         4         4 
+       F4        F5        L2        L3        L4        M1        M2        M4 
+        2         1        23         5         9         3         5         4 
+       M5        M6        M7        M9      Mast      Meso      Peri   Plasma1 
+        9         3         2         8         3        20        15         2 
+  Plasma3 
+        2 </code></pre>
+</div>
+<div id="degs-by-response-baseline-tumors" class="section level3">
+<h3>DEGs by response, baseline tumors</h3>
+<pre class="r"><code>baseline_tumor &lt;- subset(seurat_arm3, subset = Tissue == &quot;Tumor&quot; &amp;
+                           Timepoint == 0)
+baseline_tumor &lt;- baseline_tumor %&gt;%
+  NormalizeData() %&gt;%
+  ScaleData()
+
+response_DEGs_baseline &lt;- get_DEGs(seuratdata = baseline_tumor,
+                                   celltypes = unique(baseline_tumor$Annotation),
+                                   groupvar = &quot;BestResponse&quot;,
+                                   group1 = &quot;SD&quot;,
+                                   group2 = &quot;PR&quot;)
+
+# Distribution of p-values and log2FC
+hist(response_DEGs_baseline$p_val)</code></pre>
+<p><img src="figure/arm3_DEGs.Rmd/unnamed-chunk-6-1.png" width="768" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>hist(response_DEGs_baseline$p_val_adj)</code></pre>
+<p><img src="figure/arm3_DEGs.Rmd/unnamed-chunk-6-2.png" width="768" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>hist(response_DEGs_baseline$avg_log2FC)</code></pre>
+<p><img src="figure/arm3_DEGs.Rmd/unnamed-chunk-6-3.png" width="768" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>response_DEGs_baseline_sig &lt;- response_DEGs_baseline %&gt;%
+  filter(p_val_adj &lt; 0.01,
+         abs(avg_log2FC) &gt; 1.5)
+
+table(response_DEGs_baseline_sig$celltype)</code></pre>
+<pre><code>
+    Endo1 EpiTumor1        F1        F2        F3        F4        F5        L2 
+       19        42         6        11        13         2         3        10 
+       L3        L4        M1        M2        M4        M5        M6        M7 
+        6         2         2         5        13         9        10         6 
+       M9      Mast      Meso      Peri   Plasma2   Plasma3 
+       15         1        29        22         3         3 </code></pre>
+</div>
+<div id="degs-by-response-post-treatment-tumors" class="section level3">
+<h3>DEGs by response, post-treatment tumors</h3>
+<pre class="r"><code>post_treatment_tumor &lt;- subset(seurat_arm3, subset = Tissue == &quot;Tumor&quot; &amp;
+                                 Timepoint %in% c(6, 12))
+post_treatment_tumor &lt;- post_treatment_tumor %&gt;%
+  NormalizeData() %&gt;%
+  ScaleData()
+
+posttreatment_response_DEGs &lt;- get_DEGs(seuratdata = post_treatment_tumor,
+                                        celltypes = unique(post_treatment_tumor$Annotation),
+                                        groupvar = &quot;BestResponse&quot;,
+                                        group1 = &quot;SD&quot;,
+                                        group2 = &quot;PR&quot;)
+
+# Distribution of p-values and log2FC
+hist(posttreatment_response_DEGs$p_val)</code></pre>
+<p><img src="figure/arm3_DEGs.Rmd/unnamed-chunk-7-1.png" width="768" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>hist(posttreatment_response_DEGs$p_val_adj)</code></pre>
+<p><img src="figure/arm3_DEGs.Rmd/unnamed-chunk-7-2.png" width="768" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>hist(posttreatment_response_DEGs$avg_log2FC)</code></pre>
+<p><img src="figure/arm3_DEGs.Rmd/unnamed-chunk-7-3.png" width="768" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>posttreatment_response_DEGs_sig &lt;- posttreatment_response_DEGs %&gt;%
+  filter(p_val_adj &lt; 0.01,
+         abs(avg_log2FC) &gt; 1.5)
+
+table(posttreatment_response_DEGs_sig$celltype)</code></pre>
+<pre><code>
+    Endo1 EpiTumor1        F1        F2        F3        F5        M1        M5 
+        5         2         4         6        27         6         1         5 
+       M9      Peri 
+        5         1 </code></pre>
+<div id="plotting" class="section level4">
+<h4>Plotting</h4>
+<pre class="r"><code>#plot_list &lt;- lapply(unique(seurat_arm3$Annotation))</code></pre>
+</div>
+</div>
+<div id="degs-for-myeloid-lymphoid-and-fibroblast-subsets"
+class="section level3">
+<h3>DEGs for myeloid, lymphoid, and fibroblast subsets</h3>
+<div id="baseline-tumors-myeloid" class="section level4">
+<h4>Baseline tumors, myeloid</h4>
+<pre class="r"><code>sort(unique(baseline_tumor$Annotation))</code></pre>
+<pre><code> [1] &quot;B1&quot;        &quot;B2&quot;        &quot;DC&quot;        &quot;Endo1&quot;     &quot;Endo2&quot;     &quot;Endo3&quot;    
+ [7] &quot;EpiTumor1&quot; &quot;EpiTumor2&quot; &quot;F1&quot;        &quot;F2&quot;        &quot;F3&quot;        &quot;F4&quot;       
+[13] &quot;F5&quot;        &quot;L1&quot;        &quot;L2&quot;        &quot;L3&quot;        &quot;L4&quot;        &quot;L5&quot;       
+[19] &quot;M1&quot;        &quot;M2&quot;        &quot;M4&quot;        &quot;M5&quot;        &quot;M6&quot;        &quot;M7&quot;       
+[25] &quot;M8&quot;        &quot;M9&quot;        &quot;Mast&quot;      &quot;Meso&quot;      &quot;Peri&quot;      &quot;Plasma1&quot;  
+[31] &quot;Plasma2&quot;   &quot;Plasma3&quot;  </code></pre>
+<pre class="r"><code>Idents(baseline_tumor) &lt;- baseline_tumor$BestResponse
+
+myel_celltypes &lt;- c(&quot;B1&quot;, &quot;B2&quot;, &quot;DC&quot;, &quot;Mast&quot;, &quot;Plasma1&quot;, &quot;Plasma2&quot;, &quot;Plasma3&quot;,
+                    paste0(&quot;M&quot;, seq(1,9)))
+
+baseline_myel &lt;- subset(baseline_tumor, subset = Annotation %in% myel_celltypes)
+baseline_myel &lt;- baseline_myel %&gt;%
+  NormalizeData() %&gt;%
+  ScaleData()
+
+response_baseline_myel &lt;- FindMarkers(baseline_myel,
+                                      ident.1 = &quot;SD&quot;,
+                                      ident.2 = &quot;PR&quot;,
+                                      assay = &quot;RNA&quot;,
+                                      verbose = F)
+response_baseline_myel$feature &lt;- rownames(response_baseline_myel)
+
+# Distribution of p-values and log2FC
+hist(response_baseline_myel$p_val)</code></pre>
+<p><img src="figure/arm3_DEGs.Rmd/unnamed-chunk-9-1.png" width="768" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>hist(response_baseline_myel$p_val_adj)</code></pre>
+<p><img src="figure/arm3_DEGs.Rmd/unnamed-chunk-9-2.png" width="768" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>hist(response_baseline_myel$avg_log2FC)</code></pre>
+<p><img src="figure/arm3_DEGs.Rmd/unnamed-chunk-9-3.png" width="768" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>response_baseline_myel_sig &lt;- response_baseline_myel %&gt;%
+  filter(p_val_adj &lt; 0.01,
+         abs(avg_log2FC) &gt; 1.5)
+
+response_baseline_myel_sig$feature</code></pre>
+<pre><code> [1] &quot;MARCO&quot;   &quot;POSTN&quot;   &quot;KLRK1&quot;   &quot;JUN&quot;     &quot;FOS&quot;     &quot;CEACAM1&quot; &quot;IGLC3&quot;  
+ [8] &quot;SDC1&quot;    &quot;ANGPTL4&quot; &quot;CCL19&quot;   &quot;KLRC1&quot;   &quot;CXCL6&quot;   &quot;CEACAM8&quot; &quot;DERL3&quot;  </code></pre>
+<pre class="r"><code>response_baseline_myel_sig %&gt;%
+  dplyr::mutate(across(where(is.numeric), round, 3))</code></pre>
+<pre><code>        p_val avg_log2FC pct.1 pct.2 p_val_adj feature
+MARCO       0      2.908 0.376 0.056     0.000   MARCO
+POSTN       0     -2.580 0.049 0.255     0.000   POSTN
+KLRK1       0      3.020 0.151 0.012     0.000   KLRK1
+JUN         0      1.903 0.241 0.065     0.000     JUN
+FOS         0      2.048 0.126 0.036     0.000     FOS
+CEACAM1     0      1.623 0.066 0.013     0.000 CEACAM1
+IGLC3       0     -2.364 0.005 0.021     0.000   IGLC3
+SDC1        0     -1.565 0.014 0.035     0.000    SDC1
+ANGPTL4     0      1.941 0.020 0.004     0.000 ANGPTL4
+CCL19       0      2.275 0.023 0.006     0.000   CCL19
+KLRC1       0      1.867 0.019 0.004     0.000   KLRC1
+CXCL6       0      1.518 0.023 0.007     0.000   CXCL6
+CEACAM8     0      1.613 0.029 0.011     0.001 CEACAM8
+DERL3       0     -1.906 0.016 0.033     0.002   DERL3</code></pre>
+<pre class="r"><code>VlnPlot(subset(baseline_myel, subset = BestResponse %in% c(&quot;SD&quot;, &quot;PR&quot;)),
+        group.by = &quot;BestResponse&quot;,
+        features = response_baseline_myel_sig$feature,
+        layer = &quot;data&quot;,
+        pt.size = 0,
+        ncol = 3) &amp;
+  theme_classic() &amp;
+  RotatedAxis()</code></pre>
+<p><img src="figure/arm3_DEGs.Rmd/unnamed-chunk-10-1.png" width="768" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>VlnPlot(subset(baseline_myel, subset = BestResponse %in% c(&quot;SD&quot;, &quot;PR&quot;)),
+        group.by = &quot;Annotation&quot;,
+        split.by = &quot;BestResponse&quot;,
+        split.plot = T,
+        features = response_baseline_myel_sig$feature,
+        layer = &quot;data&quot;,
+        pt.size = 0,
+        ncol = 3) &amp;
+  theme_classic() &amp;
+  RotatedAxis()</code></pre>
+<p><img src="figure/arm3_DEGs.Rmd/unnamed-chunk-11-1.png" width="1152" style="display: block; margin: auto;" /></p>
+</div>
+<div id="baseline-tumors-lymphoid" class="section level4">
+<h4>Baseline tumors, lymphoid</h4>
+<pre class="r"><code>lymph_celltypes &lt;- paste0(&quot;L&quot;, seq(1,5))
+
+baseline_lymph &lt;- subset(baseline_tumor, subset = Annotation %in% lymph_celltypes)
+baseline_lymph &lt;- baseline_lymph %&gt;%
+  NormalizeData() %&gt;%
+  ScaleData()
+
+response_baseline_lymph &lt;- FindMarkers(baseline_lymph,
+                                       ident.1 = &quot;SD&quot;,
+                                       ident.2 = &quot;PR&quot;,
+                                       assay = &quot;RNA&quot;,
+                                       verbose = F)
+response_baseline_lymph$feature &lt;- rownames(response_baseline_lymph)
+
+# Distribution of p-values and log2FC
+hist(response_baseline_lymph$p_val)</code></pre>
+<p><img src="figure/arm3_DEGs.Rmd/unnamed-chunk-12-1.png" width="768" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>hist(response_baseline_lymph$p_val_adj)</code></pre>
+<p><img src="figure/arm3_DEGs.Rmd/unnamed-chunk-12-2.png" width="768" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>hist(response_baseline_lymph$avg_log2FC)</code></pre>
+<p><img src="figure/arm3_DEGs.Rmd/unnamed-chunk-12-3.png" width="768" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>response_baseline_lymph_sig &lt;- response_baseline_lymph %&gt;%
+  filter(p_val_adj &lt; 0.01,
+         abs(avg_log2FC) &gt; 1.5)
+
+response_baseline_lymph_sig$feature</code></pre>
+<pre><code> [1] &quot;COL1A2&quot; &quot;POSTN&quot;  &quot;LUM&quot;    &quot;JUN&quot;    &quot;CD248&quot;  &quot;FOS&quot;    &quot;JUNB&quot;   &quot;IGHG2&quot; 
+ [9] &quot;IGLC3&quot;  &quot;CCL13&quot; </code></pre>
+<pre class="r"><code>response_baseline_lymph_sig %&gt;%
+  dplyr::mutate(across(where(is.numeric), round, 3))</code></pre>
+<pre><code>       p_val avg_log2FC pct.1 pct.2 p_val_adj feature
+COL1A2     0     -1.825 0.301 0.785     0.000  COL1A2
+POSTN      0     -4.766 0.020 0.368     0.000   POSTN
+LUM        0     -1.571 0.200 0.488     0.000     LUM
+JUN        0      3.172 0.221 0.040     0.000     JUN
+CD248      0     -1.612 0.040 0.130     0.000   CD248
+FOS        0      5.994 0.040 0.001     0.000     FOS
+JUNB       0      2.930 0.057 0.010     0.000    JUNB
+IGHG2      0     -3.329 0.004 0.032     0.002   IGHG2
+IGLC3      0     -4.910 0.002 0.026     0.002   IGLC3
+CCL13      0     -2.177 0.017 0.055     0.004   CCL13</code></pre>
+<pre class="r"><code>VlnPlot(subset(baseline_lymph, subset = BestResponse %in% c(&quot;SD&quot;, &quot;PR&quot;)),
+        group.by = &quot;BestResponse&quot;,
+        features = response_baseline_lymph_sig$feature,
+        layer = &quot;data&quot;,
+        pt.size = 0,
+        ncol = 3) &amp;
+  theme_classic() &amp;
+  RotatedAxis()</code></pre>
+<p><img src="figure/arm3_DEGs.Rmd/unnamed-chunk-13-1.png" width="768" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>VlnPlot(subset(baseline_lymph, subset = BestResponse %in% c(&quot;SD&quot;, &quot;PR&quot;)),
+        group.by = &quot;Annotation&quot;,
+        split.by = &quot;BestResponse&quot;,
+        split.plot = T,
+        features = response_baseline_lymph_sig$feature,
+        layer = &quot;data&quot;,
+        pt.size = 0,
+        ncol = 3) &amp;
+  theme_classic() &amp;
+  RotatedAxis()</code></pre>
+<p><img src="figure/arm3_DEGs.Rmd/unnamed-chunk-14-1.png" width="1152" style="display: block; margin: auto;" /></p>
+</div>
+<div id="baseline-tumors-fibroblast" class="section level4">
+<h4>Baseline tumors, fibroblast</h4>
+<pre class="r"><code>fibro_celltypes &lt;- paste0(&quot;F&quot;, seq(1,5))
+
+baseline_fibro &lt;- subset(baseline_tumor, subset = Annotation %in% fibro_celltypes)
+baseline_fibro &lt;- baseline_fibro %&gt;%
+  NormalizeData() %&gt;%
+  ScaleData()
+
+response_baseline_fibro &lt;- FindMarkers(baseline_fibro,
+                                       ident.1 = &quot;SD&quot;,
+                                       ident.2 = &quot;PR&quot;,
+                                       assay = &quot;RNA&quot;,
+                                       verbose = F)
+response_baseline_fibro$feature &lt;- rownames(response_baseline_fibro)
+
+# Distribution of p-values and log2FC
+hist(response_baseline_fibro$p_val)</code></pre>
+<p><img src="figure/arm3_DEGs.Rmd/unnamed-chunk-15-1.png" width="768" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>hist(response_baseline_fibro$p_val_adj)</code></pre>
+<p><img src="figure/arm3_DEGs.Rmd/unnamed-chunk-15-2.png" width="768" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>hist(response_baseline_fibro$avg_log2FC)</code></pre>
+<p><img src="figure/arm3_DEGs.Rmd/unnamed-chunk-15-3.png" width="768" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>response_baseline_fibro_sig &lt;- response_baseline_fibro %&gt;%
+  filter(p_val_adj &lt; 0.01,
+         abs(avg_log2FC) &gt; 1.5)
+
+response_baseline_fibro_sig$feature</code></pre>
+<pre><code> [1] &quot;POSTN&quot;   &quot;JUN&quot;     &quot;ADM&quot;     &quot;TC2N&quot;    &quot;FOS&quot;     &quot;ANGPTL4&quot; &quot;CA9&quot;    
+ [8] &quot;SPP1&quot;    &quot;MARCO&quot;   &quot;OLFM4&quot;   &quot;CXCL1&quot;   &quot;CLEC12A&quot; &quot;CD36&quot;    &quot;NTRK1&quot;  
+[15] &quot;CXCL6&quot;   &quot;EPCAM&quot;   &quot;ICOSLG&quot; </code></pre>
+<pre class="r"><code>response_baseline_fibro_sig %&gt;%
+  dplyr::mutate(across(where(is.numeric), round, 3))</code></pre>
+<pre><code>        p_val avg_log2FC pct.1 pct.2 p_val_adj feature
+POSTN       0     -2.207 0.145 0.613     0.000   POSTN
+JUN         0      1.766 0.266 0.115     0.000     JUN
+ADM         0      2.972 0.102 0.022     0.000     ADM
+TC2N        0      2.064 0.117 0.037     0.000    TC2N
+FOS         0      3.347 0.060 0.007     0.000     FOS
+ANGPTL4     0      2.063 0.066 0.021     0.000 ANGPTL4
+CA9         0      3.370 0.026 0.004     0.000     CA9
+SPP1        0      2.285 0.085 0.044     0.000    SPP1
+MARCO       0      2.770 0.028 0.008     0.000   MARCO
+OLFM4       0      3.539 0.027 0.009     0.000   OLFM4
+CXCL1       0      2.726 0.019 0.006     0.000   CXCL1
+CLEC12A     0      1.964 0.023 0.009     0.000 CLEC12A
+CD36        0      1.627 0.051 0.030     0.000    CD36
+NTRK1       0      1.790 0.017 0.007     0.000   NTRK1
+CXCL6       0      1.761 0.021 0.010     0.000   CXCL6
+EPCAM       0      2.344 0.019 0.010     0.002   EPCAM
+ICOSLG      0      1.682 0.021 0.011     0.002  ICOSLG</code></pre>
+<pre class="r"><code>VlnPlot(subset(baseline_fibro, subset = BestResponse %in% c(&quot;SD&quot;, &quot;PR&quot;)),
+        group.by = &quot;BestResponse&quot;,
+        features = response_baseline_fibro_sig$feature,
+        layer = &quot;data&quot;,
+        pt.size = 0,
+        ncol = 3) &amp;
+  theme_classic() &amp;
+  RotatedAxis()</code></pre>
+<p><img src="figure/arm3_DEGs.Rmd/unnamed-chunk-16-1.png" width="768" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>VlnPlot(subset(baseline_fibro, subset = BestResponse %in% c(&quot;SD&quot;, &quot;PR&quot;)),
+        group.by = &quot;Annotation&quot;,
+        split.by = &quot;BestResponse&quot;,
+        split.plot = T,
+        features = response_baseline_fibro_sig$feature,
+        layer = &quot;data&quot;,
+        pt.size = 0,
+        ncol = 3) &amp;
+  theme_classic() &amp;
+  RotatedAxis()</code></pre>
+<p><img src="figure/arm3_DEGs.Rmd/unnamed-chunk-17-1.png" width="1152" style="display: block; margin: auto;" /></p>
+</div>
+<div id="post-treatment-tumors-myeloid" class="section level4">
+<h4>Post-treatment tumors, myeloid</h4>
+<pre class="r"><code>sort(unique(post_treatment_tumor$Annotation))</code></pre>
+<pre><code> [1] &quot;B1&quot;        &quot;B2&quot;        &quot;DC&quot;        &quot;Endo1&quot;     &quot;Endo2&quot;     &quot;Endo3&quot;    
+ [7] &quot;EpiTumor1&quot; &quot;F1&quot;        &quot;F2&quot;        &quot;F3&quot;        &quot;F4&quot;        &quot;F5&quot;       
+[13] &quot;L1&quot;        &quot;L2&quot;        &quot;L3&quot;        &quot;L4&quot;        &quot;L5&quot;        &quot;M1&quot;       
+[19] &quot;M2&quot;        &quot;M4&quot;        &quot;M5&quot;        &quot;M6&quot;        &quot;M7&quot;        &quot;M8&quot;       
+[25] &quot;M9&quot;        &quot;Mast&quot;      &quot;Meso&quot;      &quot;Peri&quot;      &quot;Plasma1&quot;   &quot;Plasma2&quot;  
+[31] &quot;Plasma3&quot;  </code></pre>
+<pre class="r"><code>Idents(post_treatment_tumor) &lt;- post_treatment_tumor$BestResponse
+
+myel_celltypes &lt;- c(&quot;B1&quot;, &quot;B2&quot;, &quot;DC&quot;, &quot;Mast&quot;, &quot;Plasma1&quot;, &quot;Plasma2&quot;, &quot;Plasma3&quot;,
+                    paste0(&quot;M&quot;, seq(1,9)))
+
+treated_myel &lt;- subset(post_treatment_tumor, subset = Annotation %in% myel_celltypes)
+treated_myel &lt;- treated_myel %&gt;%
+  NormalizeData() %&gt;%
+  ScaleData()
+
+response_treated_myel &lt;- FindMarkers(treated_myel,
+                                     ident.1 = &quot;SD&quot;,
+                                     ident.2 = &quot;PR&quot;,
+                                     assay = &quot;RNA&quot;,
+                                     verbose = F)
+response_treated_myel$feature &lt;- rownames(response_treated_myel)
+
+# Distribution of p-values and log2FC
+hist(response_treated_myel$p_val)</code></pre>
+<p><img src="figure/arm3_DEGs.Rmd/unnamed-chunk-18-1.png" width="768" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>hist(response_treated_myel$p_val_adj)</code></pre>
+<p><img src="figure/arm3_DEGs.Rmd/unnamed-chunk-18-2.png" width="768" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>hist(response_treated_myel$avg_log2FC)</code></pre>
+<p><img src="figure/arm3_DEGs.Rmd/unnamed-chunk-18-3.png" width="768" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>response_treated_myel_sig &lt;- response_treated_myel %&gt;%
+  filter(p_val_adj &lt; 0.01,
+         abs(avg_log2FC) &gt; 1.5)
+
+response_treated_myel_sig$feature</code></pre>
+<pre><code>[1] &quot;CX3CR1&quot; &quot;SLC1A3&quot; &quot;JUN&quot;    &quot;APOE&quot;   &quot;ANPEP&quot;  &quot;ADM&quot;    &quot;IL2RA&quot; </code></pre>
+<pre class="r"><code>response_treated_myel_sig %&gt;%
+  dplyr::mutate(across(where(is.numeric), round, 3))</code></pre>
+<pre><code>       p_val avg_log2FC pct.1 pct.2 p_val_adj feature
+CX3CR1     0     -2.818 0.032 0.175         0  CX3CR1
+SLC1A3     0      2.219 0.392 0.067         0  SLC1A3
+JUN        0      2.978 0.324 0.054         0     JUN
+APOE       0      1.683 0.174 0.059         0    APOE
+ANPEP      0      2.051 0.103 0.018         0   ANPEP
+ADM        0      3.729 0.088 0.010         0     ADM
+IL2RA      0      1.505 0.131 0.041         0   IL2RA</code></pre>
+<pre class="r"><code>VlnPlot(subset(treated_myel, subset = BestResponse %in% c(&quot;SD&quot;, &quot;PR&quot;)),
+        group.by = &quot;BestResponse&quot;,
+        features = response_treated_myel_sig$feature,
+        layer = &quot;data&quot;,
+        pt.size = 0,
+        ncol = 3) &amp;
+  theme_classic() &amp;
+  RotatedAxis()</code></pre>
+<p><img src="figure/arm3_DEGs.Rmd/unnamed-chunk-19-1.png" width="768" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>VlnPlot(subset(treated_myel, subset = BestResponse %in% c(&quot;SD&quot;, &quot;PR&quot;)),
+        group.by = &quot;Annotation&quot;,
+        split.by = &quot;BestResponse&quot;,
+        split.plot = T,
+        features = response_treated_myel_sig$feature,
+        layer = &quot;data&quot;,
+        pt.size = 0,
+        ncol = 3) &amp;
+  theme_classic() &amp;
+  RotatedAxis()</code></pre>
+<p><img src="figure/arm3_DEGs.Rmd/unnamed-chunk-20-1.png" width="1152" style="display: block; margin: auto;" /></p>
+</div>
+<div id="post-treatment-tumors-lymphoid" class="section level4">
+<h4>Post-treatment tumors, lymphoid</h4>
+<pre class="r"><code>lymph_celltypes &lt;- paste0(&quot;L&quot;, seq(1,5))
+
+treated_lymph &lt;- subset(post_treatment_tumor, subset = Annotation %in% lymph_celltypes)
+treated_lymph &lt;- treated_lymph %&gt;%
+  NormalizeData() %&gt;%
+  ScaleData()
+
+response_treated_lymph &lt;- FindMarkers(treated_lymph,
+                                      ident.1 = &quot;SD&quot;,
+                                      ident.2 = &quot;PR&quot;,
+                                      assay = &quot;RNA&quot;,
+                                      verbose = F)
+response_treated_lymph$feature &lt;- rownames(response_treated_lymph)
+
+# Distribution of p-values and log2FC
+hist(response_treated_lymph$p_val)</code></pre>
+<p><img src="figure/arm3_DEGs.Rmd/unnamed-chunk-21-1.png" width="768" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>hist(response_treated_lymph$p_val_adj)</code></pre>
+<p><img src="figure/arm3_DEGs.Rmd/unnamed-chunk-21-2.png" width="768" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>hist(response_treated_lymph$avg_log2FC)</code></pre>
+<p><img src="figure/arm3_DEGs.Rmd/unnamed-chunk-21-3.png" width="768" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>response_treated_lymph_sig &lt;- response_treated_lymph %&gt;%
+  filter(p_val_adj &lt; 0.01,
+         abs(avg_log2FC) &gt; 1.5)
+
+response_treated_lymph_sig$feature</code></pre>
+<pre><code>[1] &quot;IGHG3&quot;  &quot;DLL1&quot;   &quot;CD86&quot;   &quot;IRF8&quot;   &quot;CDKN2B&quot; &quot;LGR5&quot;   &quot;CTSE&quot;   &quot;EPO&quot;   </code></pre>
+<pre class="r"><code>response_treated_lymph_sig %&gt;%
+  dplyr::mutate(across(where(is.numeric), round, 3))</code></pre>
+<pre><code>       p_val avg_log2FC pct.1 pct.2 p_val_adj feature
+IGHG3      0     -4.518 0.004 0.125     0.000   IGHG3
+DLL1       0     -3.646 0.012 0.167     0.000    DLL1
+CD86       0     -2.972 0.022 0.208     0.000    CD86
+IRF8       0     -2.523 0.052 0.292     0.000    IRF8
+CDKN2B     0     -2.633 0.013 0.125     0.003  CDKN2B
+LGR5       0     -4.416 0.001 0.042     0.003    LGR5
+CTSE       0     -3.871 0.001 0.042     0.003    CTSE
+EPO        0     -4.604 0.001 0.042     0.003     EPO</code></pre>
+<pre class="r"><code>VlnPlot(subset(treated_lymph, subset = BestResponse %in% c(&quot;SD&quot;, &quot;PR&quot;)),
+        group.by = &quot;BestResponse&quot;,
+        features = response_treated_lymph_sig$feature,
+        layer = &quot;data&quot;,
+        pt.size = 0,
+        ncol = 3) &amp;
+  theme_classic() &amp;
+  RotatedAxis()</code></pre>
+<p><img src="figure/arm3_DEGs.Rmd/unnamed-chunk-22-1.png" width="768" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>VlnPlot(subset(treated_lymph, subset = BestResponse %in% c(&quot;SD&quot;, &quot;PR&quot;)),
+        group.by = &quot;Annotation&quot;,
+        split.by = &quot;BestResponse&quot;,
+        split.plot = T,
+        features = response_treated_lymph_sig$feature,
+        layer = &quot;data&quot;,
+        pt.size = 0,
+        ncol = 3) &amp;
+  theme_classic() &amp;
+  RotatedAxis()</code></pre>
+<p><img src="figure/arm3_DEGs.Rmd/unnamed-chunk-23-1.png" width="1152" style="display: block; margin: auto;" /></p>
+</div>
+<div id="post-treatment-tumors-fibroblast" class="section level4">
+<h4>Post-treatment tumors, fibroblast</h4>
+<pre class="r"><code>fibro_celltypes &lt;- paste0(&quot;F&quot;, seq(1,5))
+
+treated_fibro &lt;- subset(post_treatment_tumor, subset = Annotation %in% fibro_celltypes)
+treated_fibro &lt;- treated_fibro %&gt;%
+  NormalizeData() %&gt;%
+  ScaleData()
+
+response_treated_fibro &lt;- FindMarkers(treated_fibro,
+                                      ident.1 = &quot;SD&quot;,
+                                      ident.2 = &quot;PR&quot;,
+                                      assay = &quot;RNA&quot;,
+                                      verbose = F)
+response_treated_fibro$feature &lt;- rownames(response_treated_fibro)
+
+# Distribution of p-values and log2FC
+hist(response_treated_fibro$p_val)</code></pre>
+<p><img src="figure/arm3_DEGs.Rmd/unnamed-chunk-24-1.png" width="768" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>hist(response_treated_fibro$p_val_adj)</code></pre>
+<p><img src="figure/arm3_DEGs.Rmd/unnamed-chunk-24-2.png" width="768" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>hist(response_treated_fibro$avg_log2FC)</code></pre>
+<p><img src="figure/arm3_DEGs.Rmd/unnamed-chunk-24-3.png" width="768" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>response_treated_fibro_sig &lt;- response_treated_fibro %&gt;%
+  filter(p_val_adj &lt; 0.01,
+         abs(avg_log2FC) &gt; 1.5)
+
+response_treated_fibro_sig$feature</code></pre>
+<pre><code> [1] &quot;JUN&quot;    &quot;TGFBI&quot;  &quot;FOS&quot;    &quot;SPP1&quot;   &quot;JUNB&quot;   &quot;TC2N&quot;   &quot;CHL1&quot;   &quot;CD36&quot;  
+ [9] &quot;EGR3&quot;   &quot;AIF1&quot;   &quot;S100A9&quot; &quot;MSLN&quot;   &quot;ISG15&quot;  &quot;SOCS1&quot; </code></pre>
+<pre class="r"><code>response_treated_fibro_sig %&gt;%
+  dplyr::mutate(across(where(is.numeric), round, 3))</code></pre>
+<pre><code>       p_val avg_log2FC pct.1 pct.2 p_val_adj feature
+JUN        0      2.510 0.381 0.069     0.000     JUN
+TGFBI      0      1.957 0.229 0.056     0.000   TGFBI
+FOS        0      3.548 0.090 0.005     0.000     FOS
+SPP1       0      3.202 0.080 0.011     0.000    SPP1
+JUNB       0      2.472 0.084 0.014     0.000    JUNB
+TC2N       0      1.644 0.071 0.014     0.000    TC2N
+CHL1       0      1.624 0.063 0.015     0.000    CHL1
+CD36       0      1.991 0.057 0.013     0.000    CD36
+EGR3       0      1.609 0.074 0.025     0.000    EGR3
+AIF1       0      1.582 0.034 0.008     0.000    AIF1
+S100A9     0      1.738 0.035 0.009     0.000  S100A9
+MSLN       0     -1.819 0.008 0.025     0.000    MSLN
+ISG15      0      1.900 0.036 0.012     0.000   ISG15
+SOCS1      0      1.637 0.013 0.002     0.002   SOCS1</code></pre>
+<pre class="r"><code>VlnPlot(subset(treated_fibro, subset = BestResponse %in% c(&quot;SD&quot;, &quot;PR&quot;)),
+        group.by = &quot;BestResponse&quot;,
+        features = response_treated_fibro_sig$feature,
+        layer = &quot;data&quot;,
+        pt.size = 0,
+        ncol = 3) &amp;
+  theme_classic() &amp;
+  RotatedAxis()</code></pre>
+<p><img src="figure/arm3_DEGs.Rmd/unnamed-chunk-25-1.png" width="768" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>VlnPlot(subset(treated_fibro, subset = BestResponse %in% c(&quot;SD&quot;, &quot;PR&quot;)),
+        group.by = &quot;Annotation&quot;,
+        split.by = &quot;BestResponse&quot;,
+        split.plot = T,
+        features = response_treated_fibro_sig$feature,
+        layer = &quot;data&quot;,
+        pt.size = 0,
+        ncol = 3) &amp;
+  theme_classic() &amp;
+  RotatedAxis()</code></pre>
+<p><img src="figure/arm3_DEGs.Rmd/unnamed-chunk-26-1.png" width="1152" style="display: block; margin: auto;" /></p>
+<br>
+<p>
+<button type="button" class="btn btn-default btn-workflowr btn-workflowr-sessioninfo" data-toggle="collapse" data-target="#workflowr-sessioninfo" style="display: block;">
+<span class="glyphicon glyphicon-wrench" aria-hidden="true"></span>
+Session information
+</button>
+</p>
+<div id="workflowr-sessioninfo" class="collapse">
+<pre class="r"><code>sessionInfo()</code></pre>
+<pre><code>R version 4.3.0 (2023-04-21)
+Platform: x86_64-pc-linux-gnu (64-bit)
+Running under: Ubuntu 22.04.3 LTS
+
+Matrix products: default
+BLAS:   /usr/lib/x86_64-linux-gnu/openblas-pthread/libblas.so.3 
+LAPACK: /usr/lib/x86_64-linux-gnu/openblas-pthread/libopenblasp-r0.3.20.so;  LAPACK version 3.10.0
+
+locale:
+ [1] LC_CTYPE=en_US.UTF-8       LC_NUMERIC=C              
+ [3] LC_TIME=en_US.UTF-8        LC_COLLATE=en_US.UTF-8    
+ [5] LC_MONETARY=en_US.UTF-8    LC_MESSAGES=en_US.UTF-8   
+ [7] LC_PAPER=en_US.UTF-8       LC_NAME=C                 
+ [9] LC_ADDRESS=C               LC_TELEPHONE=C            
+[11] LC_MEASUREMENT=en_US.UTF-8 LC_IDENTIFICATION=C       
+
+time zone: Etc/UTC
+tzcode source: system (glibc)
+
+attached base packages:
+[1] grid      stats     graphics  grDevices utils     datasets  methods  
+[8] base     
+
+other attached packages:
+ [1] ComplexHeatmap_2.18.0 viridis_0.6.3         viridisLite_0.4.2    
+ [4] circlize_0.4.15       plyr_1.8.8            RColorBrewer_1.1-3   
+ [7] ggpmisc_0.5.2         ggpp_0.5.2            patchwork_1.1.2      
+[10] googlesheets4_1.1.0   ggrepel_0.9.3         ggpubr_0.6.0         
+[13] lubridate_1.9.2       forcats_1.0.0         stringr_1.5.0        
+[16] dplyr_1.1.2           purrr_1.0.2           readr_2.1.4          
+[19] tidyr_1.3.0           tibble_3.2.1          ggplot2_3.4.2        
+[22] tidyverse_2.0.0       SeuratDisk_0.0.0.9021 Seurat_5.0.1         
+[25] SeuratObject_5.0.2    sp_1.6-1              workflowr_1.7.1      
+
+loaded via a namespace (and not attached):
+  [1] RcppAnnoy_0.0.20       splines_4.3.0          later_1.3.1           
+  [4] cellranger_1.1.0       polyclip_1.10-4        fastDummies_1.7.3     
+  [7] lifecycle_1.0.3        rstatix_0.7.2          doParallel_1.0.17     
+ [10] rprojroot_2.0.3        globals_0.16.2         processx_3.8.1        
+ [13] lattice_0.21-8         hdf5r_1.3.8            MASS_7.3-60           
+ [16] backports_1.4.1        magrittr_2.0.3         limma_3.58.1          
+ [19] plotly_4.10.2          sass_0.4.6             rmarkdown_2.22        
+ [22] jquerylib_0.1.4        yaml_2.3.7             httpuv_1.6.11         
+ [25] sctransform_0.4.1      spam_2.9-1             spatstat.sparse_3.0-1 
+ [28] reticulate_1.29        cowplot_1.1.1          pbapply_1.7-0         
+ [31] abind_1.4-5            Rtsne_0.16             presto_1.0.0          
+ [34] BiocGenerics_0.48.1    git2r_0.32.0           S4Vectors_0.40.2      
+ [37] IRanges_2.36.0         irlba_2.3.5.1          listenv_0.9.0         
+ [40] spatstat.utils_3.0-3   MatrixModels_0.5-1     goftest_1.2-3         
+ [43] RSpectra_0.16-1        spatstat.random_3.1-5  fitdistrplus_1.1-11   
+ [46] parallelly_1.36.0      leiden_0.4.3           codetools_0.2-19      
+ [49] shape_1.4.6            tidyselect_1.2.0       farver_2.1.1          
+ [52] stats4_4.3.0           matrixStats_1.0.0      spatstat.explore_3.2-1
+ [55] googledrive_2.1.0      jsonlite_1.8.5         GetoptLong_1.0.5      
+ [58] ellipsis_0.3.2         progressr_0.13.0       iterators_1.0.14      
+ [61] ggridges_0.5.4         survival_3.5-5         foreach_1.5.2         
+ [64] tools_4.3.0            ica_1.0-3              Rcpp_1.0.10           
+ [67] glue_1.6.2             gridExtra_2.3          xfun_0.39             
+ [70] withr_2.5.0            fastmap_1.1.1          fansi_1.0.4           
+ [73] SparseM_1.81           callr_3.7.3            digest_0.6.31         
+ [76] timechange_0.2.0       R6_2.5.1               mime_0.12             
+ [79] colorspace_2.1-0       scattermore_1.2        tensor_1.5            
+ [82] spatstat.data_3.0-1    utf8_1.2.3             generics_0.1.3        
+ [85] data.table_1.14.8      httr_1.4.6             htmlwidgets_1.6.2     
+ [88] whisker_0.4.1          uwot_0.1.14            pkgconfig_2.0.3       
+ [91] gtable_0.3.3           lmtest_0.9-40          htmltools_0.5.5       
+ [94] carData_3.0-5          dotCall64_1.0-2        clue_0.3-64           
+ [97] scales_1.2.1           png_0.1-8              knitr_1.43            
+[100] rstudioapi_0.14        rjson_0.2.21           tzdb_0.4.0            
+[103] reshape2_1.4.4         curl_5.0.1             nlme_3.1-162          
+[106] GlobalOptions_0.1.2    cachem_1.0.8           zoo_1.8-12            
+[109] KernSmooth_2.23-21     vipor_0.4.5            parallel_4.3.0        
+[112] miniUI_0.1.1.1         ggrastr_1.0.2          pillar_1.9.0          
+[115] vctrs_0.6.5            RANN_2.6.1             promises_1.2.0.1      
+[118] car_3.1-2              xtable_1.8-4           cluster_2.1.4         
+[121] beeswarm_0.4.0         evaluate_0.21          cli_3.6.1             
+[124] compiler_4.3.0         rlang_1.1.1            crayon_1.5.2          
+[127] future.apply_1.11.0    ggsignif_0.6.4         labeling_0.4.2        
+[130] ps_1.7.5               ggbeeswarm_0.7.2       getPass_0.2-4         
+[133] fs_1.6.2               stringi_1.7.12         deldir_1.0-9          
+[136] munsell_0.5.0          lazyeval_0.2.2         spatstat.geom_3.2-1   
+[139] quantreg_5.95          Matrix_1.6-5           RcppHNSW_0.5.0        
+[142] hms_1.1.3              bit64_4.0.5            future_1.32.0         
+[145] statmod_1.5.0          shiny_1.7.4            highr_0.10            
+[148] ROCR_1.0-11            gargle_1.4.0           igraph_1.4.3          
+[151] broom_1.0.4            bslib_0.4.2            bit_4.0.5             
+[154] polynom_1.4-1         </code></pre>
+</div>
+</div>
+</div>
+
+
+<!-- Adjust MathJax settings so that all math formulae are shown using
+TeX fonts only; see
+https://docs.mathjax.org/en/latest/web/configuration.html. This will make
+the presentation more consistent at the cost of the webpage sometimes
+taking slightly longer to load. Note that this only works because the
+footer is added to webpages before the MathJax javascript. -->
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    "HTML-CSS": { availableFonts: ["TeX"] }
+  });
+</script>
+
+
+
+
+</div>
+</div>
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.odd').parent('tbody').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- tabsets -->
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open');
+  });
+});
+</script>
+
+<!-- code folding -->
+<script>
+$(document).ready(function () {
+  window.initializeCodeFolding("hide" === "show");
+});
+</script>
+
+<script>
+$(document).ready(function ()  {
+
+    // temporarily add toc-ignore selector to headers for the consistency with Pandoc
+    $('.unlisted.unnumbered').addClass('toc-ignore')
+
+    // move toc-ignore selectors from section div to header
+    $('div.section.toc-ignore')
+        .removeClass('toc-ignore')
+        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
+
+    // establish options
+    var options = {
+      selectors: "h1,h2,h3",
+      theme: "bootstrap3",
+      context: '.toc-content',
+      hashGenerator: function (text) {
+        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_');
+      },
+      ignoreSelector: ".toc-ignore",
+      scrollTo: 0
+    };
+    options.showAndHide = true;
+    options.smoothScroll = true;
+
+    // tocify
+    var toc = $("#TOC").tocify(options).data("toc-tocify");
+});
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

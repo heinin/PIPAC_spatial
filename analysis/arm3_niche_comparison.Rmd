@@ -1,0 +1,710 @@
+---
+title: "Arm 3 niche-based comparative analysis"
+author: "heinin"
+date: "2025-03-21"
+output:
+  workflowr::wflow_html:
+    code_folding: hide
+  html_notebook: default
+editor_options:
+  chunk_output_type: console
+---
+
+### Load packages
+
+```{r, warning=F, message=F}
+
+suppressPackageStartupMessages({
+  library(workflowr)
+  library(arrow)
+  library(Seurat)
+  library(SeuratObject)
+  library(SeuratDisk)
+  library(tidyverse)
+  library(tibble)
+  library(ggplot2)
+  library(ggpubr)
+  library(ggrepel)
+  library(googlesheets4)
+  library(workflowr)
+  library(patchwork)
+  library(ggpmisc)
+  library(scProportionTest)})
+
+```
+
+### Environment variables and helper functions
+
+```{r, message = F, warning = F}
+
+setwd("/home/hnatri/PIPAC_spatial/")
+set.seed(9999)
+options(scipen = 99999)
+options(ggrepel.max.overlaps = Inf)
+
+source("/home/hnatri/PIPAC_spatial/code/PIPAC_colors_themes.R")
+source("/home/hnatri/PIPAC_spatial/code/plot_functions.R")
+
+```
+
+### Marker information
+
+```{r, message = F, warning = F, fig.width = 6, fig.height = 4}
+
+gs4_deauth()
+metadata  <- gs4_get("https://docs.google.com/spreadsheets/d/1sXXwOreLxjMSUoPt79c6jmaQpluWkaxA5P5HfDsed3I/edit?usp=sharing")
+markers <- read_sheet(metadata, sheet = "Markers")
+second_pass_nonimmune <- read_sheet(metadata, sheet = "Tumor 2nd pass")
+second_pass_immune <- read_sheet(metadata, sheet = "Immune 2nd pass")
+
+# Cell type markers by group
+gs4_deauth()
+markers_by_group  <- gs4_get("https://docs.google.com/spreadsheets/d/1w0wrL-5KwNEWi_VpmriN7YmfwpBPlEYX0MKlwI2ZQu8/edit?usp=sharing")
+markers_by_group <- read_sheet(markers_by_group, sheet = "Markers by group")
+
+```
+
+### Import and subset data
+
+```{r, message = F, warning = F, fig.width = 8, fig.height = 4}
+
+seurat_data <- readRDS("/tgen_labs/banovich/PIPAC/Seurat/PIPAC_NC50_NN20_PC20_Seurat_annotated_metadata_niches.rds")
+DefaultAssay(seurat_data) <- "RNA"
+seurat_data <- seurat_data %>%
+  NormalizeData() %>%
+  ScaleData()
+
+seurat_arm3 <- subset(seurat_data, subset = Arm == "Arm3")
+seurat_arm3 <- seurat_arm3 %>%
+  NormalizeData() %>%
+  ScaleData()
+
+```
+
+## Niche abundance by sample, group, and correlation with survival
+
+```{r, message = F, warning = F, fig.width = 10, fig.height = 24}
+
+barplot_list <- lapply(seq(3, 8), function(k){
+  niche_column <- paste0("niche_k", k, "_n30")
+  niches <- seq(1, k)
+  seurat_arm3@meta.data[,niche_column] <- factor(seurat_arm3@meta.data[,niche_column],
+                                                 levels = niches)
+  niche_col <- colorRampPalette(brewer.pal(10, "Paired"))(nb.cols <- length(niches))
+  names(niche_col) <- levels(seurat_arm3@meta.data[,niche_column])
+  
+  create_barplot(seurat_arm3,
+                 group_var = "Sample",
+                 plot_var = niche_column,
+                 plot_levels = levels(seurat_arm3@meta.data[,niche_column]),
+                 group_levels = sort(unique(seurat_arm3$Sample)),
+                 plot_colors = niche_col,
+                 var_names =  c("Frequency (%)", ""),
+                 legend_title = "Niche")
+})
+
+wrap_plots(barplot_list, ncol = 1)
+
+```
+
+### All tumors
+
+```{r, message = F, warning = F, fig.width = 6, fig.height = 24}
+
+barplot_list <- lapply(seq(3, 8), function(k){
+  niche_column <- paste0("niche_k", k, "_n30")
+  niches <- seq(1, k)
+  seurat_arm3@meta.data[,niche_column] <- factor(seurat_arm3@meta.data[,niche_column],
+                                                 levels = niches)
+  niche_col <- colorRampPalette(brewer.pal(10, "Paired"))(nb.cols <- length(niches))
+  names(niche_col) <- niches
+  
+  create_barplot(seurat_arm3,
+                 group_var = "Sample",
+                 plot_var = niche_column,
+                 plot_levels = levels(seurat_arm3@meta.data[,niche_column]),
+                 group_levels = sort(unique(seurat_arm3$Sample)),
+                 plot_colors = niche_col,
+                 var_names =  c("Frequency (%)", ""),
+                 legend_title = "Niche")
+})
+
+wrap_plots(barplot_list, ncol = 1)
+
+```
+
+#### Proportion plots by best response
+
+```{r, message = F, warning = F, fig.width = 10, fig.height = 12}
+
+barplot_list <- lapply(seq(3, 8), function(k){
+  niche_column <- paste0("niche_k", k, "_n30")
+  niches <- seq(1, k)
+  seurat_arm3@meta.data[,niche_column] <- factor(seurat_arm3@meta.data[,niche_column],
+                                                 levels = niches)
+  niche_col <- colorRampPalette(brewer.pal(10, "Paired"))(nb.cols <- length(niches))
+  names(niche_col) <- levels(seurat_arm3@meta.data[,niche_column])
+  
+  create_barplot(seurat_arm3,
+                 group_var = "BestResponse",
+                 plot_var = niche_column,
+                 plot_levels = levels(seurat_arm3@meta.data[,niche_column]),
+                 group_levels = sort(unique(seurat_arm3$BestResponse)),
+                 plot_colors = niche_col,
+                 var_names =  c("Frequency (%)", ""),
+                 legend_title = "Niche")
+})
+
+wrap_plots(barplot_list, ncol = 2)
+
+```
+
+```{r, message = F, warning = F, fig.width = 10, fig.height = 12}
+
+scatterplot_list <- lapply(seq(3, 8), function(k){
+  niche_column <- paste0("niche_k", k, "_n30")
+  niches <- seq(1, k)
+  seurat_arm3@meta.data[,niche_column] <- factor(seurat_arm3@meta.data[,niche_column],
+                                                 levels = niches)
+  niche_col <- colorRampPalette(brewer.pal(10, "Paired"))(nb.cols <- length(niches))
+  names(niche_col) <- levels(seurat_arm3@meta.data[,niche_column])
+   
+  create_clusterpropplot(subset(seurat_arm3, subset = BestResponse %in% c("SD", "PR")),
+                         group_var = "BestResponse",
+                         plot_var = niche_column,
+                         group1 = "SD",
+                         group2 = "PR",
+                         plot_colors = niche_col,
+                         var_names =  c("Frequency (%)", ""),
+                         legend_title = "Niche")
+})
+
+wrap_plots(scatterplot_list, ncol = 2)
+
+```
+
+### Testing for significance with scProportionTest
+
+```{r, message = F, warning = F, fig.width = 6, fig.height = 6}
+
+propplot_list <- lapply(seq(3, 8), function(k){
+  niche_column <- paste0("niche_k", k, "_n30")
+  niches <- seq(1, k)
+   
+  prop_test <- sc_utils(seurat_arm3)
+  prop_test <- permutation_test(
+	   prop_test, cluster_identity = niche_column,
+	   sample_1 = "PR", sample_2 = "SD",
+	   sample_identity = "BestResponse")
+
+  permutation_plot(prop_test) +
+    ggtitle("All tumors")
+})
+
+wrap_plots(propplot_list, ncol = 2)
+
+```
+
+#### Niche abundance correlation with survival in tumor samples
+
+```{r, message = F, warning = F, fig.width = 12, fig.height = 8}
+
+seurat_arm3 <- subset(seurat_arm3, subset = Tissue == "Tumor")
+
+# Combining the quadrant samples for each patient/timepoint
+# Note: there is only one sample for per timepoint, so doesn't make a
+# difference here
+seurat_arm3$Patient_Tissue_Timepoint <- paste0(seurat_arm3$Patient_ID, "_",
+                                               seurat_arm3$Tissue, "_",
+                                               seurat_arm3$Timepoint)
+
+metadata <- seurat_arm3@meta.data %>%
+  dplyr::select("Sample", "Patient_ID", "Patient_Tissue_Timepoint", "DISEASESITE", "osmonths", "pfsmonths", "No_of_PIPACs") %>%
+  distinct()
+
+list_of_plotlists <- lapply(seq(3, 8), function(k){
+  niche_column <- paste0("niche_k", k, "_n30")
+  niches <- seq(1, k)
+  seurat_arm3@meta.data[,niche_column] <- factor(seurat_arm3@meta.data[,niche_column],
+                                                 levels = niches)
+  niche_col <- colorRampPalette(brewer.pal(10, "Paired"))(nb.cols <- length(niches))
+  names(niche_col) <- levels(seurat_arm3@meta.data[,niche_column])
+  
+  prop_table <- as.data.frame(table(unlist(seurat_arm3[[niche_column]]),   as.character(seurat_arm3@meta.data$Patient_Tissue_Timepoint)))
+  colnames(prop_table) <- c("Niche", "Patient_Tissue_Timepoint", "Freq")
+  prop_table <- spread(prop_table, Niche, Freq)
+  # Converting to percentage
+  prop_table[,2:length(prop_table)] <- (prop_table[,2:length(prop_table)]/rowSums(prop_table[,2:length(prop_table)]))*100
+  prop_table <- gather(prop_table, Niche, Freq, names(prop_table)[2:length(names(prop_table))], factor_key=TRUE)
+  
+  # Adding survival data
+  prop_survival <- merge(prop_table, metadata, by = "Patient_Tissue_Timepoint")
+  prop_survival$osmonths <- unlist(prop_survival$osmonths)
+  prop_survival$pfmonths <- unlist(prop_survival$pfmonths)
+  
+  # Plotting
+  plot_list <- lapply(niches, function(niche){
+    prop_survival %>%
+      filter(Niche == niche) %>%
+      ggplot(aes(x = Freq, y = osmonths, color = Niche)) +
+      geom_point() +
+      scale_color_manual(name = "Niche", values = niche_col) +
+      stat_poly_line() +
+      stat_poly_eq(formula = y ~ x,
+                   rr.digits = 3, p.digits = 3, small.p = T,
+                   aes(label = paste(after_stat(rr.label), after_stat(p.value.label), sep = "*`,`~")),
+                   label.x = 0.01, label.y = 1, parse = T) +
+      ylab("Overall Survival") +
+      xlab(paste0("% of niche ", niche, " cells")) +
+      theme_classic() +
+      theme(axis.text.x = element_text(color = "black"),
+            axis.text.y = element_text(color = "black")) +
+      NoLegend()
+  })
+  return(plot_list)
+})
+
+```
+
+K = 3
+
+```{r, message = F, warning = F, fig.width = 10, fig.height = 3}
+
+wrap_plots(list_of_plotlists[[1]], ncol = 3)
+
+```
+
+K = 4
+
+```{r, message = F, warning = F, fig.width = 10, fig.height = 6}
+
+wrap_plots(list_of_plotlists[[2]], ncol = 3)
+
+```
+
+K = 5
+
+```{r, message = F, warning = F, fig.width = 10, fig.height = 6}
+
+wrap_plots(list_of_plotlists[[3]], ncol = 3)
+
+```
+
+K = 6
+
+```{r, message = F, warning = F, fig.width = 10, fig.height = 6}
+
+wrap_plots(list_of_plotlists[[4]], ncol = 3)
+
+```
+
+K = 7
+
+```{r, message = F, warning = F, fig.width = 10, fig.height = 9}
+
+wrap_plots(list_of_plotlists[[5]], ncol = 3)
+
+```
+
+K = 8
+
+```{r, message = F, warning = F, fig.width = 10, fig.height = 9}
+
+wrap_plots(list_of_plotlists[[6]], ncol = 3)
+
+```
+
+### Baseline tumors
+
+```{r, message = F, warning = F, fig.width = 6, fig.height = 24}
+
+unique(seurat_arm3$Timepoint)
+baseline_tumor <- subset(seurat_arm3, subset = Tissue == "Tumor" &
+                           Timepoint == 0)
+baseline_tumor <- baseline_tumor %>%
+  NormalizeData() %>%
+  ScaleData()
+
+barplot_list <- lapply(seq(3, 8), function(k){
+  niche_column <- paste0("niche_k", k, "_n30")
+  niches <- seq(1, k)
+  niche_col <- colorRampPalette(brewer.pal(10, "Paired"))(nb.cols <- length(niches))
+  names(niche_col) <- niches
+  
+  create_barplot(baseline_tumor,
+                 group_var = "Sample",
+                 plot_var = niche_column,
+                 plot_levels = levels(baseline_tumor@meta.data[,niche_column]),
+                 group_levels = sort(unique(baseline_tumor$Sample)),
+                 plot_colors = niche_col,
+                 var_names =  c("Frequency (%)", ""),
+                 legend_title = "Niche")
+})
+
+wrap_plots(barplot_list, ncol = 1)
+
+```
+
+### Testing for significance with scProportionTest
+
+```{r, message = F, warning = F, fig.width = 6, fig.height = 6}
+
+propplot_list <- lapply(seq(3, 8), function(k){
+  niche_column <- paste0("niche_k", k, "_n30")
+  niches <- seq(1, k)
+   
+  prop_test <- sc_utils(baseline_tumor)
+  prop_test <- permutation_test(
+	   prop_test, cluster_identity = niche_column,
+	   sample_1 = "PR", sample_2 = "SD",
+	   sample_identity = "BestResponse")
+
+  permutation_plot(prop_test) +
+    ggtitle("Baseline tumors")
+})
+
+wrap_plots(propplot_list, ncol = 2)
+
+```
+
+#### Niche abundance correlation with survival
+
+```{r, message = F, warning = F, fig.width = 12, fig.height = 8}
+
+metadata <- baseline_tumor@meta.data %>%
+  dplyr::select("Sample", "Patient_ID", "DISEASESITE", "osmonths", "pfsmonths", "No_of_PIPACs") %>%
+  distinct()
+
+list_of_plotlists <- lapply(seq(3, 8), function(k){
+  niche_column <- paste0("niche_k", k, "_n30")
+  niches <- seq(1, k)
+  niche_col <- colorRampPalette(brewer.pal(10, "Paired"))(nb.cols <- length(niches))
+  names(niche_col) <- niches
+  
+  prop_table <- as.data.frame(table(unlist(baseline_tumor[[niche_column]]), as.character(baseline_tumor@meta.data$Sample)))
+  colnames(prop_table) <- c("Niche", "Sample", "Freq")
+  prop_table <- spread(prop_table, Niche, Freq)
+  # Converting to percentage
+  prop_table[,2:length(prop_table)] <- (prop_table[,2:length(prop_table)]/rowSums(prop_table[,2:length(prop_table)]))*100
+  prop_table <- gather(prop_table, Niche, Freq, names(prop_table)[2:length(names(prop_table))], factor_key=TRUE)
+  
+  # Adding survival data
+  prop_survival <- merge(prop_table, metadata, by = "Sample")
+  prop_survival$osmonths <- unlist(prop_survival$osmonths)
+  prop_survival$pfmonths <- unlist(prop_survival$pfmonths)
+  
+  # Plotting
+  plot_list <- lapply(niches, function(niche){
+    prop_survival %>%
+      filter(Niche == niche) %>%
+      ggplot(aes(x = Freq, y = osmonths, color = Niche)) +
+      geom_point() +
+      scale_color_manual(name = "Niche", values = niche_col) +
+      stat_poly_line() +
+      stat_poly_eq(formula = y ~ x,
+                   rr.digits = 3, p.digits = 3, small.p = T,
+                   aes(label = paste(after_stat(rr.label), after_stat(p.value.label), sep = "*`,`~")),
+                   label.x = 0.01, label.y = 1, parse = T) +
+      ylab("Overall Survival") +
+      xlab(paste0("% of niche ", niche, " cells")) +
+      theme_classic() +
+      theme(axis.text.x = element_text(color = "black"),
+            axis.text.y = element_text(color = "black")) +
+      NoLegend()
+  })
+  return(plot_list)
+})
+
+```
+
+K = 3
+
+```{r, message = F, warning = F, fig.width = 10, fig.height = 3}
+
+wrap_plots(list_of_plotlists[[1]], ncol = 3)
+
+```
+
+K = 4
+
+```{r, message = F, warning = F, fig.width = 10, fig.height = 6}
+
+wrap_plots(list_of_plotlists[[2]], ncol = 3)
+
+```
+
+K = 5
+
+```{r, message = F, warning = F, fig.width = 10, fig.height = 6}
+
+wrap_plots(list_of_plotlists[[3]], ncol = 3)
+
+```
+
+K = 6
+
+```{r, message = F, warning = F, fig.width = 10, fig.height = 6}
+
+wrap_plots(list_of_plotlists[[4]], ncol = 3)
+
+```
+
+K = 7
+
+```{r, message = F, warning = F, fig.width = 10, fig.height = 9}
+
+wrap_plots(list_of_plotlists[[5]], ncol = 3)
+
+```
+
+K = 8
+
+```{r, message = F, warning = F, fig.width = 10, fig.height = 9}
+
+wrap_plots(list_of_plotlists[[6]], ncol = 3)
+
+```
+
+### Post-treatment tumors (D6)
+
+```{r, message = F, warning = F, fig.width = 6, fig.height = 24}
+
+unique(seurat_arm3$Timepoint)
+later_tumor <- subset(seurat_arm3, subset = Tissue == "Tumor" &
+                        Timepoint == 6)
+later_tumor <- later_tumor %>%
+  NormalizeData() %>%
+  ScaleData()
+
+barplot_list <- lapply(seq(3, 8), function(k){
+  niche_column <- paste0("niche_k", k, "_n30")
+  niches <- seq(1, k)
+  niche_col <- colorRampPalette(brewer.pal(10, "Paired"))(nb.cols <- length(niches))
+  names(niche_col) <- niches
+  
+  create_barplot(later_tumor,
+                 group_var = "Sample",
+                 plot_var = niche_column,
+                 plot_levels = levels(later_tumor@meta.data[,niche_column]),
+                 group_levels = sort(unique(later_tumor$Sample)),
+                 plot_colors = niche_col,
+                 var_names =  c("Frequency (%)", ""),
+                 legend_title = "Niche")
+})
+
+wrap_plots(barplot_list, ncol = 1)
+
+```
+
+### Testing for significance with scProportionTest
+
+```{r, message = F, warning = F, fig.width = 6, fig.height = 6}
+
+propplot_list <- lapply(seq(3, 8), function(k){
+  niche_column <- paste0("niche_k", k, "_n30")
+  niches <- seq(1, k)
+   
+  prop_test <- sc_utils(later_tumor)
+  prop_test <- permutation_test(
+	   prop_test, cluster_identity = niche_column,
+	   sample_1 = "PR", sample_2 = "SD",
+	   sample_identity = "BestResponse")
+  
+  permutation_plot(prop_test) +
+    ggtitle("After treatment tumors")
+})
+
+wrap_plots(propplot_list, ncol = 2)
+
+```
+
+#### Niche abundance correlation with survival
+
+```{r, message = F, warning = F, fig.width = 12, fig.height = 8}
+
+metadata <- later_tumor@meta.data %>%
+  dplyr::select("Sample", "Patient_ID", "DISEASESITE", "osmonths", "pfsmonths", "No_of_PIPACs") %>%
+  distinct()
+
+list_of_plotlists <- lapply(seq(3, 8), function(k){
+  niche_column <- paste0("niche_k", k, "_n30")
+  niches <- seq(1, k)
+  niche_col <- colorRampPalette(brewer.pal(10, "Paired"))(nb.cols <- length(niches))
+  names(niche_col) <- niches
+  
+  prop_table <- as.data.frame(table(unlist(later_tumor[[niche_column]]), as.character(later_tumor@meta.data$Sample)))
+  colnames(prop_table) <- c("Niche", "Sample", "Freq")
+  prop_table <- spread(prop_table, Niche, Freq)
+  # Converting to percentage
+  prop_table[,2:length(prop_table)] <- (prop_table[,2:length(prop_table)]/rowSums(prop_table[,2:length(prop_table)]))*100
+  prop_table <- gather(prop_table, Niche, Freq, names(prop_table)[2:length(names(prop_table))], factor_key=TRUE)
+  
+  # Adding survival data
+  prop_survival <- merge(prop_table, metadata, by = "Sample")
+  prop_survival$osmonths <- unlist(prop_survival$osmonths)
+  prop_survival$pfmonths <- unlist(prop_survival$pfmonths)
+  
+  # Plotting
+  plot_list <- lapply(niches, function(niche){
+    prop_survival %>%
+      filter(Niche == niche) %>%
+      ggplot(aes(x = Freq, y = osmonths, color = Niche)) +
+      geom_point() +
+      scale_color_manual(name = "Niche", values = niche_col) +
+      stat_poly_line() +
+      stat_poly_eq(formula = y ~ x,
+                   rr.digits = 3, p.digits = 3, small.p = T,
+                   aes(label = paste(after_stat(rr.label), after_stat(p.value.label), sep = "*`,`~")),
+                   label.x = 0.01, label.y = 1, parse = T) +
+      ylab("Overall Survival") +
+      xlab(paste0("% of niche ", niche, " cells")) +
+      theme_classic() +
+      theme(axis.text.x = element_text(color = "black"),
+            axis.text.y = element_text(color = "black")) +
+      NoLegend()
+  })
+  return(plot_list)
+})
+
+```
+
+K = 3
+
+```{r, message = F, warning = F, fig.width = 10, fig.height = 3}
+
+wrap_plots(list_of_plotlists[[1]], ncol = 3)
+
+```
+
+K = 4
+
+```{r, message = F, warning = F, fig.width = 10, fig.height = 6}
+
+wrap_plots(list_of_plotlists[[2]], ncol = 3)
+
+```
+
+K = 5
+
+```{r, message = F, warning = F, fig.width = 10, fig.height = 6}
+
+wrap_plots(list_of_plotlists[[3]], ncol = 3)
+
+```
+
+K = 6
+
+```{r, message = F, warning = F, fig.width = 10, fig.height = 6}
+
+wrap_plots(list_of_plotlists[[4]], ncol = 3)
+
+```
+
+K = 7
+
+```{r, message = F, warning = F, fig.width = 10, fig.height = 9}
+
+wrap_plots(list_of_plotlists[[5]], ncol = 3)
+
+```
+
+K = 8
+
+```{r, message = F, warning = F, fig.width = 10, fig.height = 9}
+
+wrap_plots(list_of_plotlists[[6]], ncol = 3)
+
+```
+
+## Niche pseudo-bulk gene expression correlation with survival
+
+### Baseline tumors
+
+```{r, message = F, warning = F, fig.width = 8, fig.height = 4, eval = F}
+
+# Looping through each k
+exp_corr_list <- lapply(seq(3, 8), function(k){
+  niche_column <- paste0("niche_k", k, "_n30")
+  message(niche_column)
+  
+  baseline_tumor@meta.data$Niche <- unlist(baseline_tumor[[niche_column]])
+  # Looping through each gene in each niche and testing for significance
+  corr_res_tables <- lapply(seq(1, k), function(niche){
+    message(niche)
+    
+    niche_data <- subset(baseline_tumor, subset = Niche == niche)
+    
+    if(length(unique(niche_data$Patient_ID)) < 5){
+      return(NULL)
+    }
+    
+    # Log-normalized pseudobulk data
+    lognorm_counts <- LayerData(niche_data,
+                                assay = "RNA",
+                                layer = "data")
+    lognorm_counts <- lognorm_counts %>% t() %>% as.data.frame()
+    lognorm_counts$Patient_ID <- niche_data$Patient_ID
+    
+    lognorm_counts <- lognorm_counts %>% group_by(Patient_ID) %>%
+      summarise_at(vars(-group_cols()), mean) %>%
+      as.data.frame()
+    
+    lognorm_counts <- t(lognorm_counts) %>%
+      as.data.frame()
+      
+    colnames(lognorm_counts) <- lognorm_counts[1,]
+    lognorm_counts <- lognorm_counts[2:nrow(lognorm_counts),]
+    
+    pseudobulk_exp <- lognorm_counts
+    
+    pseudobulk_exp <- sapply(pseudobulk_exp, as.numeric )
+    rownames(pseudobulk_exp) <- rownames(lognorm_counts)
+  
+    corr_res_table <- as.data.frame(matrix(NA, nrow = nrow(lognorm_counts), ncol = 4))
+    rownames(corr_res_table) <- rownames(lognorm_counts)
+    
+    colnames(corr_res_table) <- c("niche", "cor", "pval", "k")
+  
+    for(gene in rownames(lognorm_counts)){
+      pseudobulk_gene_exp <- pseudobulk_exp %>%
+        as.data.frame() %>%
+        filter(row.names(.) == gene) %>%
+        pivot_longer(cols = colnames(pseudobulk_exp),
+                     names_to = "Patient_ID",
+                     values_to = gene)
+      
+      # Adding survival info
+      exp_survival <- merge(pseudobulk_gene_exp, metadata, by = "Patient_ID")
+      
+      # R2 and p for correlation
+      cor_res <- cor.test(exp_survival[,gene], unlist(exp_survival$osmonths),
+                          method = "pearson")
+      
+      cor <- as.numeric(cor_res$estimate)
+      pval <- as.numeric(cor_res$p.value)
+      
+      corr_res_table[gene, "niche"] <- niche
+      corr_res_table[gene, "cor"] <- cor
+      corr_res_table[gene, "pval"] <- pval
+      corr_res_table[gene, "k"] <- niche_column
+    }
+    
+    return(corr_res_table)
+    
+  })
+  
+  
+})
+
+
+names(plot_list) <- test_genes
+
+```
+
+
+
+
+
+
+
+

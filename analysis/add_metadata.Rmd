@@ -28,7 +28,8 @@ suppressPackageStartupMessages({
   library(googlesheets4)
   library(workflowr)
   library(patchwork)
-  library(stringr)})
+  library(stringr)
+  library(data.table)})
 
 ```
 
@@ -52,6 +53,9 @@ source("/home/hnatri/PIPAC_spatial/code/plot_functions.R")
 
 seurat_data <- readRDS("/tgen_labs/banovich/PIPAC/Seurat/PIPAC_NC50_NN20_PC20_Seurat_annotated.rds")
 
+immune <- readRDS("/tgen_labs/banovich/PIPAC/Seurat/nonimmune_complete_subset_clustered_NC50_NN20_PC20_Seurat_annotated.rds")
+nonimmune <- readRDS("/tgen_labs/banovich/PIPAC/Seurat/immune_complete_subset_clustered_NC50_NN20_PC20_Seurat_annotated.rds")
+
 DimPlot(seurat_data,
         group.by = "Annotation",
         cols = pipac_celltype_col,
@@ -68,7 +72,7 @@ DimPlot(seurat_data,
 
 ### Adding metadata
 
-```{r, message = F, warning = F, fig.width = 8, fig.height = 4, eval = F}
+```{r, message = F, warning = F, fig.width = 8, fig.height = 4, eval = T}
 
 gs4_deauth()
 metadata  <- gs4_get("https://docs.google.com/spreadsheets/d/1sXXwOreLxjMSUoPt79c6jmaQpluWkaxA5P5HfDsed3I/edit?usp=sharing")
@@ -89,6 +93,8 @@ all_metadata$Site_abbr <- ifelse(all_metadata$STUDY_SITE == "Northwell Health Ca
                                  ifelse(all_metadata$STUDY_SITE == "Mayo Clinic (Florida)", "MFL", "COH"))
 
 seurat_data$Patient_ID <- gsub("Mayo", "MFL", seurat_data$Patient_ID)
+immune$Patient_ID <- gsub("Mayo", "MFL", immune$Patient_ID)
+nonimmune$Patient_ID <- gsub("Mayo", "MFL", nonimmune$Patient_ID)
 
 all_metadata$RPN <- str_pad(all_metadata$RPN, 3, pad = "0")
 all_metadata$Patient_ID <- paste0(all_metadata$Site_abbr, "-", all_metadata$RPN)
@@ -107,6 +113,26 @@ for (m in setdiff(colnames(all_metadata), c("Obs"))){
 }
 
 saveRDS(seurat_data, "/tgen_labs/banovich/PIPAC/Seurat/PIPAC_NC50_NN20_PC20_Seurat_annotated_metadata.rds")
+
+for (m in setdiff(colnames(all_metadata), c("Obs"))){
+  immune@meta.data[[m]] = plyr::mapvalues(x = immune@meta.data$Patient_ID,
+                                          from = all_metadata$Patient_ID,
+                                          to = all_metadata[[m]])
+  
+  immune@meta.data[[m]][-which(immune@meta.data$Patient_ID %in% all_metadata$Patient_ID)] <- NA
+}
+
+saveRDS(immune, "/tgen_labs/banovich/PIPAC/Seurat/PIPAC_immune_NC50_NN20_PC20_Seurat_annotated_metadata.rds")
+
+for (m in setdiff(colnames(all_metadata), c("Obs"))){
+  nonimmune@meta.data[[m]] = plyr::mapvalues(x = nonimmune@meta.data$Patient_ID,
+                                             from = all_metadata$Patient_ID,
+                                             to = all_metadata[[m]])
+  
+  nonimmune@meta.data[[m]][-which(nonimmune@meta.data$Patient_ID %in% all_metadata$Patient_ID)] <- NA
+}
+
+saveRDS(nonimmune, "/tgen_labs/banovich/PIPAC/Seurat/PIPAC_nonimmune_NC50_NN20_PC20_Seurat_annotated_metadata.rds")
 
 ```
 

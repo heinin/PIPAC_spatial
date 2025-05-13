@@ -1,0 +1,327 @@
+---
+title: "PCA and variance decomposition of the PIPAC Arm 3 data"
+author: "heinin"
+date: "2025-03-27"
+output:
+  workflowr::wflow_html:
+    code_folding: hide
+  html_notebook: default
+editor_options:
+  chunk_output_type: console
+---
+
+### Load packages
+
+```{r, warning=F, message=F}
+
+suppressPackageStartupMessages({
+  library(workflowr)
+  library(Seurat)
+  library(SeuratObject)
+  library(SeuratDisk)
+  library(tidyverse)
+  library(tibble)
+  library(ggplot2)
+  library(ggpubr)
+  library(ggrepel)
+  library(googlesheets4)
+  library(workflowr)
+  library(patchwork)
+  library(PALMO)})
+
+```
+
+### Environment variables and helper functions
+
+```{r, message = F, warning = F}
+
+setwd("/home/hnatri/PIPAC_spatial/")
+set.seed(9999)
+options(scipen = 99999)
+options(ggrepel.max.overlaps = Inf)
+
+source("/home/hnatri/PIPAC_spatial/code/PIPAC_colors_themes.R")
+source("/home/hnatri/PIPAC_spatial/code/plot_functions.R")
+
+# Modified function for variance decomposition
+#source("/home/hnatri/PIPAC_spatial/code/vardecomp.R")
+
+```
+
+### Marker information
+
+```{r, message = F, warning = F, fig.width = 6, fig.height = 4}
+
+gs4_deauth()
+metadata  <- gs4_get("https://docs.google.com/spreadsheets/d/1sXXwOreLxjMSUoPt79c6jmaQpluWkaxA5P5HfDsed3I/edit?usp=sharing")
+markers <- read_sheet(metadata, sheet = "Markers")
+second_pass_nonimmune <- read_sheet(metadata, sheet = "Tumor 2nd pass")
+second_pass_immune <- read_sheet(metadata, sheet = "Immune 2nd pass")
+
+# Cell type markers by group
+gs4_deauth()
+markers_by_group  <- gs4_get("https://docs.google.com/spreadsheets/d/1w0wrL-5KwNEWi_VpmriN7YmfwpBPlEYX0MKlwI2ZQu8/edit?usp=sharing")
+markers_by_group <- read_sheet(markers_by_group, sheet = "Markers by group")
+
+```
+
+### Import and subset data
+
+```{r, message = F, warning = F, fig.width = 8, fig.height = 4}
+
+seurat_data <- readRDS("/tgen_labs/banovich/PIPAC/Seurat/PIPAC_NC50_NN20_PC20_Seurat_annotated_metadata_niches.rds")
+DefaultAssay(seurat_data) <- "RNA"
+seurat_data <- seurat_data %>%
+  NormalizeData() %>%
+  ScaleData()
+
+seurat_arm3 <- subset(seurat_data, subset = Arm == "Arm3")
+seurat_arm3 <- seurat_arm3 %>%
+  NormalizeData() %>%
+  ScaleData()
+
+```
+
+### Pseudobulk expression
+
+```{r, message = F, warning = F, fig.width = 8, fig.height = 4}
+
+seurat_arm3$Sample_Annotation <- paste0(seurat_arm3$Sample, "_",
+                                        seurat_arm3$Annotation)
+
+#exp_mx <- LayerData(seurat_arm3,
+#                    assay = "RNA",
+#                    layer = "data")
+
+pseudobulk <- LayerData(seurat_arm3,
+                        assay = "RNA",
+                        layer = "data",
+                        features = rownames(seurat_arm3))
+pseudobulk <- pseudobulk %>% t() %>% as.data.frame()
+pseudobulk$Sample_Annotation <- seurat_arm3$Sample_Annotation
+
+pseudobulk <- pseudobulk %>% group_by(Sample_Annotation) %>%
+  summarise_at(vars(-group_cols()), mean) %>%
+  as.data.frame()
+
+pseudobulk <- t(pseudobulk) %>%
+  as.data.frame()
+  
+colnames(pseudobulk) <- pseudobulk[1,]
+pseudobulk <- pseudobulk[2:nrow(pseudobulk),]
+
+metadata_mx <- seurat_arm3@meta.data %>%
+  rownames_to_column(var = "CellID") %>%
+  dplyr::select(c("Patient_ID", "Sample", "Timepoint", "Tissue", "BestResponse",
+                  "Annotation", "Sample_Annotation")) %>%
+  distinct()
+
+```
+
+### Variance decomposition using PALMO
+
+```{r, message = F, warning = F, fig.width = 8, fig.height = 4, eval = F}
+
+# Creating a PALMO object
+palmo_obj <- createPALMOobject(anndata = metadata_mx,
+                               data = seurat_arm3)
+
+#Assign Sample, Patient_ID and Timepoint
+palmo_obj <- annotateMetadata(data_object = palmo_obj,
+                              sample_column = "Sample", donor_column = "Patient_ID",
+                              time_column = "Timepoint")
+
+# For single cell data merge annotation and single cell metadata by mentioned
+# sample_column.
+# Sample overlap and final matrix
+palmo_obj <- mergePALMOdata(data_object = palmo_obj,
+                            datatype = "singlecell")
+
+# Pseudobulking instead of using the PALMO function
+lognorm_counts <- LayerData(seurat_arm3,
+                            assay = "RNA",
+                            layer = "data",
+                            features = rownames(seurat_arm3))
+lognorm_counts <- lognorm_counts %>% t() %>% as.data.frame()
+# Sample and annotation as the grouping variable
+lognorm_counts$Sample_Annotation <- seurat_arm3$Sample_Annotation
+
+lognorm_counts <- lognorm_counts %>% group_by(Sample_Annotation) %>%
+  summarise_at(vars(-group_cols()), mean) %>%
+  as.data.frame()
+
+lognorm_counts <- t(lognorm_counts) %>%
+  as.data.frame()
+  
+colnames(lognorm_counts) <- lognorm_counts[1,]
+lognorm_counts <- lognorm_counts[2:nrow(lognorm_counts),]
+
+palmo_obj@curated$anndata <- metadata_mx
+palmo_obj@curated$data <- lognorm_counts
+palmo_obj@rownames <- row.names(lognorm_counts)
+palmo_obj@colnames <- colnames(lognorm_counts)
+
+# Variance decomposition
+featureSet <- c("Patient_ID", "Sample", "Tissue", "Timepoint", "Annotation",
+                "BestResponse")
+palmo_obj <- lmeVariance(data_object = palmo_obj,
+                         featureSet = featureSet,
+                         meanThreshold = 0.1,
+                         cl = 4,
+                         fileName = "scrna")
+
+# Get the result
+var_decomp <- palmo_obj@result$variance_decomposition
+
+write.table(var_decomp, "/home/hnatri/PIPAC_spatial/output/vardecomp.tsv",
+            quote = F, sep = "\t", row.names = F)
+
+```
+
+#### Plotting variance composition
+
+```{r, message = F, warning = F, fig.width = 8, fig.height = 4, eval = T}
+
+var_decomp <- read.table("/home/hnatri/PIPAC_spatial/output/vardecomp.tsv",
+                         header = T, sep = "\t")
+
+var_decomp <- var_decomp %>%
+  pivot_longer(cols = c("Patient_ID", "Sample", "Tissue",
+                        "Timepoint", "Annotation", "BestResponse"),
+               names_to = "Variable",
+               values_to = "VarExplained")
+var_decomp$Variable <- factor(var_decomp$Variable,
+                              levels = c("Patient_ID", "Annotation", "Sample",
+                                         "BestResponse", "Timepoint", "Tissue"))
+
+ggplot(var_decomp, aes(x = Variable, y = VarExplained, fill = Variable)) +
+  geom_violin(scale = "width") +
+  geom_boxplot(width = 0.1, fill = "white") +
+  geom_text_repel(data = var_decomp, aes(x = Variable, y = VarExplained),
+                  label = var_decomp$Gene,
+                  label.padding = 5,
+                  nudge_x = 0.1,
+                  nudge_y = 0.1,
+                  size = 3,
+                  segment.size = 0.1,
+                  segment.alpha = 0.9,
+                  max.overlaps = 20,
+                  color = "black") +
+  labs(x = "", y = "Variance Explained (%)") +
+  theme_classic() +
+  RotatedAxis()
+
+```
+
+### PCA, pseudobulk by sample and celltype
+
+```{r, message = F, warning = F, fig.width = 16, fig.height = 4}
+
+pseudobulk <- apply(pseudobulk, 2, as.numeric)
+
+pcs <- prcomp(pseudobulk)
+
+pcres <- as.data.frame(pcs$rotation)
+pcres$Sample_Annotation <- rownames(pcres)
+
+pcs_metadata <- merge(pcres, metadata_mx, by = "Sample_Annotation")
+
+annot_plot_list <- lapply(seq(1, 4), function(pc){
+  #pc1 <- paste0("PC", pc)
+  pc2 <- paste0("PC", (pc+1))
+  
+  pcs_metadata %>% ggplot(aes_string(x = "PC1", y = pc2, color = "Annotation")) +
+  geom_point() +
+  scale_color_manual(name = "Annotation", values = pipac_celltype_col) +
+  theme_classic()
+})
+
+patchwork::wrap_plots(annot_plot_list, ncol = 4) +
+  plot_layout(guides = "collect") & theme(legend.position = 'right')
+
+tissue_plot_list <- lapply(seq(1, 4), function(pc){
+  #pc1 <- paste0("PC", pc)
+  pc2 <- paste0("PC", (pc+1))
+  
+  pcs_metadata %>% ggplot(aes_string(x = "PC1", y = pc2, color = "Tissue")) +
+  geom_point() +
+  scale_color_manual(name = "Tissue", values = tissue_col) +
+  theme_classic()
+})
+
+patchwork::wrap_plots(tissue_plot_list, ncol = 4) +
+  plot_layout(guides = "collect") & theme(legend.position = 'right')
+
+patient_plot_list <- lapply(seq(1, 4), function(pc){
+  #pc1 <- paste0("PC", pc)
+  pc2 <- paste0("PC", (pc+1))
+  
+  pcs_metadata %>% ggplot(aes_string(x = "PC1", y = pc2, color = "Patient_ID")) +
+  geom_point() +
+  #scale_color_manual(name = "Tissue", values = tissue_col) +
+  theme_classic()
+})
+
+patchwork::wrap_plots(patient_plot_list, ncol = 4) +
+  plot_layout(guides = "collect") & theme(legend.position = 'right')
+
+```
+
+### Pseudobulk by sample only
+
+```{r, message = F, warning = F, fig.width = 16, fig.height = 4}
+
+pseudobulk <- LayerData(seurat_arm3,
+                        assay = "RNA",
+                        layer = "data",
+                        features = rownames(seurat_arm3))
+pseudobulk <- pseudobulk %>% t() %>% as.data.frame()
+pseudobulk$Sample <- seurat_arm3$Sample
+
+pseudobulk <- pseudobulk %>% group_by(Sample) %>%
+  summarise_at(vars(-group_cols()), mean) %>%
+  as.data.frame()
+
+pseudobulk <- t(pseudobulk) %>%
+  as.data.frame()
+  
+colnames(pseudobulk) <- pseudobulk[1,]
+pseudobulk <- pseudobulk[2:nrow(pseudobulk),]
+
+pseudobulk <- apply(pseudobulk, 2, as.numeric)
+
+pcs <- prcomp(pseudobulk)
+
+pcres <- as.data.frame(pcs$rotation)
+pcres$Sample <- rownames(pcres)
+
+pcs_metadata <- merge(pcres, metadata_mx, by = "Sample")
+
+tissue_plot_list <- lapply(seq(1, 4), function(pc){
+  #pc1 <- paste0("PC", pc)
+  pc2 <- paste0("PC", (pc+1))
+  
+  pcs_metadata %>% ggplot(aes_string(x = "PC1", y = pc2, color = "Tissue")) +
+  geom_point() +
+  scale_color_manual(name = "Tissue", values = tissue_col) +
+  theme_classic()
+})
+
+patchwork::wrap_plots(tissue_plot_list, ncol = 4) +
+  plot_layout(guides = "collect") & theme(legend.position = 'right')
+
+patient_plot_list <- lapply(seq(1, 4), function(pc){
+  #pc1 <- paste0("PC", pc)
+  pc2 <- paste0("PC", (pc+1))
+  
+  pcs_metadata %>% ggplot(aes_string(x = "PC1", y = pc2, color = "Patient_ID")) +
+  geom_point() +
+  #scale_color_manual(name = "Tissue", values = tissue_col) +
+  theme_classic()
+})
+
+patchwork::wrap_plots(patient_plot_list, ncol = 4) +
+  plot_layout(guides = "collect") & theme(legend.position = 'right')
+
+
+```

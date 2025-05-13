@@ -1,0 +1,644 @@
+---
+title: "PIPAC Arm 3 pre- and post-treatment comparison"
+author: "heinin"
+date: "2025-04-23"
+output:
+  workflowr::wflow_html:
+    code_folding: hide
+  html_notebook: default
+editor_options:
+  chunk_output_type: console
+---
+
+## Load packages
+
+```{r, warning=F, message=F}
+
+suppressPackageStartupMessages({
+  library(workflowr)
+  library(arrow)
+  library(Seurat)
+  library(SeuratObject)
+  library(SeuratDisk)
+  library(tidyverse)
+  library(tibble)
+  library(ggplot2)
+  library(ggpubr)
+  library(ggrepel)
+  library(googlesheets4)
+  library(workflowr)
+  library(patchwork)
+  library(ggpmisc)
+  library(scProportionTest)})
+
+```
+
+## Environment variables and helper functions
+
+```{r, message = F, warning = F}
+
+setwd("/home/hnatri/PIPAC_spatial/")
+set.seed(9999)
+options(scipen = 99999)
+options(ggrepel.max.overlaps = Inf)
+
+source("/home/hnatri/PIPAC_spatial/code/PIPAC_colors_themes.R")
+source("/home/hnatri/PIPAC_spatial/code/plot_functions.R")
+
+# Calling DEGs between two groups for each cell type
+get_DEGs <- function(seuratdata, celltypes, groupvar, group1, group2){
+  #message(xx)
+  DEGlist <- lapply(celltypes, function(xx){
+    data_subset <- subset(seuratdata, subset = Annotation == xx)
+    Idents(data_subset) <- as.character(unlist(data_subset[[groupvar]]))
+    
+    if (min(table(unlist(data_subset[[groupvar]])))<20){
+      return(NULL)
+    }
+    
+    if (all((c(group1, group2) %in% unlist(data_subset[[groupvar]]) == c(T, T)))){
+      markers <- FindMarkers(data_subset,
+                             ident.1 = group1,
+                             ident.2 = group2,
+                             assay = "RNA",
+                             verbose = F)
+      markers$feature <- rownames(markers)
+      markers$celltype <- xx
+      
+      return(markers)
+    } else {
+      return(NULL)
+    }
+    })
+  
+  as.data.frame(do.call(rbind, DEGlist))
+}
+
+```
+
+## Marker information
+
+```{r, message = F, warning = F, fig.width = 6, fig.height = 4}
+
+gs4_deauth()
+metadata  <- gs4_get("https://docs.google.com/spreadsheets/d/1sXXwOreLxjMSUoPt79c6jmaQpluWkaxA5P5HfDsed3I/edit?usp=sharing")
+markers <- read_sheet(metadata, sheet = "Markers")
+second_pass_nonimmune <- read_sheet(metadata, sheet = "Tumor 2nd pass")
+second_pass_immune <- read_sheet(metadata, sheet = "Immune 2nd pass")
+
+# Cell type markers by group
+gs4_deauth()
+markers_by_group  <- gs4_get("https://docs.google.com/spreadsheets/d/1w0wrL-5KwNEWi_VpmriN7YmfwpBPlEYX0MKlwI2ZQu8/edit?usp=sharing")
+markers_by_group <- read_sheet(markers_by_group, sheet = "Markers by group")
+
+```
+
+## Import and subset data
+
+```{r, message = F, warning = F, fig.width = 8, fig.height = 4}
+
+seurat_data <- readRDS("/tgen_labs/banovich/PIPAC/Seurat/PIPAC_NC50_NN20_PC20_Seurat_annotated_metadata_niches.rds")
+DefaultAssay(seurat_data) <- "RNA"
+VariableFeatures(seurat_data) <- rownames(seurat_data)
+
+seurat_data <- seurat_data %>%
+  NormalizeData() %>%
+  ScaleData()
+
+seurat_arm3 <- subset(seurat_data, subset = Arm == "Arm3")
+seurat_arm3 <- seurat_arm3 %>%
+  NormalizeData() %>%
+  ScaleData()
+
+length(unique(seurat_arm3$Patient_ID))
+length(unique(seurat_arm3$Sample))
+unique(seurat_arm3$Timepoint)
+
+arm3_tumor <- subset(seurat_arm3, subset = Tissue == "Tumor")
+arm3_tumor <- arm3_tumor %>%
+  NormalizeData() %>%
+  ScaleData()
+
+table(arm3_tumor$Patient_ID)
+table(as.character(arm3_tumor$Sample))
+
+arm3_tumor@meta.data %>%
+  dplyr::select(c("Patient_ID", "Sample")) %>%
+  distinct()
+
+arm3_normal <- subset(seurat_arm3, subset = Tissue == "Normal")
+arm3_normal <- arm3_normal %>%
+  NormalizeData() %>%
+  ScaleData()
+
+table(arm3_normal$Patient_ID)
+table(as.character(arm3_normal$Sample))
+
+arm3_normal@meta.data %>%
+  dplyr::select(c("Patient_ID", "Sample")) %>%
+  distinct()
+
+
+```
+
+## Tumor cell type proportion differences between timepoints (before and after treatment)
+
+```{r, message = F, warning = F, fig.width = 4, fig.height = 5}
+
+arm3_tumor$PrePost <- ifelse(arm3_tumor$Timepoint == 0, "Baseline", "Treated")
+
+create_barplot(arm3_tumor,
+               group_var = "PrePost",
+               plot_var = "Annotation",
+               plot_levels = sort((unique(arm3_tumor$Annotation))),
+               group_levels = sort(unique(arm3_tumor$PrePost)),
+               plot_colors = pipac_celltype_col,
+               var_names =  c("Frequency (%)", ""),
+               legend_title = "Celltype")
+
+```
+
+```{r, message = F, warning = F, fig.width = 6, fig.height = 6}
+
+prop_test <- sc_utils(arm3_tumor)
+prop_test <- permutation_test(
+	prop_test, cluster_identity = "Annotation",
+	sample_1 = "Baseline", sample_2 = "Treated",
+	sample_identity = "PrePost")
+
+permutation_plot(prop_test) +
+  ggtitle("Baseline vs. treated")
+
+```
+
+## Tumor-adjacent cell type proportion differences between timepoints (before and after treatment)
+
+```{r, message = F, warning = F, fig.width = 4, fig.height = 5}
+
+arm3_normal$PrePost <- ifelse(arm3_normal$Timepoint == 0, "Baseline", "Treated")
+
+create_barplot(arm3_normal,
+               group_var = "PrePost",
+               plot_var = "Annotation",
+               plot_levels = sort((unique(arm3_normal$Annotation))),
+               group_levels = sort(unique(arm3_normal$PrePost)),
+               plot_colors = pipac_celltype_col,
+               var_names =  c("Frequency (%)", ""),
+               legend_title = "Celltype")
+
+```
+
+```{r, message = F, warning = F, fig.width = 6, fig.height = 6}
+
+prop_test <- sc_utils(arm3_normal)
+prop_test <- permutation_test(
+	prop_test, cluster_identity = "Annotation",
+	sample_1 = "Baseline", sample_2 = "Treated",
+	sample_identity = "PrePost")
+
+permutation_plot(prop_test) +
+  ggtitle("Baseline vs. treated")
+
+```
+
+## DEGs
+
+### Tumor
+
+```{r, message = F, warning = F, fig.width = 8, fig.height = 4}
+
+tumor_DEGs <- get_DEGs(seuratdata = arm3_tumor,
+                       celltypes = unique(arm3_tumor$Annotation),
+                       groupvar = "PrePost",
+                       group1 = "Treated",
+                       group2 = "Baseline")
+
+# Distribution of p-values and log2FC
+hist(tumor_DEGs$p_val)
+hist(tumor_DEGs$p_val_adj)
+hist(tumor_DEGs$avg_log2FC)
+
+tumor_DEGs_sig <- tumor_DEGs %>%
+  filter(p_val_adj < 0.01,
+         abs(avg_log2FC) > 1.5)
+
+table(tumor_DEGs_sig$celltype)
+
+```
+
+### Tumor-adjacent
+
+```{r, message = F, warning = F, fig.width = 8, fig.height = 4}
+
+normal_DEGs <- get_DEGs(seuratdata = arm3_normal,
+                        celltypes = unique(arm3_normal$Annotation),
+                        groupvar = "PrePost",
+                        group1 = "Treated",
+                        group2 = "Baseline")
+
+# Distribution of p-values and log2FC
+hist(normal_DEGs$p_val)
+hist(normal_DEGs$p_val_adj)
+hist(normal_DEGs$avg_log2FC)
+
+normal_DEGs_sig <- normal_DEGs %>%
+  filter(p_val_adj < 0.01,
+         abs(avg_log2FC) > 1.5)
+
+table(normal_DEGs_sig$celltype)
+
+```
+
+#### Plotting
+
+```{r, message = F, warning = F, fig.width = 8, fig.height = 4}
+
+#plot_list <- lapply(unique(seurat_arm3$Annotation))
+
+```
+
+### DEGs for myeloid, lymphoid, and fibroblast subsets
+
+#### Tumors, myeloid
+
+```{r, message = F, warning = F, fig.width = 8, fig.height = 4}
+
+sort(unique(arm3_tumor$Annotation))
+
+Idents(arm3_tumor) <- arm3_tumor$PrePost
+
+myel_celltypes <- c("B1", "B2", "DC", "Mast", "Plasma1", "Plasma2", "Plasma3",
+                    paste0("M", seq(1,9)))
+
+tumor_myel <- subset(arm3_tumor, subset = Annotation %in% myel_celltypes)
+tumor_myel <- tumor_myel %>%
+  NormalizeData() %>%
+  ScaleData()
+
+degs_tumor_myel <- FindMarkers(arm3_tumor,
+                               ident.1 = "Treated",
+                               ident.2 = "Baseline",
+                               assay = "RNA",
+                               verbose = F)
+degs_tumor_myel$feature <- rownames(degs_tumor_myel)
+
+# Distribution of p-values and log2FC
+hist(degs_tumor_myel$p_val)
+hist(degs_tumor_myel$p_val_adj)
+hist(degs_tumor_myel$avg_log2FC)
+
+degs_tumor_myel_sig <- degs_tumor_myel %>%
+  filter(p_val_adj < 0.01,
+         abs(avg_log2FC) > 1.5)
+
+degs_tumor_myel_sig$feature
+
+degs_tumor_myel_sig %>%
+  dplyr::mutate(across(where(is.numeric), round, 3))
+
+```
+
+```{r, message = F, warning = F, fig.width = 8, fig.height = 8, eval = F}
+
+VlnPlot(tumor_myel,
+        group.by = "PrePost",
+        features = degs_tumor_myel_sig$feature,
+        layer = "data",
+        pt.size = 0,
+        ncol = 3) &
+  theme_classic() &
+  RotatedAxis()
+
+```
+
+```{r, message = F, warning = F, fig.width = 12, fig.height = 8, eval = F}
+
+VlnPlot(tumor_myel,
+        group.by = "Annotation",
+        split.by = "PrePost",
+        split.plot = T,
+        features = degs_tumor_myel_sig$feature,
+        layer = "data",
+        pt.size = 0,
+        ncol = 3) &
+  theme_classic() &
+  RotatedAxis()
+
+```
+
+#### Tumors, lymphoid
+
+```{r, message = F, warning = F, fig.width = 8, fig.height = 4}
+
+lymph_celltypes <- paste0("L", seq(1,5))
+
+tumor_lymph <- subset(arm3_tumor, subset = Annotation %in% lymph_celltypes)
+tumor_lymph <- tumor_lymph %>%
+  NormalizeData() %>%
+  ScaleData()
+
+degs_tumor_lymph <- FindMarkers(tumor_lymph,
+                           ident.1 = "Treated",
+                           ident.2 = "Baseline",
+                           assay = "RNA",
+                           verbose = F)
+degs_tumor_lymph$feature <- rownames(degs_tumor_lymph)
+
+# Distribution of p-values and log2FC
+hist(degs_tumor_lymph$p_val)
+hist(degs_tumor_lymph$p_val_adj)
+hist(degs_tumor_lymph$avg_log2FC)
+
+degs_tumor_lymph_sig <- degs_tumor_lymph %>%
+  filter(p_val_adj < 0.01,
+         abs(avg_log2FC) > 1.5)
+
+degs_tumor_lymph_sig$feature
+
+degs_tumor_lymph_sig %>%
+  dplyr::mutate(across(where(is.numeric), round, 3))
+
+```
+
+```{r, message = F, warning = F, fig.width = 8, fig.height = 8, eval = F}
+
+VlnPlot(tumor_lymph,
+        group.by = "PrePost",
+        features = degs_tumor_lymph_sig$feature,
+        layer = "data",
+        pt.size = 0,
+        ncol = 3) &
+  theme_classic() &
+  RotatedAxis()
+
+```
+
+```{r, message = F, warning = F, fig.width = 12, fig.height = 8, eval = F}
+
+VlnPlot(tumor_lymph,
+        group.by = "Annotation",
+        split.by = "PrePost",
+        split.plot = T,
+        features = degs_tumor_lymph_sig$feature,
+        layer = "data",
+        pt.size = 0,
+        ncol = 3) &
+  theme_classic() &
+  RotatedAxis()
+
+```
+
+#### Tumors, fibroblast
+
+```{r, message = F, warning = F, fig.width = 8, fig.height = 4}
+
+fibro_celltypes <- paste0("F", seq(1,5))
+
+tumor_fibro <- subset(arm3_tumor, subset = Annotation %in% fibro_celltypes)
+tumor_fibro <- tumor_fibro %>%
+  NormalizeData() %>%
+  ScaleData()
+
+degs_tumor_fibro <- FindMarkers(tumor_fibro,
+                                ident.1 = "Treated",
+                                ident.2 = "Baseline",
+                                assay = "RNA",
+                                verbose = F)
+degs_tumor_fibro$feature <- rownames(degs_tumor_fibro)
+
+# Distribution of p-values and log2FC
+hist(degs_tumor_fibro$p_val)
+hist(degs_tumor_fibro$p_val_adj)
+hist(degs_tumor_fibro$avg_log2FC)
+
+degs_tumor_fibro_sig <- degs_tumor_fibro %>%
+  filter(p_val_adj < 0.01,
+         abs(avg_log2FC) > 1.5)
+
+degs_tumor_fibro_sig$feature
+
+degs_tumor_fibro_sig %>%
+  dplyr::mutate(across(where(is.numeric), round, 3))
+
+```
+
+```{r, message = F, warning = F, fig.width = 8, fig.height = 14, eval = F}
+
+VlnPlot(tumor_fibro,
+        group.by = "PrePost",
+        features = degs_tumor_fibro_sig$feature,
+        layer = "data",
+        pt.size = 0,
+        ncol = 3) &
+  theme_classic() &
+  RotatedAxis()
+
+```
+
+```{r, message = F, warning = F, fig.width = 12, fig.height = 14, eval = F}
+
+VlnPlot(tumor_fibro,
+        group.by = "Annotation",
+        split.by = "PrePost",
+        split.plot = T,
+        features = degs_tumor_fibro_sig$feature,
+        layer = "data",
+        pt.size = 0,
+        ncol = 3) &
+  theme_classic() &
+  RotatedAxis()
+
+```
+
+#### Tumor-adjacent, myeloid
+
+```{r, message = F, warning = F, fig.width = 8, fig.height = 4}
+
+sort(unique(arm3_normal$Annotation))
+
+Idents(arm3_normal) <- arm3_normal$PrePost
+
+myel_celltypes <- c("B1", "B2", "DC", "Mast", "Plasma1", "Plasma2", "Plasma3",
+                    paste0("M", seq(1,9)))
+
+normal_myel <- subset(arm3_normal, subset = Annotation %in% myel_celltypes)
+normal_myel <- normal_myel %>%
+  NormalizeData() %>%
+  ScaleData()
+
+degs_normal_myel <- FindMarkers(normal_myel,
+                                ident.1 = "Treated",
+                                ident.2 = "Baseline",
+                                assay = "RNA",
+                                verbose = F)
+degs_normal_myel$feature <- rownames(degs_normal_myel)
+
+# Distribution of p-values and log2FC
+hist(degs_normal_myel$p_val)
+hist(degs_normal_myel$p_val_adj)
+hist(degs_normal_myel$avg_log2FC)
+
+degs_normal_myel_sig <- degs_normal_myel %>%
+  filter(p_val_adj < 0.01,
+         abs(avg_log2FC) > 1.5)
+
+degs_normal_myel_sig$feature
+
+degs_normal_myel_sig %>%
+  dplyr::mutate(across(where(is.numeric), round, 3))
+
+```
+
+```{r, message = F, warning = F, fig.width = 8, fig.height = 8, eval = F}
+
+VlnPlot(normal_myel,
+        group.by = "PrePost",
+        features = degs_normal_myel_sig$feature,
+        layer = "data",
+        pt.size = 0,
+        ncol = 3) &
+  theme_classic() &
+  RotatedAxis()
+
+```
+
+```{r, message = F, warning = F, fig.width = 12, fig.height = 8, eval = F}
+
+VlnPlot(normal_myel,
+        group.by = "Annotation",
+        split.by = "PrePost",
+        split.plot = T,
+        features = degs_normal_myel_sig$feature,
+        layer = "data",
+        pt.size = 0,
+        ncol = 3) &
+  theme_classic() &
+  RotatedAxis()
+
+```
+
+#### Tumor-adjacent, lymphoid
+
+```{r, message = F, warning = F, fig.width = 8, fig.height = 4}
+
+lymph_celltypes <- paste0("L", seq(1,5))
+
+normal_lymph <- subset(arm3_normal, subset = Annotation %in% lymph_celltypes)
+normal_lymph <- normal_lymph %>%
+  NormalizeData() %>%
+  ScaleData()
+
+degs_normal_lymph <- FindMarkers(normal_lymph,
+                                 ident.1 = "Treated",
+                                 ident.2 = "Baseline",
+                                 assay = "RNA",
+                                 verbose = F)
+degs_normal_lymph$feature <- rownames(degs_normal_lymph)
+
+# Distribution of p-values and log2FC
+hist(degs_normal_lymph$p_val)
+hist(degs_normal_lymph$p_val_adj)
+hist(degs_normal_lymph$avg_log2FC)
+
+degs_normal_lymph_sig <- degs_normal_lymph %>%
+  filter(p_val_adj < 0.01,
+         abs(avg_log2FC) > 1.5)
+
+degs_normal_lymph_sig$feature
+
+degs_normal_lymph_sig %>%
+  dplyr::mutate(across(where(is.numeric), round, 3))
+
+```
+
+```{r, message = F, warning = F, fig.width = 8, fig.height = 8, eval = F}
+
+VlnPlot(normal_lymph,
+        group.by = "PrePost",
+        features = degs_normal_lymph_sig$feature,
+        layer = "data",
+        pt.size = 0,
+        ncol = 3) &
+  theme_classic() &
+  RotatedAxis()
+
+```
+
+```{r, message = F, warning = F, fig.width = 12, fig.height = 8, eval = F}
+
+VlnPlot(normal_lymph,
+        group.by = "Annotation",
+        split.by = "PrePost",
+        split.plot = T,
+        features = degs_normal_lymph_sig$feature,
+        layer = "data",
+        pt.size = 0,
+        ncol = 3) &
+  theme_classic() &
+  RotatedAxis()
+
+```
+
+#### Tumor-adjacent, fibroblast
+
+```{r, message = F, warning = F, fig.width = 8, fig.height = 4}
+
+fibro_celltypes <- paste0("F", seq(1,5))
+
+normal_fibro <- subset(arm3_normal, subset = Annotation %in% fibro_celltypes)
+normal_fibro <- normal_fibro %>%
+  NormalizeData() %>%
+  ScaleData()
+
+degs_normal_fibro <- FindMarkers(normal_fibro,
+                                 ident.1 = "Treated",
+                                 ident.2 = "Baseline",
+                                 assay = "RNA",
+                                 verbose = F)
+degs_normal_fibro$feature <- rownames(degs_normal_fibro)
+
+# Distribution of p-values and log2FC
+hist(degs_normal_fibro$p_val)
+hist(degs_normal_fibro$p_val_adj)
+hist(degs_normal_fibro$avg_log2FC)
+
+degs_normal_fibro_sig <- degs_normal_fibro %>%
+  filter(p_val_adj < 0.01,
+         abs(avg_log2FC) > 1.5)
+
+degs_normal_fibro_sig$feature
+
+degs_normal_fibro_sig %>%
+  dplyr::mutate(across(where(is.numeric), round, 3))
+
+```
+
+```{r, message = F, warning = F, fig.width = 8, fig.height = 12, eval = F}
+
+VlnPlot(normal_fibro,
+        group.by = "PrePost",
+        features = degs_normal_fibro_sig$feature,
+        layer = "data",
+        pt.size = 0,
+        ncol = 3) &
+  theme_classic() &
+  RotatedAxis()
+
+```
+
+```{r, message = F, warning = F, fig.width = 12, fig.height = 12, eval = F}
+
+VlnPlot(normal_fibro,
+        group.by = "Annotation",
+        split.by = "PrePost",
+        split.plot = T,
+        features = degs_normal_fibro_sig$feature,
+        layer = "data",
+        pt.size = 0,
+        ncol = 3) &
+  theme_classic() &
+  RotatedAxis()
+
+```
+
+

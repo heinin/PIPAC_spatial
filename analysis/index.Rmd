@@ -22,7 +22,10 @@ Project spreadsheets in [Google Sheets](https://docs.google.com/spreadsheets/d/1
 8. [Non-immune annotation](nonimmune_annotation.html)\
 9. [2nd pass annotation](annotation_2nd_pass.html)\
 10. [Adding patient metadata](add_metadata.html)\
-11. [Plotting by group](plot_by_group.html)\
-12. [Niche construction](niche_construction.html)\
+13. [Feature expression by cell type](feature_expression.html)\
+12. [Plotting by group](plot_by_group.html)\
+13. [Niche construction](niche_construction.html)\
+14. [Arm 3 first-pass comparative analysis](arm3_comparative_analysis.html)\
+
 
 Contact: Heini M Natri, hnatri@tgen.org

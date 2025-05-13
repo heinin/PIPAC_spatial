@@ -395,7 +395,7 @@ aria-hidden="true"></span> </a>
 <div class="tab-content">
 <div id="summary" class="tab-pane fade in active">
 <p>
-<strong>Last updated:</strong> 2025-02-18
+<strong>Last updated:</strong> 2025-03-21
 </p>
 <p>
 <strong>Checks:</strong> <span
@@ -595,15 +595,15 @@ celltype_markers.tsv
 <div class="panel panel-default">
 <div class="panel-heading">
 <p class="panel-title">
-<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomheininPIPACspatialtree0ffcec0c7f572aad3c70c599c3f6084eaff4ffeftargetblank0ffcec0a">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomheininPIPACspatialtree281c5e5063f3db18ffb2b23cc0dfc784422dfc6btargetblank281c5e5a">
 <span class="glyphicon glyphicon-ok text-success"
 aria-hidden="true"></span> <strong>Repository version:</strong>
-<a href="https://github.com/heinin/PIPAC_spatial/tree/0ffcec0c7f572aad3c70c599c3f6084eaff4ffef" target="_blank">0ffcec0</a>
+<a href="https://github.com/heinin/PIPAC_spatial/tree/281c5e5063f3db18ffb2b23cc0dfc784422dfc6b" target="_blank">281c5e5</a>
 </a>
 </p>
 </div>
 <div
-id="strongRepositoryversionstrongahrefhttpsgithubcomheininPIPACspatialtree0ffcec0c7f572aad3c70c599c3f6084eaff4ffeftargetblank0ffcec0a"
+id="strongRepositoryversionstrongahrefhttpsgithubcomheininPIPACspatialtree281c5e5063f3db18ffb2b23cc0dfc784422dfc6btargetblank281c5e5a"
 class="panel-collapse collapse">
 <div class="panel-body">
 <p>
@@ -613,7 +613,7 @@ reproducibility.
 </p>
 <p>
 The results in this page were generated with repository version
-<a href="https://github.com/heinin/PIPAC_spatial/tree/0ffcec0c7f572aad3c70c599c3f6084eaff4ffef" target="_blank">0ffcec0</a>.
+<a href="https://github.com/heinin/PIPAC_spatial/tree/281c5e5063f3db18ffb2b23cc0dfc784422dfc6b" target="_blank">281c5e5</a>.
 See the <em>Past versions</em> tab to see a history of the changes made
 to the R Markdown and HTML files.
 </p>
@@ -628,6 +628,7 @@ were generated:
 </p>
 <pre><code>
 Ignored files:
+    Ignored:    .RData
     Ignored:    celltype_markers.tsv
     Ignored:    immune_cluster_marker_annotations.tsv
     Ignored:    immune_cluster_marker_annotations_2ndpass.tsv
@@ -635,9 +636,33 @@ Ignored files:
     Ignored:    nonimmune_cluster_marker_annotations.tsv
     Ignored:    nonimmune_cluster_marker_annotations_2ndpass.tsv
 
+Untracked files:
+    Untracked:  MR_PIPACTMA3-Rerun_highres.png
+    Untracked:  analysis/arm2_comparative_analysis.Rmd
+    Untracked:  analysis/arm3_comparative_analysis.Rmd
+    Untracked:  analysis/feature_expression.Rmd
+    Untracked:  annotation_dimplot.pdf
+    Untracked:  code/construct_niches.R
+    Untracked:  code/construct_niches.Rout
+    Untracked:  code/plot_metadata.R
+    Untracked:  code/plot_save_pdf.R
+    Untracked:  code/run_rscript.sh
+    Untracked:  code/slurm.18348851.err
+    Untracked:  code/slurm.18348851.out
+    Untracked:  code/slurm.18351391.err
+    Untracked:  code/slurm.18351391.out
+    Untracked:  coh004.pdf
+    Untracked:  demographics_grid.pdf
+    Untracked:  tissue_celltypeprop_scatter.pdf
+
 Unstaged changes:
+    Modified:   analysis/add_metadata.Rmd
     Modified:   analysis/annotation_2nd_pass.Rmd
-    Modified:   code/rapids_pipeline/gpu_pipeline_guide.sh
+    Modified:   analysis/index.Rmd
+    Modified:   analysis/niche_construction.Rmd
+    Modified:   analysis/plot_by_group.Rmd
+    Modified:   analysis/splitting_samples.Rmd
+    Modified:   code/PIPAC_colors_themes.R
 
 </code></pre>
 <p>
@@ -683,6 +708,40 @@ Message
 </tr>
 </thead>
 <tbody>
+<tr>
+<td>
+Rmd
+</td>
+<td>
+<a href="https://github.com/heinin/PIPAC_spatial/blob/281c5e5063f3db18ffb2b23cc0dfc784422dfc6b/analysis/annotation_2nd_pass.Rmd" target="_blank">281c5e5</a>
+</td>
+<td>
+heinin
+</td>
+<td>
+2025-02-19
+</td>
+<td>
+Added featureplots
+</td>
+</tr>
+<tr>
+<td>
+html
+</td>
+<td>
+<a href="https://rawcdn.githack.com/heinin/PIPAC_spatial/281c5e5063f3db18ffb2b23cc0dfc784422dfc6b/docs/annotation_2nd_pass.html" target="_blank">281c5e5</a>
+</td>
+<td>
+heinin
+</td>
+<td>
+2025-02-19
+</td>
+<td>
+Added featureplots
+</td>
+</tr>
 <tr>
 <td>
 Rmd
@@ -787,10 +846,10 @@ source(&quot;/home/hnatri/PIPAC_spatial/code/plot_functions.R&quot;)</code></pre
 </div>
 <div id="import-data" class="section level3">
 <h3>Import data</h3>
-<pre class="r"><code>nonimmune &lt;- readRDS(&quot;/scratch/hnatri/PIPAC/nonimmune_complete_subset_clustered_NC50_NN20_PC20_Seurat.rds&quot;)
+<pre class="r"><code>nonimmune &lt;- readRDS(&quot;/tgen_labs/banovich/PIPAC/Seurat/nonimmune_complete_subset_clustered_NC50_NN20_PC20_Seurat.rds&quot;)
 nonimmune &lt;- NormalizeData(nonimmune)
 
-immune &lt;- readRDS(&quot;/scratch/hnatri/PIPAC/immune_complete_subset_clustered_NC50_NN20_PC20_Seurat.rds&quot;)
+immune &lt;- readRDS(&quot;/tgen_labs/banovich/PIPAC/Seurat/immune_complete_subset_clustered_NC50_NN20_PC20_Seurat.rds&quot;)
 immune &lt;- NormalizeData(immune)
 
 p1 &lt;- DimPlot(immune,
@@ -853,31 +912,35 @@ heinin
 </div>
 </div>
 </div>
-<div id="marker-information" class="section level3">
-<h3>Marker information</h3>
+<div id="marker-information-and-annotations" class="section level3">
+<h3>Marker information and annotations</h3>
 <pre class="r"><code>gs4_deauth()
 metadata  &lt;- gs4_get(&quot;https://docs.google.com/spreadsheets/d/1sXXwOreLxjMSUoPt79c6jmaQpluWkaxA5P5HfDsed3I/edit?usp=sharing&quot;)
 markers &lt;- read_sheet(metadata, sheet = &quot;Markers&quot;)
 second_pass_nonimmune &lt;- read_sheet(metadata, sheet = &quot;Tumor 2nd pass&quot;)
-second_pass_immune &lt;- read_sheet(metadata, sheet = &quot;Immune 2nd pass&quot;)</code></pre>
+second_pass_immune &lt;- read_sheet(metadata, sheet = &quot;Immune 2nd pass&quot;)
+
+# Cell type markers by group
+gs4_deauth()
+markers_by_group  &lt;- gs4_get(&quot;https://docs.google.com/spreadsheets/d/1w0wrL-5KwNEWi_VpmriN7YmfwpBPlEYX0MKlwI2ZQu8/edit?usp=sharing&quot;)
+markers_by_group &lt;- read_sheet(markers_by_group, sheet = &quot;Markers by group&quot;)</code></pre>
 </div>
 <div id="top-cluster-markers" class="section level3">
 <h3>Top cluster markers</h3>
 <pre class="r"><code>Idents(immune) &lt;- immune$leiden_res0.5
 immune_markers &lt;- FindAllMarkers(immune,
-                                  return.thresh = 0.01,
-                                  logfc.threshold = 0.5,
-                                  min.pct = 0.20,
-                                  verbose = F)
+                                 return.thresh = 0.01,
+                                 logfc.threshold = 0.5,
+                                 min.pct = 0.20,
+                                 only.pos = T,
+                                 verbose = F)
 
 table(immune_markers$cluster)</code></pre>
 <pre><code>
-  0   1   2   3   4   5   6   7   8   9  10  11  12  13  14  15  16  17  18  19 
- 68  79  35  77  23  88  41  48  75  61 106  43  63  53  65  80  70  62  72  49 
- 20  21 
- 84  79 </code></pre>
+ 0  1  2  3  4  5  6  7  8  9 10 11 12 13 14 15 16 17 18 19 20 21 
+42 56 20 60 23 61 13 21 64 35 83 29 53 47 44 65 33 14 39 15 52 44 </code></pre>
 <pre class="r"><code>top_immune_markers &lt;- immune_markers %&gt;%
-  arrange(dplyr::desc(avg_log2FC)) %&gt;%
+  arrange(dplyr::desc(abs(avg_log2FC))) %&gt;%
   group_by(cluster) %&gt;%
   dplyr::slice(1:10)
 
@@ -886,14 +949,15 @@ nonimmune_markers &lt;- FindAllMarkers(nonimmune,
                                     return.thresh = 0.01,
                                     logfc.threshold = 0.5,
                                     min.pct = 0.20,
+                                    only.pos = T,
                                     verbose = F)
 
 table(nonimmune_markers$cluster)</code></pre>
 <pre><code>
-  0   1   2   3   4   5   6   7   8   9  10 
- 36  55 104  37  30 118  61  40  23  47  54 </code></pre>
+ 0  1  2  3  4  5  6  7  8  9 10 
+22 41 74 23 25 90 39 36 20  1 22 </code></pre>
 <pre class="r"><code>top_nonimmune_markers &lt;- nonimmune_markers %&gt;%
-  arrange(dplyr::desc(avg_log2FC)) %&gt;%
+  arrange(dplyr::desc(abs(avg_log2FC))) %&gt;%
   group_by(cluster) %&gt;%
   dplyr::slice(1:10)</code></pre>
 </div>
@@ -1211,6 +1275,17 @@ Date
 <tbody>
 <tr>
 <td>
+<a href="https://github.com/heinin/PIPAC_spatial/blob/281c5e5063f3db18ffb2b23cc0dfc784422dfc6b/docs/figure/annotation_2nd_pass.Rmd/unnamed-chunk-10-1.png" target="_blank">281c5e5</a>
+</td>
+<td>
+heinin
+</td>
+<td>
+2025-02-19
+</td>
+</tr>
+<tr>
+<td>
 <a href="https://github.com/heinin/PIPAC_spatial/blob/0ffcec0c7f572aad3c70c599c3f6084eaff4ffef/docs/figure/annotation_2nd_pass.Rmd/unnamed-chunk-10-1.png" target="_blank">0ffcec0</a>
 </td>
 <td>
@@ -1231,6 +1306,43 @@ heinin
   RotatedAxis() +
   ggtitle(&quot;Non-immune&quot;)</code></pre>
 <p><img src="figure/annotation_2nd_pass.Rmd/unnamed-chunk-11-1.png" width="960" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-11-1">
+Past versions of unnamed-chunk-11-1.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-11-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/heinin/PIPAC_spatial/blob/281c5e5063f3db18ffb2b23cc0dfc784422dfc6b/docs/figure/annotation_2nd_pass.Rmd/unnamed-chunk-11-1.png" target="_blank">281c5e5</a>
+</td>
+<td>
+heinin
+</td>
+<td>
+2025-02-19
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 <pre class="r"><code>FeaturePlot(nonimmune,
             features = plot_features,
             cols = c(&quot;gray89&quot;, &quot;tomato3&quot;),
@@ -1240,9 +1352,47 @@ heinin
   theme_bw() &amp;
   plot_theme #ggtitle(&quot;Non-immune&quot;)</code></pre>
 <p><img src="figure/annotation_2nd_pass.Rmd/unnamed-chunk-12-1.png" width="1152" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-12-1">
+Past versions of unnamed-chunk-12-1.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-12-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/heinin/PIPAC_spatial/blob/281c5e5063f3db18ffb2b23cc0dfc784422dfc6b/docs/figure/annotation_2nd_pass.Rmd/unnamed-chunk-12-1.png" target="_blank">281c5e5</a>
+</td>
+<td>
+heinin
+</td>
+<td>
+2025-02-19
+</td>
+</tr>
+</tbody>
+</table>
 </div>
-<div id="adding-annotations-to-the-full-object" class="section level3">
-<h3>Adding annotations to the full object</h3>
+</div>
+</div>
+<div id="adding-annotations-to-the-subsets-and-the-full-object"
+class="section level3">
+<h3>Adding annotations to the subsets and the full object</h3>
 <pre class="r"><code>immune$annot2 &lt;- mapvalues(x = immune$leiden_res0.5,
                            from = second_pass_immune$leiden_res0.5,
                            to = second_pass_immune$Annotation)
@@ -1250,6 +1400,9 @@ heinin
 nonimmune$annot2 &lt;- mapvalues(x = nonimmune$leiden_res0.5,
                               from = second_pass_nonimmune$leiden_res0.5,
                               to = second_pass_nonimmune$Annotation)
+
+saveRDS(immune, &quot;/tgen_labs/banovich/PIPAC/Seurat/immune_complete_subset_clustered_NC50_NN20_PC20_Seurat_annotated.rds&quot;)
+saveRDS(nonimmune, &quot;/tgen_labs/banovich/PIPAC/Seurat/nonimmune_complete_subset_clustered_NC50_NN20_PC20_Seurat_annotated.rds&quot;)
 
 immune_nonimmune &lt;- merge(immune, nonimmune)
 
@@ -1263,19 +1416,100 @@ unique(seurat_data$Annotation)
 
 saveRDS(seurat_data, &quot;/tgen_labs/banovich/PIPAC/Seurat/PIPAC_NC50_NN20_PC20_Seurat_annotated.rds&quot;)</code></pre>
 </div>
+<div id="plotting-cell-type-markers-by-group" class="section level3">
+<h3>Plotting cell type markers by group</h3>
+<pre class="r"><code>seurat_data &lt;- readRDS(&quot;/tgen_labs/banovich/PIPAC/Seurat/PIPAC_NC50_NN20_PC20_Seurat_annotated.rds&quot;)
+
+DotPlot(seurat_data,
+        group.by = &quot;Annotation&quot;,
+        features = unique(markers_by_group[which(markers_by_group$annotation1 == &quot;Cell-cell crosstalk&quot;),]$feature),
+        cols = c(&quot;azure&quot;, &quot;tomato3&quot;)) +
+  RotatedAxis() +
+  ggtitle(&quot;Cell-cell crosstalk&quot;)</code></pre>
+<p><img src="figure/annotation_2nd_pass.Rmd/unnamed-chunk-14-1.png" width="1536" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>DotPlot(seurat_data,
+        group.by = &quot;Annotation&quot;,
+        features = unique(markers_by_group[which(markers_by_group$annotation1 == &quot;Macrophage signaling&quot;),]$feature),
+        cols = c(&quot;azure&quot;, &quot;tomato3&quot;)) +
+  RotatedAxis() +
+  ggtitle(&quot;Macrophage signaling&quot;)</code></pre>
+<p><img src="figure/annotation_2nd_pass.Rmd/unnamed-chunk-15-1.png" width="576" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>DotPlot(seurat_data,
+        group.by = &quot;Annotation&quot;,
+        features = unique(markers_by_group[which(markers_by_group$annotation1 == &quot;DNA damage and cell faith&quot;),]$feature),
+        cols = c(&quot;azure&quot;, &quot;tomato3&quot;)) +
+  RotatedAxis() +
+  ggtitle(&quot;DNA damage and cell faith&quot;)</code></pre>
+<p><img src="figure/annotation_2nd_pass.Rmd/unnamed-chunk-16-1.png" width="576" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>DotPlot(seurat_data,
+        group.by = &quot;Annotation&quot;,
+        features = unique(markers_by_group[which(markers_by_group$annotation1 == &quot;Functional markers&quot;),]$feature),
+        cols = c(&quot;azure&quot;, &quot;tomato3&quot;)) +
+  RotatedAxis() +
+  ggtitle(&quot;Functional markers&quot;)</code></pre>
+<p><img src="figure/annotation_2nd_pass.Rmd/unnamed-chunk-17-1.png" width="960" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>DotPlot(seurat_data,
+        group.by = &quot;Annotation&quot;,
+        features = unique(markers_by_group[which(markers_by_group$annotation1 == &quot;Mesothelial&quot;),]$feature),
+        cols = c(&quot;azure&quot;, &quot;tomato3&quot;)) +
+  RotatedAxis() +
+  ggtitle(&quot;Mesothelial&quot;)</code></pre>
+<p><img src="figure/annotation_2nd_pass.Rmd/unnamed-chunk-18-1.png" width="576" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>DotPlot(seurat_data,
+        group.by = &quot;Annotation&quot;,
+        features = unique(markers_by_group[which(markers_by_group$annotation1 == &quot;Macrophages&quot;),]$feature),
+        cols = c(&quot;azure&quot;, &quot;tomato3&quot;)) +
+  RotatedAxis() +
+  ggtitle(&quot;Macrophages&quot;)</code></pre>
+<pre class="r"><code>DotPlot(seurat_data,
+        group.by = &quot;Annotation&quot;,
+        features = unique(markers_by_group[which(markers_by_group$annotation1 == &quot;CAFs&quot;),]$feature),
+        cols = c(&quot;azure&quot;, &quot;tomato3&quot;)) +
+  RotatedAxis() +
+  ggtitle(&quot;CAFs&quot;)</code></pre>
+<p><img src="figure/annotation_2nd_pass.Rmd/unnamed-chunk-20-1.png" width="960" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>DotPlot(seurat_data,
+        group.by = &quot;Annotation&quot;,
+        features = grep(&quot;COL&quot;, rownames(seurat_data), value = T),
+        cols = c(&quot;azure&quot;, &quot;tomato3&quot;)) +
+  RotatedAxis() +
+  ggtitle(&quot;Collagen&quot;)</code></pre>
+<p><img src="figure/annotation_2nd_pass.Rmd/unnamed-chunk-21-1.png" width="576" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>DotPlot(seurat_data,
+        group.by = &quot;Annotation&quot;,
+        features = grep(&quot;COL&quot;, rownames(seurat_data), value = T),
+        cols = c(&quot;azure&quot;, &quot;tomato3&quot;)) +
+  RotatedAxis() +
+  ggtitle(&quot;Collagen&quot;)</code></pre>
+<p><img src="figure/annotation_2nd_pass.Rmd/unnamed-chunk-22-1.png" width="576" style="display: block; margin: auto;" /></p>
+</div>
+<div id="cell-cycle-markers" class="section level3">
+<h3>Cell cycle markers</h3>
+<pre class="r"><code>s.genes &lt;- cc.genes.updated.2019$s.genes
+g2m.genes &lt;- cc.genes.updated.2019$g2m.genes
+
+DotPlot(seurat_data,
+        group.by = &quot;Annotation&quot;,
+        features = c(s.genes, g2m.genes),
+        cols = c(&quot;azure&quot;, &quot;tomato3&quot;)) +
+  RotatedAxis() +
+  ggtitle(&quot;S/G2M genes&quot;)</code></pre>
+<p><img src="figure/annotation_2nd_pass.Rmd/unnamed-chunk-23-1.png" width="576" style="display: block; margin: auto;" /></p>
+</div>
 <div id="saving-markers-one-more-time" class="section level3">
 <h3>Saving markers one more time</h3>
-<pre class="r"><code>seurat_data &lt;- readRDS(&quot;/tgen_labs/banovich/PIPAC/Seurat/PIPAC_NC50_NN20_PC20_Seurat_annotated.rds&quot;)
+<pre class="r"><code>#seurat_data &lt;- readRDS(&quot;/tgen_labs/banovich/PIPAC/Seurat/PIPAC_NC50_NN20_PC20_Seurat_annotated.rds&quot;)
 
 Idents(seurat_data) &lt;- seurat_data$Annotation
 celltype_markers &lt;- FindAllMarkers(seurat_data,
                                    return.thresh = 0.01,
-                                   logfc.threshold = 0.5,
+                                   #logfc.threshold = 0.5,
                                    min.pct = 0.20,
+                                   only.pos = T,
                                    verbose = F)
 
 output_celltype_markers &lt;- celltype_markers %&gt;%
-  arrange(dplyr::desc(avg_log2FC)) %&gt;%
+  arrange(dplyr::desc(abs(avg_log2FC))) %&gt;%
   group_by(cluster) %&gt;%
   dplyr::slice(1:30)
 

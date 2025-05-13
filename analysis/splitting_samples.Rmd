@@ -215,6 +215,7 @@ merged_spatial@meta.data$cell_id <- colnames(merged_spatial)
 ```
 
 ```{r, message = F, warning = F, fig.width = 8, fig.height = 8}
+
 # Add spatial dimension reduction object separately
 position_xy <- cbind((merged_spatial$x_centroid)*-1,
                      (merged_spatial$y_centroid))

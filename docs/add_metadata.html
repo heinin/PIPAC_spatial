@@ -395,7 +395,7 @@ aria-hidden="true"></span> </a>
 <div class="tab-content">
 <div id="summary" class="tab-pane fade in active">
 <p>
-<strong>Last updated:</strong> 2025-02-18
+<strong>Last updated:</strong> 2025-03-04
 </p>
 <p>
 <strong>Checks:</strong> <span
@@ -571,13 +571,15 @@ code/plot_functions.R
 <div class="panel panel-default">
 <div class="panel-heading">
 <p class="panel-title">
-<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrong6448204">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomheininPIPACspatialtree281c5e5063f3db18ffb2b23cc0dfc784422dfc6btargetblank281c5e5a">
 <span class="glyphicon glyphicon-ok text-success"
-aria-hidden="true"></span> <strong>Repository version:</strong> 6448204
+aria-hidden="true"></span> <strong>Repository version:</strong>
+<a href="https://github.com/heinin/PIPAC_spatial/tree/281c5e5063f3db18ffb2b23cc0dfc784422dfc6b" target="_blank">281c5e5</a>
 </a>
 </p>
 </div>
-<div id="strongRepositoryversionstrong6448204"
+<div
+id="strongRepositoryversionstrongahrefhttpsgithubcomheininPIPACspatialtree281c5e5063f3db18ffb2b23cc0dfc784422dfc6btargetblank281c5e5a"
 class="panel-collapse collapse">
 <div class="panel-body">
 <p>
@@ -586,7 +588,8 @@ and connecting the code version to the results is critical for
 reproducibility.
 </p>
 <p>
-The results in this page were generated with repository version 6448204.
+The results in this page were generated with repository version
+<a href="https://github.com/heinin/PIPAC_spatial/tree/281c5e5063f3db18ffb2b23cc0dfc784422dfc6b" target="_blank">281c5e5</a>.
 See the <em>Past versions</em> tab to see a history of the changes made
 to the R Markdown and HTML files.
 </p>
@@ -601,6 +604,7 @@ were generated:
 </p>
 <pre><code>
 Ignored files:
+    Ignored:    .RData
     Ignored:    celltype_markers.tsv
     Ignored:    immune_cluster_marker_annotations.tsv
     Ignored:    immune_cluster_marker_annotations_2ndpass.tsv
@@ -608,8 +612,19 @@ Ignored files:
     Ignored:    nonimmune_cluster_marker_annotations.tsv
     Ignored:    nonimmune_cluster_marker_annotations_2ndpass.tsv
 
+Untracked files:
+    Untracked:  analysis/feature_expression.Rmd
+    Untracked:  code/construct_niches.R
+    Untracked:  code/construct_niches.Rout
+    Untracked:  code/run_rscript.sh
+    Untracked:  code/slurm.16507254.err
+    Untracked:  code/slurm.16507254.out
+
 Unstaged changes:
     Modified:   analysis/add_metadata.Rmd
+    Modified:   analysis/annotation_2nd_pass.Rmd
+    Modified:   analysis/niche_construction.Rmd
+    Modified:   analysis/plot_by_group.Rmd
 
 </code></pre>
 <p>
@@ -660,7 +675,41 @@ Message
 Rmd
 </td>
 <td>
-6448204
+<a href="https://github.com/heinin/PIPAC_spatial/blob/fae8c8af3477efbf96ebf511e3ef86eeba3f2d56/analysis/add_metadata.Rmd" target="_blank">fae8c8a</a>
+</td>
+<td>
+heinin
+</td>
+<td>
+2025-02-18
+</td>
+<td>
+Added annotations and basic analysis
+</td>
+</tr>
+<tr>
+<td>
+html
+</td>
+<td>
+<a href="https://rawcdn.githack.com/heinin/PIPAC_spatial/fae8c8af3477efbf96ebf511e3ef86eeba3f2d56/docs/add_metadata.html" target="_blank">fae8c8a</a>
+</td>
+<td>
+heinin
+</td>
+<td>
+2025-02-18
+</td>
+<td>
+Added annotations and basic analysis
+</td>
+</tr>
+<tr>
+<td>
+Rmd
+</td>
+<td>
+<a href="https://github.com/heinin/PIPAC_spatial/blob/64482047ae9660d08678b8cd1d99c7695b427aaa/analysis/add_metadata.Rmd" target="_blank">6448204</a>
 </td>
 <td>
 heinin
@@ -677,7 +726,7 @@ Added annotations
 html
 </td>
 <td>
-6448204
+<a href="https://rawcdn.githack.com/heinin/PIPAC_spatial/64482047ae9660d08678b8cd1d99c7695b427aaa/docs/add_metadata.html" target="_blank">6448204</a>
 </td>
 <td>
 heinin
@@ -712,7 +761,8 @@ Added annotations
   library(googlesheets4)
   library(workflowr)
   library(patchwork)
-  library(stringr)})</code></pre>
+  library(stringr)
+  library(data.table)})</code></pre>
 </div>
 <div id="environment-variables-and-helper-functions"
 class="section level3">
@@ -728,6 +778,9 @@ source(&quot;/home/hnatri/PIPAC_spatial/code/plot_functions.R&quot;)</code></pre
 <div id="import-data" class="section level3">
 <h3>Import data</h3>
 <pre class="r"><code>seurat_data &lt;- readRDS(&quot;/tgen_labs/banovich/PIPAC/Seurat/PIPAC_NC50_NN20_PC20_Seurat_annotated.rds&quot;)
+
+immune &lt;- readRDS(&quot;/tgen_labs/banovich/PIPAC/Seurat/nonimmune_complete_subset_clustered_NC50_NN20_PC20_Seurat_annotated.rds&quot;)
+nonimmune &lt;- readRDS(&quot;/tgen_labs/banovich/PIPAC/Seurat/immune_complete_subset_clustered_NC50_NN20_PC20_Seurat_annotated.rds&quot;)
 
 DimPlot(seurat_data,
         group.by = &quot;Annotation&quot;,
@@ -765,7 +818,7 @@ Date
 <tbody>
 <tr>
 <td>
-6448204
+<a href="https://github.com/heinin/PIPAC_spatial/blob/64482047ae9660d08678b8cd1d99c7695b427aaa/docs/figure/add_metadata.Rmd/unnamed-chunk-3-1.png" target="_blank">6448204</a>
 </td>
 <td>
 heinin
@@ -786,11 +839,47 @@ metadata  &lt;- gs4_get(&quot;https://docs.google.com/spreadsheets/d/1sXXwOreLxj
 arm2_metadata &lt;- read_sheet(metadata, sheet = &quot;Arm 2 metadata&quot;)
 arm3_metadata &lt;- read_sheet(metadata, sheet = &quot;Arm 3 metadata&quot;)
 
-intersect(colnames(arm2_metadata), colnames(arm3_metadata))
-setdiff(colnames(arm2_metadata), colnames(arm3_metadata))
-intersect(colnames(arm3_metadata), colnames(arm2_metadata))
-
-arm2_metadata$Arm &lt;- &quot;Arm2&quot;
+intersect(colnames(arm2_metadata), colnames(arm3_metadata))</code></pre>
+<pre><code> [1] &quot;Obs&quot;                 &quot;RPN&quot;                 &quot;STUDY_SITE&quot;         
+ [4] &quot;GENDER&quot;              &quot;ETHNICITY&quot;           &quot;race&quot;               
+ [7] &quot;DISEASESITE&quot;         &quot;ECOG&quot;                &quot;ACTUALWEIGHT&quot;       
+[10] &quot;txstartdate&quot;         &quot;DXHISTOLOGY&quot;         &quot;DXSITE&quot;             
+[13] &quot;initialdxdate&quot;       &quot;LINETHERAPY&quot;         &quot;PRIORTHERAPYTYPE&quot;   
+[16] &quot;priorcytoreduction&quot;  &quot;lastcontactdate&quot;     &quot;furthertxall&quot;       
+[19] &quot;progressiondt&quot;       &quot;vitalstatus1&quot;        &quot;deathdate&quot;          
+[22] &quot;OFFSTUDYREASON&quot;      &quot;offstudydate&quot;        &quot;OFFTXREASON&quot;        
+[25] &quot;offtxdate&quot;           &quot;asascore1&quot;           &quot;asascore2&quot;          
+[28] &quot;asascore3&quot;           &quot;lesionsize1&quot;         &quot;lesionsize2&quot;        
+[31] &quot;lesionsize3&quot;         &quot;pipacdate1&quot;          &quot;pipacdate2&quot;         
+[34] &quot;pipacdate3&quot;          &quot;ascites1&quot;            &quot;ascites2&quot;           
+[37] &quot;ascites3&quot;            &quot;transfusion1&quot;        &quot;transfusion2&quot;       
+[40] &quot;transfusion3&quot;        &quot;ebl1&quot;                &quot;ebl2&quot;               
+[43] &quot;ebl3&quot;                &quot;pci1&quot;                &quot;pci2&quot;               
+[46] &quot;pci3&quot;                &quot;numcycles_pipacsurg&quot; &quot;cyclenum&quot;           
+[49] &quot;age&quot;                 &quot;lastfollowdate&quot;      &quot;oscensor&quot;           
+[52] &quot;osmonths&quot;            &quot;pfscensor&quot;           &quot;pfsmonths&quot;          </code></pre>
+<pre class="r"><code>setdiff(colnames(arm2_metadata), colnames(arm3_metadata))</code></pre>
+<pre><code>[1] &quot;No_of_PIPACs&quot;</code></pre>
+<pre class="r"><code>intersect(colnames(arm3_metadata), colnames(arm2_metadata))</code></pre>
+<pre><code> [1] &quot;Obs&quot;                 &quot;RPN&quot;                 &quot;STUDY_SITE&quot;         
+ [4] &quot;GENDER&quot;              &quot;ETHNICITY&quot;           &quot;race&quot;               
+ [7] &quot;DISEASESITE&quot;         &quot;ECOG&quot;                &quot;ACTUALWEIGHT&quot;       
+[10] &quot;txstartdate&quot;         &quot;DXHISTOLOGY&quot;         &quot;DXSITE&quot;             
+[13] &quot;initialdxdate&quot;       &quot;LINETHERAPY&quot;         &quot;PRIORTHERAPYTYPE&quot;   
+[16] &quot;priorcytoreduction&quot;  &quot;lastcontactdate&quot;     &quot;furthertxall&quot;       
+[19] &quot;progressiondt&quot;       &quot;vitalstatus1&quot;        &quot;deathdate&quot;          
+[22] &quot;OFFSTUDYREASON&quot;      &quot;offstudydate&quot;        &quot;OFFTXREASON&quot;        
+[25] &quot;offtxdate&quot;           &quot;asascore1&quot;           &quot;asascore2&quot;          
+[28] &quot;asascore3&quot;           &quot;lesionsize1&quot;         &quot;lesionsize2&quot;        
+[31] &quot;lesionsize3&quot;         &quot;pipacdate1&quot;          &quot;pipacdate2&quot;         
+[34] &quot;pipacdate3&quot;          &quot;ascites1&quot;            &quot;ascites2&quot;           
+[37] &quot;ascites3&quot;            &quot;transfusion1&quot;        &quot;transfusion2&quot;       
+[40] &quot;transfusion3&quot;        &quot;ebl1&quot;                &quot;ebl2&quot;               
+[43] &quot;ebl3&quot;                &quot;pci1&quot;                &quot;pci2&quot;               
+[46] &quot;pci3&quot;                &quot;numcycles_pipacsurg&quot; &quot;cyclenum&quot;           
+[49] &quot;age&quot;                 &quot;lastfollowdate&quot;      &quot;oscensor&quot;           
+[52] &quot;osmonths&quot;            &quot;pfscensor&quot;           &quot;pfsmonths&quot;          </code></pre>
+<pre class="r"><code>arm2_metadata$Arm &lt;- &quot;Arm2&quot;
 arm3_metadata$Arm &lt;- &quot;Arm3&quot;
 
 all_metadata &lt;- rbindlist(list(arm2_metadata, arm3_metadata), fill = TRUE)
@@ -800,15 +889,24 @@ all_metadata$Site_abbr &lt;- ifelse(all_metadata$STUDY_SITE == &quot;Northwell H
                                  ifelse(all_metadata$STUDY_SITE == &quot;Mayo Clinic (Florida)&quot;, &quot;MFL&quot;, &quot;COH&quot;))
 
 seurat_data$Patient_ID &lt;- gsub(&quot;Mayo&quot;, &quot;MFL&quot;, seurat_data$Patient_ID)
+immune$Patient_ID &lt;- gsub(&quot;Mayo&quot;, &quot;MFL&quot;, immune$Patient_ID)
+nonimmune$Patient_ID &lt;- gsub(&quot;Mayo&quot;, &quot;MFL&quot;, nonimmune$Patient_ID)
 
 all_metadata$RPN &lt;- str_pad(all_metadata$RPN, 3, pad = &quot;0&quot;)
 all_metadata$Patient_ID &lt;- paste0(all_metadata$Site_abbr, &quot;-&quot;, all_metadata$RPN)
 
-intersect(seurat_data$Patient_ID, all_metadata$Patient_ID)
-setdiff(seurat_data$Patient_ID, all_metadata$Patient_ID)
-setdiff(all_metadata$Patient_ID, seurat_data$Patient_ID)
-
-# Adding all metadata
+intersect(seurat_data$Patient_ID, all_metadata$Patient_ID)</code></pre>
+<pre><code> [1] &quot;S21-NWH-012&quot; &quot;S21-NWH-011&quot; &quot;S21-NWH-009&quot; &quot;COH-004&quot;     &quot;COH-001&quot;    
+ [6] &quot;COH-015&quot;     &quot;COH-006&quot;     &quot;COH-007&quot;     &quot;MFL-019&quot;     &quot;MFL-018&quot;    
+[11] &quot;COH-008&quot;     &quot;MFL-017&quot;     &quot;COH-038&quot;     &quot;MFL-046&quot;     &quot;COH-022&quot;    
+[16] &quot;MFL-049&quot;     &quot;MFL-040&quot;     &quot;MFL-043&quot;     &quot;COH-045&quot;    </code></pre>
+<pre class="r"><code>setdiff(seurat_data$Patient_ID, all_metadata$Patient_ID)</code></pre>
+<pre><code>character(0)</code></pre>
+<pre class="r"><code>setdiff(all_metadata$Patient_ID, seurat_data$Patient_ID)</code></pre>
+<pre><code> [1] &quot;COH-025&quot;     &quot;S21-NWH-030&quot; &quot;MFL-052&quot;     &quot;COH-044&quot;     &quot;S21-NWH-048&quot;
+ [6] &quot;MFL-027&quot;     &quot;S21-NWH-039&quot; &quot;MFL-037&quot;     &quot;COH-056&quot;     &quot;MFL-023&quot;    
+[11] &quot;COH-026&quot;     &quot;S21-NWH-020&quot; &quot;S21-NWH-034&quot;</code></pre>
+<pre class="r"><code># Adding all metadata
 for (m in setdiff(colnames(all_metadata), c(&quot;Obs&quot;))){
   seurat_data@meta.data[[m]] = plyr::mapvalues(x = seurat_data@meta.data$Patient_ID,
                                                from = all_metadata$Patient_ID,
@@ -817,7 +915,27 @@ for (m in setdiff(colnames(all_metadata), c(&quot;Obs&quot;))){
   seurat_data@meta.data[[m]][-which(seurat_data@meta.data$Patient_ID %in% all_metadata$Patient_ID)] &lt;- NA
 }
 
-saveRDS(seurat_data, &quot;/tgen_labs/banovich/PIPAC/Seurat/PIPAC_NC50_NN20_PC20_Seurat_annotated_metadata.rds&quot;)</code></pre>
+saveRDS(seurat_data, &quot;/tgen_labs/banovich/PIPAC/Seurat/PIPAC_NC50_NN20_PC20_Seurat_annotated_metadata.rds&quot;)
+
+for (m in setdiff(colnames(all_metadata), c(&quot;Obs&quot;))){
+  immune@meta.data[[m]] = plyr::mapvalues(x = immune@meta.data$Patient_ID,
+                                          from = all_metadata$Patient_ID,
+                                          to = all_metadata[[m]])
+  
+  immune@meta.data[[m]][-which(immune@meta.data$Patient_ID %in% all_metadata$Patient_ID)] &lt;- NA
+}
+
+saveRDS(immune, &quot;/tgen_labs/banovich/PIPAC/Seurat/PIPAC_immune_NC50_NN20_PC20_Seurat_annotated_metadata.rds&quot;)
+
+for (m in setdiff(colnames(all_metadata), c(&quot;Obs&quot;))){
+  nonimmune@meta.data[[m]] = plyr::mapvalues(x = nonimmune@meta.data$Patient_ID,
+                                             from = all_metadata$Patient_ID,
+                                             to = all_metadata[[m]])
+  
+  nonimmune@meta.data[[m]][-which(nonimmune@meta.data$Patient_ID %in% all_metadata$Patient_ID)] &lt;- NA
+}
+
+saveRDS(nonimmune, &quot;/tgen_labs/banovich/PIPAC/Seurat/PIPAC_nonimmune_NC50_NN20_PC20_Seurat_annotated_metadata.rds&quot;)</code></pre>
 <br>
 <p>
 <button type="button" class="btn btn-default btn-workflowr btn-workflowr-sessioninfo" data-toggle="collapse" data-target="#workflowr-sessioninfo" style="display: block;">
@@ -853,13 +971,13 @@ attached base packages:
 other attached packages:
  [1] ComplexHeatmap_2.18.0 viridis_0.6.3         viridisLite_0.4.2    
  [4] circlize_0.4.15       plyr_1.8.8            RColorBrewer_1.1-3   
- [7] patchwork_1.1.2       googlesheets4_1.1.0   ggrepel_0.9.3        
-[10] ggpubr_0.6.0          lubridate_1.9.2       forcats_1.0.0        
-[13] stringr_1.5.0         dplyr_1.1.2           purrr_1.0.2          
-[16] readr_2.1.4           tidyr_1.3.0           tibble_3.2.1         
-[19] ggplot2_3.4.2         tidyverse_2.0.0       SeuratDisk_0.0.0.9021
-[22] Seurat_5.0.1          SeuratObject_5.0.2    sp_1.6-1             
-[25] arrow_12.0.0          workflowr_1.7.1      
+ [7] data.table_1.14.8     patchwork_1.1.2       googlesheets4_1.1.0  
+[10] ggrepel_0.9.3         ggpubr_0.6.0          lubridate_1.9.2      
+[13] forcats_1.0.0         stringr_1.5.0         dplyr_1.1.2          
+[16] purrr_1.0.2           readr_2.1.4           tidyr_1.3.0          
+[19] tibble_3.2.1          ggplot2_3.4.2         tidyverse_2.0.0      
+[22] SeuratDisk_0.0.0.9021 Seurat_5.0.1          SeuratObject_5.0.2   
+[25] sp_1.6-1              arrow_12.0.0          workflowr_1.7.1      
 
 loaded via a namespace (and not attached):
   [1] RcppAnnoy_0.0.20       splines_4.3.0          later_1.3.1           
@@ -888,28 +1006,28 @@ loaded via a namespace (and not attached):
  [70] callr_3.7.3            digest_0.6.31          timechange_0.2.0      
  [73] R6_2.5.1               mime_0.12              colorspace_2.1-0      
  [76] scattermore_1.2        tensor_1.5             spatstat.data_3.0-1   
- [79] utf8_1.2.3             generics_0.1.3         data.table_1.14.8     
- [82] httr_1.4.6             htmlwidgets_1.6.2      whisker_0.4.1         
- [85] uwot_0.1.14            pkgconfig_2.0.3        gtable_0.3.3          
- [88] lmtest_0.9-40          htmltools_0.5.5        carData_3.0-5         
- [91] dotCall64_1.0-2        clue_0.3-64            scales_1.2.1          
- [94] png_0.1-8              knitr_1.43             rstudioapi_0.14       
- [97] rjson_0.2.21           tzdb_0.4.0             reshape2_1.4.4        
-[100] nlme_3.1-162           curl_5.0.1             cachem_1.0.8          
-[103] zoo_1.8-12             GlobalOptions_0.1.2    KernSmooth_2.23-21    
-[106] parallel_4.3.0         miniUI_0.1.1.1         pillar_1.9.0          
-[109] vctrs_0.6.5            RANN_2.6.1             promises_1.2.0.1      
-[112] car_3.1-2              xtable_1.8-4           cluster_2.1.4         
-[115] evaluate_0.21          cli_3.6.1              compiler_4.3.0        
-[118] rlang_1.1.1            crayon_1.5.2           future.apply_1.11.0   
-[121] ggsignif_0.6.4         labeling_0.4.2         ps_1.7.5              
-[124] getPass_0.2-4          fs_1.6.2               stringi_1.7.12        
-[127] deldir_1.0-9           assertthat_0.2.1       munsell_0.5.0         
-[130] lazyeval_0.2.2         spatstat.geom_3.2-1    Matrix_1.6-5          
-[133] RcppHNSW_0.5.0         hms_1.1.3              bit64_4.0.5           
-[136] future_1.32.0          shiny_1.7.4            highr_0.10            
-[139] ROCR_1.0-11            gargle_1.4.0           igraph_1.4.3          
-[142] broom_1.0.4            bslib_0.4.2            bit_4.0.5             </code></pre>
+ [79] utf8_1.2.3             generics_0.1.3         httr_1.4.6            
+ [82] htmlwidgets_1.6.2      whisker_0.4.1          uwot_0.1.14           
+ [85] pkgconfig_2.0.3        gtable_0.3.3           lmtest_0.9-40         
+ [88] htmltools_0.5.5        carData_3.0-5          dotCall64_1.0-2       
+ [91] clue_0.3-64            scales_1.2.1           png_0.1-8             
+ [94] knitr_1.43             rstudioapi_0.14        rjson_0.2.21          
+ [97] tzdb_0.4.0             reshape2_1.4.4         nlme_3.1-162          
+[100] curl_5.0.1             cachem_1.0.8           zoo_1.8-12            
+[103] GlobalOptions_0.1.2    KernSmooth_2.23-21     parallel_4.3.0        
+[106] miniUI_0.1.1.1         pillar_1.9.0           vctrs_0.6.5           
+[109] RANN_2.6.1             promises_1.2.0.1       car_3.1-2             
+[112] xtable_1.8-4           cluster_2.1.4          evaluate_0.21         
+[115] cli_3.6.1              compiler_4.3.0         rlang_1.1.1           
+[118] crayon_1.5.2           future.apply_1.11.0    ggsignif_0.6.4        
+[121] labeling_0.4.2         ps_1.7.5               getPass_0.2-4         
+[124] fs_1.6.2               stringi_1.7.12         deldir_1.0-9          
+[127] assertthat_0.2.1       munsell_0.5.0          lazyeval_0.2.2        
+[130] spatstat.geom_3.2-1    Matrix_1.6-5           RcppHNSW_0.5.0        
+[133] hms_1.1.3              bit64_4.0.5            future_1.32.0         
+[136] shiny_1.7.4            highr_0.10             ROCR_1.0-11           
+[139] gargle_1.4.0           igraph_1.4.3           broom_1.0.4           
+[142] bslib_0.4.2            bit_4.0.5             </code></pre>
 </div>
 </div>
 

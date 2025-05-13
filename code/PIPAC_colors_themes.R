@@ -27,6 +27,13 @@ plot_theme <- theme(text = element_text(size = 10),
                     axis.title.x = element_text(size = 10),
                     axis.title.y = element_text(size = 10))
 
+# ggplot theme for manuscript plots
+manuscript_theme <- theme(text = element_text(size = 6),
+                          axis.text.x = element_text(size = 6),
+                          axis.text.y = element_text(size = 6),  
+                          axis.title.x = element_text(size = 6),
+                          axis.title.y = element_text(size = 6))
+
 # Colors for plotting
 # Define colors for each level of categorical variables
 
@@ -53,6 +60,10 @@ pipac_celltypes <- read_sheet(metadata, sheet = "Cell type colors")
 
 pipac_celltype_col <- pipac_celltypes$Color
 names(pipac_celltype_col) <- pipac_celltypes$Annotation
+
+# Tissue
+tissue_col <- c("Tumor" = "brown3",
+                "Normal" = "cyan4")
 
 # Cluster annotations
 #gs4_deauth()

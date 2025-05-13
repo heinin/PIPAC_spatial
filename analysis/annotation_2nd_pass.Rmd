@@ -48,10 +48,10 @@ source("/home/hnatri/PIPAC_spatial/code/plot_functions.R")
 
 ```{r, message = F, warning = F, fig.width = 8, fig.height = 4}
 
-nonimmune <- readRDS("/scratch/hnatri/PIPAC/nonimmune_complete_subset_clustered_NC50_NN20_PC20_Seurat.rds")
+nonimmune <- readRDS("/tgen_labs/banovich/PIPAC/Seurat/nonimmune_complete_subset_clustered_NC50_NN20_PC20_Seurat.rds")
 nonimmune <- NormalizeData(nonimmune)
 
-immune <- readRDS("/scratch/hnatri/PIPAC/immune_complete_subset_clustered_NC50_NN20_PC20_Seurat.rds")
+immune <- readRDS("/tgen_labs/banovich/PIPAC/Seurat/immune_complete_subset_clustered_NC50_NN20_PC20_Seurat.rds")
 immune <- NormalizeData(immune)
 
 p1 <- DimPlot(immune,
@@ -78,7 +78,7 @@ p1 + p2
 
 ```
 
-### Marker information
+### Marker information and annotations
 
 ```{r, message = F, warning = F, fig.width = 6, fig.height = 4}
 
@@ -88,6 +88,11 @@ markers <- read_sheet(metadata, sheet = "Markers")
 second_pass_nonimmune <- read_sheet(metadata, sheet = "Tumor 2nd pass")
 second_pass_immune <- read_sheet(metadata, sheet = "Immune 2nd pass")
 
+# Cell type markers by group
+gs4_deauth()
+markers_by_group  <- gs4_get("https://docs.google.com/spreadsheets/d/1w0wrL-5KwNEWi_VpmriN7YmfwpBPlEYX0MKlwI2ZQu8/edit?usp=sharing")
+markers_by_group <- read_sheet(markers_by_group, sheet = "Markers by group")
+
 ```
 
 ### Top cluster markers
@@ -96,15 +101,16 @@ second_pass_immune <- read_sheet(metadata, sheet = "Immune 2nd pass")
 
 Idents(immune) <- immune$leiden_res0.5
 immune_markers <- FindAllMarkers(immune,
-                                  return.thresh = 0.01,
-                                  logfc.threshold = 0.5,
-                                  min.pct = 0.20,
-                                  verbose = F)
+                                 return.thresh = 0.01,
+                                 logfc.threshold = 0.5,
+                                 min.pct = 0.20,
+                                 only.pos = T,
+                                 verbose = F)
 
 table(immune_markers$cluster)
 
 top_immune_markers <- immune_markers %>%
-  arrange(dplyr::desc(avg_log2FC)) %>%
+  arrange(dplyr::desc(abs(avg_log2FC))) %>%
   group_by(cluster) %>%
   dplyr::slice(1:10)
 
@@ -113,12 +119,13 @@ nonimmune_markers <- FindAllMarkers(nonimmune,
                                     return.thresh = 0.01,
                                     logfc.threshold = 0.5,
                                     min.pct = 0.20,
+                                    only.pos = T,
                                     verbose = F)
 
 table(nonimmune_markers$cluster)
 
 top_nonimmune_markers <- nonimmune_markers %>%
-  arrange(dplyr::desc(avg_log2FC)) %>%
+  arrange(dplyr::desc(abs(avg_log2FC))) %>%
   group_by(cluster) %>%
   dplyr::slice(1:10)
 
@@ -160,7 +167,7 @@ create_dotplot_heatmap(seurat_object = nonimmune,
 
 ### Saving top markers and marker annotations
 
-```{r, message = F, warning = F, fig.width = 6, fig.height = 6, eval = F}
+```{r, message = F, warning = F, fig.width = 6, fig.height = 6, eval = T}
 
 output_immune_markers <- immune_markers %>%
   arrange(dplyr::desc(avg_log2FC)) %>%
@@ -246,7 +253,7 @@ FeaturePlot(nonimmune,
 
 ```
 
-### Adding annotations to the full object
+### Adding annotations to the subsets and the full object
 
 ```{r, message = F, warning = F, fig.width = 10, fig.height = 4, eval = F}
 
@@ -257,6 +264,9 @@ immune$annot2 <- mapvalues(x = immune$leiden_res0.5,
 nonimmune$annot2 <- mapvalues(x = nonimmune$leiden_res0.5,
                               from = second_pass_nonimmune$leiden_res0.5,
                               to = second_pass_nonimmune$Annotation)
+
+saveRDS(immune, "/tgen_labs/banovich/PIPAC/Seurat/immune_complete_subset_clustered_NC50_NN20_PC20_Seurat_annotated.rds")
+saveRDS(nonimmune, "/tgen_labs/banovich/PIPAC/Seurat/nonimmune_complete_subset_clustered_NC50_NN20_PC20_Seurat_annotated.rds")
 
 immune_nonimmune <- merge(immune, nonimmune)
 
@@ -272,21 +282,141 @@ saveRDS(seurat_data, "/tgen_labs/banovich/PIPAC/Seurat/PIPAC_NC50_NN20_PC20_Seur
 
 ```
 
-### Saving markers one more time
+### Plotting cell type markers by group
 
-```{r, message = F, warning = F, fig.width = 10, fig.height = 4}
+```{r, message = F, warning = F, fig.width = 16, fig.height = 6, eval = T}
 
 seurat_data <- readRDS("/tgen_labs/banovich/PIPAC/Seurat/PIPAC_NC50_NN20_PC20_Seurat_annotated.rds")
+
+DotPlot(seurat_data,
+        group.by = "Annotation",
+        features = unique(markers_by_group[which(markers_by_group$annotation1 == "Cell-cell crosstalk"),]$feature),
+        cols = c("azure", "tomato3")) +
+  RotatedAxis() +
+  ggtitle("Cell-cell crosstalk")
+
+```
+
+```{r, message = F, warning = F, fig.width = 6, fig.height = 6, eval = T}
+
+DotPlot(seurat_data,
+        group.by = "Annotation",
+        features = unique(markers_by_group[which(markers_by_group$annotation1 == "Macrophage signaling"),]$feature),
+        cols = c("azure", "tomato3")) +
+  RotatedAxis() +
+  ggtitle("Macrophage signaling")
+
+```
+
+```{r, message = F, warning = F, fig.width = 6, fig.height = 6, eval = T}
+
+DotPlot(seurat_data,
+        group.by = "Annotation",
+        features = unique(markers_by_group[which(markers_by_group$annotation1 == "DNA damage and cell faith"),]$feature),
+        cols = c("azure", "tomato3")) +
+  RotatedAxis() +
+  ggtitle("DNA damage and cell faith")
+
+```
+
+```{r, message = F, warning = F, fig.width = 10, fig.height = 6, eval = T}
+
+DotPlot(seurat_data,
+        group.by = "Annotation",
+        features = unique(markers_by_group[which(markers_by_group$annotation1 == "Functional markers"),]$feature),
+        cols = c("azure", "tomato3")) +
+  RotatedAxis() +
+  ggtitle("Functional markers")
+
+```
+
+```{r, message = F, warning = F, fig.width = 6, fig.height = 6, eval = T}
+
+DotPlot(seurat_data,
+        group.by = "Annotation",
+        features = unique(markers_by_group[which(markers_by_group$annotation1 == "Mesothelial"),]$feature),
+        cols = c("azure", "tomato3")) +
+  RotatedAxis() +
+  ggtitle("Mesothelial")
+
+```
+
+```{r, message = F, warning = F, fig.width = 10, fig.height = 6, eval = F}
+
+DotPlot(seurat_data,
+        group.by = "Annotation",
+        features = unique(markers_by_group[which(markers_by_group$annotation1 == "Macrophages"),]$feature),
+        cols = c("azure", "tomato3")) +
+  RotatedAxis() +
+  ggtitle("Macrophages")
+
+```
+
+```{r, message = F, warning = F, fig.width = 10, fig.height = 6, eval = T}
+
+DotPlot(seurat_data,
+        group.by = "Annotation",
+        features = unique(markers_by_group[which(markers_by_group$annotation1 == "CAFs"),]$feature),
+        cols = c("azure", "tomato3")) +
+  RotatedAxis() +
+  ggtitle("CAFs")
+
+```
+
+```{r, message = F, warning = F, fig.width = 6, fig.height = 6, eval = T}
+
+DotPlot(seurat_data,
+        group.by = "Annotation",
+        features = grep("COL", rownames(seurat_data), value = T),
+        cols = c("azure", "tomato3")) +
+  RotatedAxis() +
+  ggtitle("Collagen")
+
+```
+
+```{r, message = F, warning = F, fig.width = 6, fig.height = 6, eval = T}
+
+DotPlot(seurat_data,
+        group.by = "Annotation",
+        features = grep("COL", rownames(seurat_data), value = T),
+        cols = c("azure", "tomato3")) +
+  RotatedAxis() +
+  ggtitle("Collagen")
+
+```
+
+### Cell cycle markers
+
+```{r, message = F, warning = F, fig.width = 6, fig.height = 6, eval = T}
+
+s.genes <- cc.genes.updated.2019$s.genes
+g2m.genes <- cc.genes.updated.2019$g2m.genes
+
+DotPlot(seurat_data,
+        group.by = "Annotation",
+        features = c(s.genes, g2m.genes),
+        cols = c("azure", "tomato3")) +
+  RotatedAxis() +
+  ggtitle("S/G2M genes")
+
+```
+
+### Saving markers one more time
+
+```{r, message = F, warning = F, fig.width = 10, fig.height = 4, eval = T}
+
+#seurat_data <- readRDS("/tgen_labs/banovich/PIPAC/Seurat/PIPAC_NC50_NN20_PC20_Seurat_annotated.rds")
 
 Idents(seurat_data) <- seurat_data$Annotation
 celltype_markers <- FindAllMarkers(seurat_data,
                                    return.thresh = 0.01,
-                                   logfc.threshold = 0.5,
+                                   #logfc.threshold = 0.5,
                                    min.pct = 0.20,
+                                   only.pos = T,
                                    verbose = F)
 
 output_celltype_markers <- celltype_markers %>%
-  arrange(dplyr::desc(avg_log2FC)) %>%
+  arrange(dplyr::desc(abs(avg_log2FC))) %>%
   group_by(cluster) %>%
   dplyr::slice(1:30)
 

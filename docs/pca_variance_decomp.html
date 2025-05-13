@@ -1,0 +1,1174 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+
+<meta name="author" content="heinin" />
+
+<meta name="date" content="2025-03-27" />
+
+<title>PCA and variance decomposition of the PIPAC Arm 3 data</title>
+
+<script src="site_libs/header-attrs-2.22/header-attrs.js"></script>
+<script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="site_libs/bootstrap-3.3.5/css/cosmo.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<style>h1 {font-size: 34px;}
+       h1.title {font-size: 38px;}
+       h2 {font-size: 30px;}
+       h3 {font-size: 24px;}
+       h4 {font-size: 18px;}
+       h5 {font-size: 16px;}
+       h6 {font-size: 12px;}
+       code {color: inherit; background-color: rgba(0, 0, 0, 0.04);}
+       pre:not([class]) { background-color: white }</style>
+<script src="site_libs/jqueryui-1.13.2/jquery-ui.min.js"></script>
+<link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
+<script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
+<script src="site_libs/navigation-1.1/tabsets.js"></script>
+<script src="site_libs/navigation-1.1/codefolding.js"></script>
+<link href="site_libs/highlightjs-9.12.0/textmate.css" rel="stylesheet" />
+<script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
+
+<link rel="icon" href="https://github.com/workflowr/workflowr-assets/raw/main/img/reproducible.png">
+<!-- Add a small amount of space between sections. -->
+<style type="text/css">
+div.section {
+  padding-top: 12px;
+}
+</style>
+
+
+
+<style type="text/css">
+  code{white-space: pre-wrap;}
+  span.smallcaps{font-variant: small-caps;}
+  span.underline{text-decoration: underline;}
+  div.column{display: inline-block; vertical-align: top; width: 50%;}
+  div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+  ul.task-list{list-style: none;}
+    </style>
+
+<style type="text/css">code{white-space: pre;}</style>
+<script type="text/javascript">
+if (window.hljs) {
+  hljs.configure({languages: []});
+  hljs.initHighlightingOnLoad();
+  if (document.readyState && document.readyState === "complete") {
+    window.setTimeout(function() { hljs.initHighlighting(); }, 0);
+  }
+}
+</script>
+
+
+
+
+
+
+
+
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+img {
+  max-width:100%;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+.html-widget {
+  margin-bottom: 20px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+summary {
+  display: list-item;
+}
+details > summary > p:only-child {
+  display: inline;
+}
+pre code {
+  padding: 0;
+}
+</style>
+
+
+<style type="text/css">
+.dropdown-submenu {
+  position: relative;
+}
+.dropdown-submenu>.dropdown-menu {
+  top: 0;
+  left: 100%;
+  margin-top: -6px;
+  margin-left: -1px;
+  border-radius: 0 6px 6px 6px;
+}
+.dropdown-submenu:hover>.dropdown-menu {
+  display: block;
+}
+.dropdown-submenu>a:after {
+  display: block;
+  content: " ";
+  float: right;
+  width: 0;
+  height: 0;
+  border-color: transparent;
+  border-style: solid;
+  border-width: 5px 0 5px 5px;
+  border-left-color: #cccccc;
+  margin-top: 5px;
+  margin-right: -10px;
+}
+.dropdown-submenu:hover>a:after {
+  border-left-color: #adb5bd;
+}
+.dropdown-submenu.pull-left {
+  float: none;
+}
+.dropdown-submenu.pull-left>.dropdown-menu {
+  left: -100%;
+  margin-left: 10px;
+  border-radius: 6px 0 6px 6px;
+}
+</style>
+
+<script type="text/javascript">
+// manage active state of menu based on current page
+$(document).ready(function () {
+  // active menu anchor
+  href = window.location.pathname
+  href = href.substr(href.lastIndexOf('/') + 1)
+  if (href === "")
+    href = "index.html";
+  var menuAnchor = $('a[href="' + href + '"]');
+
+  // mark the anchor link active (and if it's in a dropdown, also mark that active)
+  var dropdown = menuAnchor.closest('li.dropdown');
+  if (window.bootstrap) { // Bootstrap 4+
+    menuAnchor.addClass('active');
+    dropdown.find('> .dropdown-toggle').addClass('active');
+  } else { // Bootstrap 3
+    menuAnchor.parent().addClass('active');
+    dropdown.addClass('active');
+  }
+
+  // Navbar adjustments
+  var navHeight = $(".navbar").first().height() + 15;
+  var style = document.createElement('style');
+  var pt = "padding-top: " + navHeight + "px; ";
+  var mt = "margin-top: -" + navHeight + "px; ";
+  var css = "";
+  // offset scroll position for anchor links (for fixed navbar)
+  for (var i = 1; i <= 6; i++) {
+    css += ".section h" + i + "{ " + pt + mt + "}\n";
+  }
+  style.innerHTML = "body {" + pt + "padding-bottom: 40px; }\n" + css;
+  document.head.appendChild(style);
+});
+</script>
+
+<!-- tabsets -->
+
+<style type="text/css">
+.tabset-dropdown > .nav-tabs {
+  display: inline-table;
+  max-height: 500px;
+  min-height: 44px;
+  overflow-y: auto;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs > li.active:before, .tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "\e259";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
+  content: "\e258";
+  font-family: 'Glyphicons Halflings';
+  border: none;
+}
+
+.tabset-dropdown > .nav-tabs > li.active {
+  display: block;
+}
+
+.tabset-dropdown > .nav-tabs > li > a,
+.tabset-dropdown > .nav-tabs > li > a:focus,
+.tabset-dropdown > .nav-tabs > li > a:hover {
+  border: none;
+  display: inline-block;
+  border-radius: 4px;
+  background-color: transparent;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li {
+  display: block;
+  float: none;
+}
+
+.tabset-dropdown > .nav-tabs > li {
+  display: none;
+}
+</style>
+
+<!-- code folding -->
+<style type="text/css">
+.code-folding-btn { margin-bottom: 4px; }
+</style>
+
+
+
+<style type="text/css">
+
+#TOC {
+  margin: 25px 0px 20px 0px;
+}
+@media (max-width: 768px) {
+#TOC {
+  position: relative;
+  width: 100%;
+}
+}
+
+@media print {
+.toc-content {
+  /* see https://github.com/w3c/csswg-drafts/issues/4434 */
+  float: right;
+}
+}
+
+.toc-content {
+  padding-left: 30px;
+  padding-right: 40px;
+}
+
+div.main-container {
+  max-width: 1200px;
+}
+
+div.tocify {
+  width: 20%;
+  max-width: 260px;
+  max-height: 85%;
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+  div.tocify {
+    width: 25%;
+  }
+}
+
+@media (max-width: 767px) {
+  div.tocify {
+    width: 100%;
+    max-width: none;
+  }
+}
+
+.tocify ul, .tocify li {
+  line-height: 20px;
+}
+
+.tocify-subheader .tocify-item {
+  font-size: 0.90em;
+}
+
+.tocify .list-group-item {
+  border-radius: 0px;
+}
+
+
+</style>
+
+
+
+</head>
+
+<body>
+
+
+<div class="container-fluid main-container">
+
+
+<!-- setup 3col/9col grid for toc_float and main content  -->
+<div class="row">
+<div class="col-xs-12 col-sm-4 col-md-3">
+<div id="TOC" class="tocify">
+</div>
+</div>
+
+<div class="toc-content col-xs-12 col-sm-8 col-md-9">
+
+
+
+
+<div class="navbar navbar-default  navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-bs-toggle="collapse" data-target="#navbar" data-bs-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="index.html">PIPAC_spatial</a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        <li>
+  <a href="index.html">Home</a>
+</li>
+<li>
+  <a href="about.html">About</a>
+</li>
+<li>
+  <a href="license.html">License</a>
+</li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div><!--/.container -->
+</div><!--/.navbar -->
+
+<div id="header">
+
+<div class="btn-group pull-right float-right">
+<button type="button" class="btn btn-default btn-xs btn-secondary btn-sm dropdown-toggle" data-toggle="dropdown" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><span>Code</span> <span class="caret"></span></button>
+<ul class="dropdown-menu dropdown-menu-right" style="min-width: 50px;">
+<li><a id="rmd-show-all-code" href="#">Show All Code</a></li>
+<li><a id="rmd-hide-all-code" href="#">Hide All Code</a></li>
+</ul>
+</div>
+
+
+
+<h1 class="title toc-ignore">PCA and variance decomposition of the PIPAC
+Arm 3 data</h1>
+<h4 class="author">heinin</h4>
+<h4 class="date">2025-03-27</h4>
+
+</div>
+
+
+<p>
+<button type="button" class="btn btn-default btn-workflowr btn-workflowr-report" data-toggle="collapse" data-target="#workflowr-report">
+<span class="glyphicon glyphicon-list" aria-hidden="true"></span>
+workflowr <span class="glyphicon glyphicon-exclamation-sign text-danger"
+aria-hidden="true"></span>
+</button>
+</p>
+<div id="workflowr-report" class="collapse">
+<ul class="nav nav-tabs">
+<li class="active">
+<a data-toggle="tab" href="#summary">Summary</a>
+</li>
+<li>
+<a data-toggle="tab" href="#checks"> Checks <span
+class="glyphicon glyphicon-exclamation-sign text-danger"
+aria-hidden="true"></span> </a>
+</li>
+<li>
+<a data-toggle="tab" href="#versions">Past versions</a>
+</li>
+</ul>
+<div class="tab-content">
+<div id="summary" class="tab-pane fade in active">
+<p>
+<strong>Last updated:</strong> 2025-03-28
+</p>
+<p>
+<strong>Checks:</strong> <span
+class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> 5
+<span class="glyphicon glyphicon-exclamation-sign text-danger"
+aria-hidden="true"></span> 2
+</p>
+<p>
+<strong>Knit directory:</strong> <code>PIPAC_spatial/</code> <span
+class="glyphicon glyphicon-question-sign" aria-hidden="true"
+title="This is the local directory in which the code in this file was executed.">
+</span>
+</p>
+<p>
+This reproducible <a href="https://rmarkdown.rstudio.com">R Markdown</a>
+analysis was created with <a
+  href="https://github.com/workflowr/workflowr">workflowr</a> (version
+1.7.1). The <em>Checks</em> tab describes the reproducibility checks
+that were applied when the results were created. The <em>Past
+versions</em> tab lists the development history.
+</p>
+<hr>
+</div>
+<div id="checks" class="tab-pane fade">
+<div id="workflowr-checks" class="panel-group">
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRMarkdownfilestronguncommittedchanges">
+<span class="glyphicon glyphicon-exclamation-sign text-danger"
+aria-hidden="true"></span> <strong>R Markdown file:</strong> uncommitted
+changes </a>
+</p>
+</div>
+<div id="strongRMarkdownfilestronguncommittedchanges"
+class="panel-collapse collapse">
+<div class="panel-body">
+<p>The R Markdown is untracked by Git. To know which version of the R
+Markdown file created these results, you’ll want to first commit it to
+the Git repo. If you’re still working on the analysis, you can ignore
+this warning. When you’re finished, you can run
+<code>wflow_publish</code> to commit the R Markdown file and build the
+HTML.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongEnvironmentstrongempty">
+<span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span> <strong>Environment:</strong> empty </a>
+</p>
+</div>
+<div id="strongEnvironmentstrongempty" class="panel-collapse collapse">
+<div class="panel-body">
+<p>Great job! The global environment was empty. Objects defined in the
+global environment can affect the analysis in your R Markdown file in
+unknown ways. For reproduciblity it’s best to always run the code in an
+empty environment.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongSeedstrongcodesetseed20240917code">
+<span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span> <strong>Seed:</strong>
+<code>set.seed(20240917)</code> </a>
+</p>
+</div>
+<div id="strongSeedstrongcodesetseed20240917code"
+class="panel-collapse collapse">
+<div class="panel-body">
+<p>The command <code>set.seed(20240917)</code> was run prior to running
+the code in the R Markdown file. Setting a seed ensures that any results
+that rely on randomness, e.g. subsampling or permutations, are
+reproducible.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongSessioninformationstrongrecorded">
+<span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span> <strong>Session information:</strong>
+recorded </a>
+</p>
+</div>
+<div id="strongSessioninformationstrongrecorded"
+class="panel-collapse collapse">
+<div class="panel-body">
+<p>Great job! Recording the operating system, R version, and package
+versions is critical for reproducibility.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongCachestrongnone">
+<span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span> <strong>Cache:</strong> none </a>
+</p>
+</div>
+<div id="strongCachestrongnone" class="panel-collapse collapse">
+<div class="panel-body">
+<p>Nice! There were no cached chunks for this analysis, so you can be
+confident that you successfully produced the results during this
+run.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongFilepathsstrongabsolute">
+<span class="glyphicon glyphicon-exclamation-sign text-danger"
+aria-hidden="true"></span> <strong>File paths:</strong> absolute </a>
+</p>
+</div>
+<div id="strongFilepathsstrongabsolute" class="panel-collapse collapse">
+<div class="panel-body">
+<p>
+Using absolute paths to the files within your workflowr project makes it
+difficult for you and others to run your code on a different machine.
+Change the absolute path(s) below to the suggested relative path(s) to
+make your code more reproducible.
+</p>
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th style="text-align:left;">
+absolute
+</th>
+<th style="text-align:left;">
+relative
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+/home/hnatri/PIPAC_spatial/
+</td>
+<td style="text-align:left;">
+.
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+/home/hnatri/PIPAC_spatial/code/PIPAC_colors_themes.R
+</td>
+<td style="text-align:left;">
+code/PIPAC_colors_themes.R
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+/home/hnatri/PIPAC_spatial/code/plot_functions.R
+</td>
+<td style="text-align:left;">
+code/plot_functions.R
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+/home/hnatri/PIPAC_spatial/code/vardecomp.R
+</td>
+<td style="text-align:left;">
+code/vardecomp.R
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+/home/hnatri/PIPAC_spatial/output/vardecomp.tsv
+</td>
+<td style="text-align:left;">
+output/vardecomp.tsv
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomheininPIPACspatialtree281c5e5063f3db18ffb2b23cc0dfc784422dfc6btargetblank281c5e5a">
+<span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span> <strong>Repository version:</strong>
+<a href="https://github.com/heinin/PIPAC_spatial/tree/281c5e5063f3db18ffb2b23cc0dfc784422dfc6b" target="_blank">281c5e5</a>
+</a>
+</p>
+</div>
+<div
+id="strongRepositoryversionstrongahrefhttpsgithubcomheininPIPACspatialtree281c5e5063f3db18ffb2b23cc0dfc784422dfc6btargetblank281c5e5a"
+class="panel-collapse collapse">
+<div class="panel-body">
+<p>
+Great! You are using Git for version control. Tracking code development
+and connecting the code version to the results is critical for
+reproducibility.
+</p>
+<p>
+The results in this page were generated with repository version
+<a href="https://github.com/heinin/PIPAC_spatial/tree/281c5e5063f3db18ffb2b23cc0dfc784422dfc6b" target="_blank">281c5e5</a>.
+See the <em>Past versions</em> tab to see a history of the changes made
+to the R Markdown and HTML files.
+</p>
+<p>
+Note that you need to be careful to ensure that all relevant files for
+the analysis have been committed to Git prior to generating the results
+(you can use <code>wflow_publish</code> or
+<code>wflow_git_commit</code>). workflowr only checks the R Markdown
+file, but you know if there are other scripts or data files that it
+depends on. Below is the status of the Git repository when the results
+were generated:
+</p>
+<pre><code>
+Ignored files:
+    Ignored:    .RData
+    Ignored:    celltype_markers.tsv
+    Ignored:    immune_cluster_marker_annotations.tsv
+    Ignored:    immune_cluster_marker_annotations_2ndpass.tsv
+    Ignored:    main_cluster_marker_annotations.tsv
+    Ignored:    nonimmune_cluster_marker_annotations.tsv
+    Ignored:    nonimmune_cluster_marker_annotations_2ndpass.tsv
+
+Untracked files:
+    Untracked:  MR_PIPACTMA3-Rerun_highres.png
+    Untracked:  analysis/arm2_comparative_analysis.Rmd
+    Untracked:  analysis/arm3_DEGs.Rmd
+    Untracked:  analysis/arm3_comparative_analysis.Rmd
+    Untracked:  analysis/arm3_niche_comparison.Rmd
+    Untracked:  analysis/feature_expression.Rmd
+    Untracked:  analysis/pca_variance_decomp.Rmd
+    Untracked:  annotation_dimplot.pdf
+    Untracked:  code/construct_niches.R
+    Untracked:  code/construct_niches.Rout
+    Untracked:  code/plot_metadata.R
+    Untracked:  code/plot_save_pdf.R
+    Untracked:  code/run_rscript.sh
+    Untracked:  code/slurm.18348851.err
+    Untracked:  code/slurm.18348851.out
+    Untracked:  code/slurm.18351391.err
+    Untracked:  code/slurm.18351391.out
+    Untracked:  code/slurm.18632903.err
+    Untracked:  code/slurm.18632903.out
+    Untracked:  code/update_metadata.R
+    Untracked:  code/vardecomp.R
+    Untracked:  coh004.pdf
+    Untracked:  demographics_grid.pdf
+    Untracked:  output/outputFile-Meanplot.pdf
+    Untracked:  output/outputFile-Variance.csv
+    Untracked:  output/outputFile-VarianceExplained-Boxplot.pdf
+    Untracked:  output/scrna-Meanplot.pdf
+    Untracked:  output/scrna-Variance.csv
+    Untracked:  output/scrna-VarianceExplained-Boxplot.pdf
+    Untracked:  output/vardecomp.tsv
+    Untracked:  tissue_celltypeprop_scatter.pdf
+
+Unstaged changes:
+    Modified:   analysis/add_metadata.Rmd
+    Modified:   analysis/annotation_2nd_pass.Rmd
+    Modified:   analysis/index.Rmd
+    Modified:   analysis/niche_construction.Rmd
+    Modified:   analysis/plot_by_group.Rmd
+    Modified:   analysis/splitting_samples.Rmd
+    Modified:   code/PIPAC_colors_themes.R
+
+</code></pre>
+<p>
+Note that any generated files, e.g. HTML, png, CSS, etc., are not
+included in this status report because it is ok for generated content to
+have uncommitted changes.
+</p>
+</div>
+</div>
+</div>
+</div>
+<hr>
+</div>
+<div id="versions" class="tab-pane fade">
+<p>
+There are no past versions. Publish this analysis with
+<code>wflow_publish()</code> to start tracking its development.
+</p>
+<hr>
+</div>
+</div>
+</div>
+<div id="load-packages" class="section level3">
+<h3>Load packages</h3>
+<pre class="r"><code>suppressPackageStartupMessages({
+  library(workflowr)
+  library(Seurat)
+  library(SeuratObject)
+  library(SeuratDisk)
+  library(tidyverse)
+  library(tibble)
+  library(ggplot2)
+  library(ggpubr)
+  library(ggrepel)
+  library(googlesheets4)
+  library(workflowr)
+  library(patchwork)
+  library(PALMO)})</code></pre>
+</div>
+<div id="environment-variables-and-helper-functions"
+class="section level3">
+<h3>Environment variables and helper functions</h3>
+<pre class="r"><code>setwd(&quot;/home/hnatri/PIPAC_spatial/&quot;)
+set.seed(9999)
+options(scipen = 99999)
+options(ggrepel.max.overlaps = Inf)
+
+source(&quot;/home/hnatri/PIPAC_spatial/code/PIPAC_colors_themes.R&quot;)
+source(&quot;/home/hnatri/PIPAC_spatial/code/plot_functions.R&quot;)
+
+# Modified function for variance decomposition
+#source(&quot;/home/hnatri/PIPAC_spatial/code/vardecomp.R&quot;)</code></pre>
+</div>
+<div id="marker-information" class="section level3">
+<h3>Marker information</h3>
+<pre class="r"><code>gs4_deauth()
+metadata  &lt;- gs4_get(&quot;https://docs.google.com/spreadsheets/d/1sXXwOreLxjMSUoPt79c6jmaQpluWkaxA5P5HfDsed3I/edit?usp=sharing&quot;)
+markers &lt;- read_sheet(metadata, sheet = &quot;Markers&quot;)
+second_pass_nonimmune &lt;- read_sheet(metadata, sheet = &quot;Tumor 2nd pass&quot;)
+second_pass_immune &lt;- read_sheet(metadata, sheet = &quot;Immune 2nd pass&quot;)
+
+# Cell type markers by group
+gs4_deauth()
+markers_by_group  &lt;- gs4_get(&quot;https://docs.google.com/spreadsheets/d/1w0wrL-5KwNEWi_VpmriN7YmfwpBPlEYX0MKlwI2ZQu8/edit?usp=sharing&quot;)
+markers_by_group &lt;- read_sheet(markers_by_group, sheet = &quot;Markers by group&quot;)</code></pre>
+</div>
+<div id="import-and-subset-data" class="section level3">
+<h3>Import and subset data</h3>
+<pre class="r"><code>seurat_data &lt;- readRDS(&quot;/tgen_labs/banovich/PIPAC/Seurat/PIPAC_NC50_NN20_PC20_Seurat_annotated_metadata_niches.rds&quot;)
+DefaultAssay(seurat_data) &lt;- &quot;RNA&quot;
+seurat_data &lt;- seurat_data %&gt;%
+  NormalizeData() %&gt;%
+  ScaleData()
+
+seurat_arm3 &lt;- subset(seurat_data, subset = Arm == &quot;Arm3&quot;)
+seurat_arm3 &lt;- seurat_arm3 %&gt;%
+  NormalizeData() %&gt;%
+  ScaleData()</code></pre>
+</div>
+<div id="pseudobulk-expression" class="section level3">
+<h3>Pseudobulk expression</h3>
+<pre class="r"><code>seurat_arm3$Sample_Annotation &lt;- paste0(seurat_arm3$Sample, &quot;_&quot;,
+                                        seurat_arm3$Annotation)
+
+#exp_mx &lt;- LayerData(seurat_arm3,
+#                    assay = &quot;RNA&quot;,
+#                    layer = &quot;data&quot;)
+
+pseudobulk &lt;- LayerData(seurat_arm3,
+                        assay = &quot;RNA&quot;,
+                        layer = &quot;data&quot;,
+                        features = rownames(seurat_arm3))
+pseudobulk &lt;- pseudobulk %&gt;% t() %&gt;% as.data.frame()
+pseudobulk$Sample_Annotation &lt;- seurat_arm3$Sample_Annotation
+
+pseudobulk &lt;- pseudobulk %&gt;% group_by(Sample_Annotation) %&gt;%
+  summarise_at(vars(-group_cols()), mean) %&gt;%
+  as.data.frame()
+
+pseudobulk &lt;- t(pseudobulk) %&gt;%
+  as.data.frame()
+  
+colnames(pseudobulk) &lt;- pseudobulk[1,]
+pseudobulk &lt;- pseudobulk[2:nrow(pseudobulk),]
+
+metadata_mx &lt;- seurat_arm3@meta.data %&gt;%
+  rownames_to_column(var = &quot;CellID&quot;) %&gt;%
+  dplyr::select(c(&quot;Patient_ID&quot;, &quot;Sample&quot;, &quot;Timepoint&quot;, &quot;Tissue&quot;, &quot;BestResponse&quot;,
+                  &quot;Annotation&quot;, &quot;Sample_Annotation&quot;)) %&gt;%
+  distinct()</code></pre>
+</div>
+<div id="variance-decomposition-using-palmo" class="section level3">
+<h3>Variance decomposition using PALMO</h3>
+<pre class="r"><code># Creating a PALMO object
+palmo_obj &lt;- createPALMOobject(anndata = metadata_mx,
+                               data = seurat_arm3)
+
+#Assign Sample, Patient_ID and Timepoint
+palmo_obj &lt;- annotateMetadata(data_object = palmo_obj,
+                              sample_column = &quot;Sample&quot;, donor_column = &quot;Patient_ID&quot;,
+                              time_column = &quot;Timepoint&quot;)
+
+# For single cell data merge annotation and single cell metadata by mentioned
+# sample_column.
+# Sample overlap and final matrix
+palmo_obj &lt;- mergePALMOdata(data_object = palmo_obj,
+                            datatype = &quot;singlecell&quot;)
+
+# Pseudobulking instead of using the PALMO function
+lognorm_counts &lt;- LayerData(seurat_arm3,
+                            assay = &quot;RNA&quot;,
+                            layer = &quot;data&quot;,
+                            features = rownames(seurat_arm3))
+lognorm_counts &lt;- lognorm_counts %&gt;% t() %&gt;% as.data.frame()
+# Sample and annotation as the grouping variable
+lognorm_counts$Sample_Annotation &lt;- seurat_arm3$Sample_Annotation
+
+lognorm_counts &lt;- lognorm_counts %&gt;% group_by(Sample_Annotation) %&gt;%
+  summarise_at(vars(-group_cols()), mean) %&gt;%
+  as.data.frame()
+
+lognorm_counts &lt;- t(lognorm_counts) %&gt;%
+  as.data.frame()
+  
+colnames(lognorm_counts) &lt;- lognorm_counts[1,]
+lognorm_counts &lt;- lognorm_counts[2:nrow(lognorm_counts),]
+
+palmo_obj@curated$anndata &lt;- metadata_mx
+palmo_obj@curated$data &lt;- lognorm_counts
+palmo_obj@rownames &lt;- row.names(lognorm_counts)
+palmo_obj@colnames &lt;- colnames(lognorm_counts)
+
+# Variance decomposition
+featureSet &lt;- c(&quot;Patient_ID&quot;, &quot;Sample&quot;, &quot;Tissue&quot;, &quot;Timepoint&quot;, &quot;Annotation&quot;,
+                &quot;BestResponse&quot;)
+palmo_obj &lt;- lmeVariance(data_object = palmo_obj,
+                         featureSet = featureSet,
+                         meanThreshold = 0.1,
+                         cl = 4,
+                         fileName = &quot;scrna&quot;)
+
+# Get the result
+var_decomp &lt;- palmo_obj@result$variance_decomposition
+
+write.table(var_decomp, &quot;/home/hnatri/PIPAC_spatial/output/vardecomp.tsv&quot;,
+            quote = F, sep = &quot;\t&quot;, row.names = F)</code></pre>
+<div id="plotting-variance-composition" class="section level4">
+<h4>Plotting variance composition</h4>
+<pre class="r"><code>var_decomp &lt;- read.table(&quot;/home/hnatri/PIPAC_spatial/output/vardecomp.tsv&quot;,
+                         header = T, sep = &quot;\t&quot;)
+
+var_decomp &lt;- var_decomp %&gt;%
+  pivot_longer(cols = c(&quot;Patient_ID&quot;, &quot;Sample&quot;, &quot;Tissue&quot;,
+                        &quot;Timepoint&quot;, &quot;Annotation&quot;, &quot;BestResponse&quot;),
+               names_to = &quot;Variable&quot;,
+               values_to = &quot;VarExplained&quot;)
+var_decomp$Variable &lt;- factor(var_decomp$Variable,
+                              levels = c(&quot;Patient_ID&quot;, &quot;Annotation&quot;, &quot;Sample&quot;,
+                                         &quot;BestResponse&quot;, &quot;Timepoint&quot;, &quot;Tissue&quot;))
+
+ggplot(var_decomp, aes(x = Variable, y = VarExplained, fill = Variable)) +
+  geom_violin(scale = &quot;width&quot;) +
+  geom_boxplot(width = 0.1, fill = &quot;white&quot;) +
+  geom_text_repel(data = var_decomp, aes(x = Variable, y = VarExplained),
+                  label = var_decomp$Gene,
+                  label.padding = 5,
+                  nudge_x = 0.1,
+                  nudge_y = 0.1,
+                  size = 3,
+                  segment.size = 0.1,
+                  segment.alpha = 0.9,
+                  max.overlaps = 20,
+                  color = &quot;black&quot;) +
+  labs(x = &quot;&quot;, y = &quot;Variance Explained (%)&quot;) +
+  theme_classic() +
+  RotatedAxis()</code></pre>
+<p><img src="figure/pca_variance_decomp.Rmd/unnamed-chunk-7-1.png" width="768" style="display: block; margin: auto;" /></p>
+</div>
+</div>
+<div id="pca" class="section level3">
+<h3>PCA</h3>
+<pre class="r"><code>pseudobulk &lt;- apply(pseudobulk, 2, as.numeric)
+
+pcs &lt;- prcomp(pseudobulk)
+
+pcres &lt;- as.data.frame(pcs$rotation)
+pcres$Sample_Annotation &lt;- rownames(pcres)
+
+pcs_metadata &lt;- merge(pcres, metadata_mx, by = &quot;Sample_Annotation&quot;)
+
+#pcs_metadata %&gt;% ggplot(aes(x = PC1, y = PC2, color = Annotation)) +
+#  geom_point() +
+#  scale_color_manual(name = &quot;Annotation&quot;, values = pipac_celltype_col) +
+#  theme_classic()
+
+p1 &lt;- pcs_metadata %&gt;% ggplot(aes(x = PC1, y = PC2, color = Annotation)) +
+  geom_point() +
+  scale_color_manual(name = &quot;Annotation&quot;, values = pipac_celltype_col) +
+  theme_classic()
+
+p2 &lt;- pcs_metadata %&gt;% ggplot(aes(x = PC1, y = PC2, color = Patient_ID)) +
+  geom_point() +
+  #scale_color_manual(name = &quot;Annotation&quot;, values = pipac_celltype_col) +
+  theme_classic()
+
+p3 &lt;- pcs_metadata %&gt;% ggplot(aes(x = PC1, y = PC2, color = Tissue)) +
+  geom_point() +
+  scale_color_manual(name = &quot;Tissue&quot;, values = tissue_col) +
+  theme_classic()
+
+p4 &lt;- pcs_metadata %&gt;% ggplot(aes(x = PC1, y = PC2, color = BestResponse)) +
+  geom_point() +
+  #scale_color_manual(name = &quot;Tissue&quot;, values = tissue_col) +
+  theme_classic()
+
+annot_plot_list &lt;- lapply(seq(1, 4), function(pc){
+  #pc1 &lt;- paste0(&quot;PC&quot;, pc)
+  pc2 &lt;- paste0(&quot;PC&quot;, (pc+1))
+  
+  pcs_metadata %&gt;% ggplot(aes_string(x = &quot;PC1&quot;, y = pc2, color = &quot;Annotation&quot;)) +
+  geom_point() +
+  scale_color_manual(name = &quot;Annotation&quot;, values = pipac_celltype_col) +
+  theme_classic()
+})
+
+patchwork::wrap_plots(annot_plot_list, ncol = 4) +
+  plot_layout(guides = &quot;collect&quot;) &amp; theme(legend.position = &#39;right&#39;)</code></pre>
+<p><img src="figure/pca_variance_decomp.Rmd/unnamed-chunk-8-1.png" width="1536" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>tissue_plot_list &lt;- lapply(seq(1, 4), function(pc){
+  #pc1 &lt;- paste0(&quot;PC&quot;, pc)
+  pc2 &lt;- paste0(&quot;PC&quot;, (pc+1))
+  
+  pcs_metadata %&gt;% ggplot(aes_string(x = &quot;PC1&quot;, y = pc2, color = &quot;Tissue&quot;)) +
+  geom_point() +
+  scale_color_manual(name = &quot;Tissue&quot;, values = tissue_col) +
+  theme_classic()
+})
+
+patchwork::wrap_plots(tissue_plot_list, ncol = 4) +
+  plot_layout(guides = &quot;collect&quot;) &amp; theme(legend.position = &#39;right&#39;)</code></pre>
+<p><img src="figure/pca_variance_decomp.Rmd/unnamed-chunk-8-2.png" width="1536" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>patient_plot_list &lt;- lapply(seq(1, 4), function(pc){
+  #pc1 &lt;- paste0(&quot;PC&quot;, pc)
+  pc2 &lt;- paste0(&quot;PC&quot;, (pc+1))
+  
+  pcs_metadata %&gt;% ggplot(aes_string(x = &quot;PC1&quot;, y = pc2, color = &quot;Patient_ID&quot;)) +
+  geom_point() +
+  #scale_color_manual(name = &quot;Tissue&quot;, values = tissue_col) +
+  theme_classic()
+})
+
+patchwork::wrap_plots(patient_plot_list, ncol = 4) +
+  plot_layout(guides = &quot;collect&quot;) &amp; theme(legend.position = &#39;right&#39;)</code></pre>
+<p><img src="figure/pca_variance_decomp.Rmd/unnamed-chunk-8-3.png" width="1536" style="display: block; margin: auto;" /></p>
+<br>
+<p>
+<button type="button" class="btn btn-default btn-workflowr btn-workflowr-sessioninfo" data-toggle="collapse" data-target="#workflowr-sessioninfo" style="display: block;">
+<span class="glyphicon glyphicon-wrench" aria-hidden="true"></span>
+Session information
+</button>
+</p>
+<div id="workflowr-sessioninfo" class="collapse">
+<pre class="r"><code>sessionInfo()</code></pre>
+<pre><code>R version 4.3.0 (2023-04-21)
+Platform: x86_64-pc-linux-gnu (64-bit)
+Running under: Ubuntu 22.04.3 LTS
+
+Matrix products: default
+BLAS:   /usr/lib/x86_64-linux-gnu/openblas-pthread/libblas.so.3 
+LAPACK: /usr/lib/x86_64-linux-gnu/openblas-pthread/libopenblasp-r0.3.20.so;  LAPACK version 3.10.0
+
+locale:
+ [1] LC_CTYPE=en_US.UTF-8       LC_NUMERIC=C              
+ [3] LC_TIME=en_US.UTF-8        LC_COLLATE=en_US.UTF-8    
+ [5] LC_MONETARY=en_US.UTF-8    LC_MESSAGES=en_US.UTF-8   
+ [7] LC_PAPER=en_US.UTF-8       LC_NAME=C                 
+ [9] LC_ADDRESS=C               LC_TELEPHONE=C            
+[11] LC_MEASUREMENT=en_US.UTF-8 LC_IDENTIFICATION=C       
+
+time zone: Etc/UTC
+tzcode source: system (glibc)
+
+attached base packages:
+[1] grid      stats     graphics  grDevices utils     datasets  methods  
+[8] base     
+
+other attached packages:
+ [1] ComplexHeatmap_2.18.0 viridis_0.6.3         viridisLite_0.4.2    
+ [4] circlize_0.4.15       plyr_1.8.8            RColorBrewer_1.1-3   
+ [7] PALMO_0.1.1           patchwork_1.1.2       googlesheets4_1.1.0  
+[10] ggrepel_0.9.3         ggpubr_0.6.0          lubridate_1.9.2      
+[13] forcats_1.0.0         stringr_1.5.0         dplyr_1.1.2          
+[16] purrr_1.0.2           readr_2.1.4           tidyr_1.3.0          
+[19] tibble_3.2.1          ggplot2_3.4.2         tidyverse_2.0.0      
+[22] SeuratDisk_0.0.0.9021 Seurat_5.0.1          SeuratObject_5.0.2   
+[25] sp_1.6-1              workflowr_1.7.1      
+
+loaded via a namespace (and not attached):
+  [1] fs_1.6.2                    matrixStats_1.0.0          
+  [3] spatstat.sparse_3.0-1       bitops_1.0-7               
+  [5] httr_1.4.6                  doParallel_1.0.17          
+  [7] tools_4.3.0                 sctransform_0.4.1          
+  [9] backports_1.4.1             utf8_1.2.3                 
+ [11] R6_2.5.1                    lazyeval_0.2.2             
+ [13] uwot_0.1.14                 GetoptLong_1.0.5           
+ [15] withr_2.5.0                 gridExtra_2.3              
+ [17] progressr_0.13.0            cli_3.6.1                  
+ [19] Biobase_2.62.0              factoextra_1.0.7           
+ [21] spatstat.explore_3.2-1      fastDummies_1.7.3          
+ [23] labeling_0.4.2              sass_0.4.6                 
+ [25] spatstat.data_3.0-1         ggridges_0.5.4             
+ [27] pbapply_1.7-0               parallelly_1.36.0          
+ [29] rstudioapi_0.14             generics_0.1.3             
+ [31] shape_1.4.6                 ica_1.0-3                  
+ [33] spatstat.random_3.1-5       car_3.1-2                  
+ [35] Matrix_1.6-5                fansi_1.0.4                
+ [37] S4Vectors_0.40.2            abind_1.4-5                
+ [39] lifecycle_1.0.3             whisker_0.4.1              
+ [41] yaml_2.3.7                  carData_3.0-5              
+ [43] SummarizedExperiment_1.32.0 SparseArray_1.2.4          
+ [45] Rtsne_0.16                  promises_1.2.0.1           
+ [47] crayon_1.5.2                miniUI_0.1.1.1             
+ [49] lattice_0.21-8              cowplot_1.1.1              
+ [51] pillar_1.9.0                knitr_1.43                 
+ [53] GenomicRanges_1.54.1        rjson_0.2.21               
+ [55] boot_1.3-28.1               future.apply_1.11.0        
+ [57] codetools_0.2-19            leiden_0.4.3               
+ [59] glue_1.6.2                  getPass_0.2-4              
+ [61] data.table_1.14.8           vctrs_0.6.5                
+ [63] png_0.1-8                   spam_2.9-1                 
+ [65] Rdpack_2.4                  cellranger_1.1.0           
+ [67] gtable_0.3.3                cachem_1.0.8               
+ [69] xfun_0.39                   rbibutils_2.2.13           
+ [71] S4Arrays_1.2.1              mime_0.12                  
+ [73] reformulas_0.4.0            survival_3.5-5             
+ [75] gargle_1.4.0                SingleCellExperiment_1.24.0
+ [77] pheatmap_1.0.12             iterators_1.0.14           
+ [79] ellipsis_0.3.2              fitdistrplus_1.1-11        
+ [81] ROCR_1.0-11                 nlme_3.1-162               
+ [83] bit64_4.0.5                 RcppAnnoy_0.0.20           
+ [85] GenomeInfoDb_1.38.8         rprojroot_2.0.3            
+ [87] bslib_0.4.2                 irlba_2.3.5.1              
+ [89] KernSmooth_2.23-21          colorspace_2.1-0           
+ [91] BiocGenerics_0.48.1         tidyselect_1.2.0           
+ [93] processx_3.8.1              bit_4.0.5                  
+ [95] compiler_4.3.0              curl_5.0.1                 
+ [97] git2r_0.32.0                hdf5r_1.3.8                
+ [99] DelayedArray_0.28.0         plotly_4.10.2              
+[101] scales_1.2.1                lmtest_0.9-40              
+[103] callr_3.7.3                 digest_0.6.31              
+[105] goftest_1.2-3               spatstat.utils_3.0-3       
+[107] minqa_1.2.5                 rmarkdown_2.22             
+[109] XVector_0.42.0              htmltools_0.5.5            
+[111] pkgconfig_2.0.3             lme4_1.1-37                
+[113] MatrixGenerics_1.14.0       highr_0.10                 
+[115] fastmap_1.1.1               rlang_1.1.1                
+[117] GlobalOptions_0.1.2         htmlwidgets_1.6.2          
+[119] shiny_1.7.4                 farver_2.1.1               
+[121] jquerylib_0.1.4             zoo_1.8-12                 
+[123] jsonlite_1.8.5              RCurl_1.98-1.12            
+[125] magrittr_2.0.3              GenomeInfoDbData_1.2.11    
+[127] dotCall64_1.0-2             munsell_0.5.0              
+[129] Rcpp_1.0.10                 reticulate_1.29            
+[131] stringi_1.7.12              zlibbioc_1.48.2            
+[133] MASS_7.3-60                 MAST_1.28.0                
+[135] parallel_4.3.0              listenv_0.9.0              
+[137] deldir_1.0-9                splines_4.3.0              
+[139] tensor_1.5                  hms_1.1.3                  
+[141] ps_1.7.5                    igraph_1.4.3               
+[143] spatstat.geom_3.2-1         ggsignif_0.6.4             
+[145] RcppHNSW_0.5.0              reshape2_1.4.4             
+[147] stats4_4.3.0                evaluate_0.21              
+[149] nloptr_2.0.3                tzdb_0.4.0                 
+[151] foreach_1.5.2               tweenr_2.0.2               
+[153] httpuv_1.6.11               RANN_2.6.1                 
+[155] polyclip_1.10-4             future_1.32.0              
+[157] clue_0.3-64                 scattermore_1.2            
+[159] ggforce_0.4.1               broom_1.0.4                
+[161] xtable_1.8-4                RSpectra_0.16-1            
+[163] rstatix_0.7.2               later_1.3.1                
+[165] googledrive_2.1.0           IRanges_2.36.0             
+[167] cluster_2.1.4               timechange_0.2.0           
+[169] globals_0.16.2             </code></pre>
+</div>
+</div>
+
+
+<!-- Adjust MathJax settings so that all math formulae are shown using
+TeX fonts only; see
+https://docs.mathjax.org/en/latest/web/configuration.html. This will make
+the presentation more consistent at the cost of the webpage sometimes
+taking slightly longer to load. Note that this only works because the
+footer is added to webpages before the MathJax javascript. -->
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    "HTML-CSS": { availableFonts: ["TeX"] }
+  });
+</script>
+
+
+
+
+</div>
+</div>
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.odd').parent('tbody').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- tabsets -->
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open');
+  });
+});
+</script>
+
+<!-- code folding -->
+<script>
+$(document).ready(function () {
+  window.initializeCodeFolding("hide" === "show");
+});
+</script>
+
+<script>
+$(document).ready(function ()  {
+
+    // temporarily add toc-ignore selector to headers for the consistency with Pandoc
+    $('.unlisted.unnumbered').addClass('toc-ignore')
+
+    // move toc-ignore selectors from section div to header
+    $('div.section.toc-ignore')
+        .removeClass('toc-ignore')
+        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
+
+    // establish options
+    var options = {
+      selectors: "h1,h2,h3",
+      theme: "bootstrap3",
+      context: '.toc-content',
+      hashGenerator: function (text) {
+        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_');
+      },
+      ignoreSelector: ".toc-ignore",
+      scrollTo: 0
+    };
+    options.showAndHide = true;
+    options.smoothScroll = true;
+
+    // tocify
+    var toc = $("#TOC").tocify(options).data("toc-tocify");
+});
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

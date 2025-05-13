@@ -1,0 +1,231 @@
+---
+title: "Niche analysis with n neighbors = 20"
+author: "heinin"
+date: "2025-03-30"
+output:
+  workflowr::wflow_html:
+    code_folding: hide
+  html_notebook: default
+editor_options:
+  chunk_output_type: console
+---
+
+### Load packages
+
+```{r, warning=F, message=F}
+
+suppressPackageStartupMessages({
+  library(workflowr)
+  library(arrow)
+  library(Seurat)
+  library(SeuratObject)
+  library(SeuratDisk)
+  library(tidyverse)
+  library(tibble)
+  library(ggplot2)
+  library(ggpubr)
+  library(ggrepel)
+  library(googlesheets4)
+  library(workflowr)
+  library(patchwork)})
+
+```
+
+### Environment variables and helper functions
+
+```{r, message = F, warning = F}
+
+setwd("/home/hnatri/PIPAC_spatial/")
+set.seed(9999)
+options(future.globals.maxSize = 30000 * 1024^2)
+options(scipen = 99999)
+options(ggrepel.max.overlaps = Inf)
+
+source("/home/hnatri/PIPAC_spatial/code/PIPAC_colors_themes.R")
+source("/home/hnatri/PIPAC_spatial/code/plot_functions.R")
+
+```
+
+### Import data
+
+```{r, message = F, warning = F, fig.width = 8, fig.height = 4}
+
+seurat_data <- readRDS("/tgen_labs/banovich/PIPAC/Seurat/PIPAC_NC50_NN20_PC20_Seurat_annotated_metadata_niches20.rds")
+
+```
+
+### Niche construction
+
+See /code/construct_niches.R
+
+### Plotting niche composition
+
+```{r, message = F, warning = F, fig.width = 8, fig.height = 5}
+
+plot_list <- lapply(seq(3, 8), function(niche){
+  niche_column <- paste0("niche_k", niche, "_n20")
+  niches <- seq(1, niche)
+  seurat_data@meta.data[,niche_column] <- factor(seurat_data@meta.data[,niche_column],
+                                                 levels = niches)
+  
+  create_barplot(seurat_data,
+                 group_var = niche_column,
+                 plot_var = "Annotation",
+                 group_levels = niches,
+                 plot_levels = sort(unique(seurat_data$Annotation)),
+                 plot_colors = pipac_celltype_col,
+                 var_names =  c("Frequency (%)", ""),
+                 legend_title = "Cell type")
+  
+})
+
+plot_list
+
+```
+
+### Plotting by response
+
+```{r, message = F, warning = F, fig.width = 4, fig.height = 4}
+
+plot_list <- lapply(seq(3, 8), function(niche){
+  niche_column <- paste0("niche_k", niche, "_n20")
+  ct_table <- as.data.frame(table(seurat_data@meta.data[, niche_column], seurat_data$Tissue))
+  colnames(ct_table) <- c("Niche", "Tissue", "Freq")
+  ct_table <- spread(ct_table, Niche, Freq)
+  # Converting to percetange
+  #ct_table[,2:length(ct_table)] <- (ct_table[,2:length(ct_table)]/rowSums(ct_table[,2:length(ct_table)]))*100
+  ct_table <- gather(ct_table, Niche, Freq, names(ct_table)[2:length(names(ct_table))], factor_key=TRUE)
+      
+  ct_table$Tissue <- factor(ct_table$Tissue, levels = c("Normal", "Tumor"))
+  
+  niches <- seq(1, niche)
+  niches <- factor(niches, levels = niches)
+  #niches <- sort(unique(seurat_data@meta.data[, niche_col]))
+  niche_col <- colorRampPalette(brewer.pal(10, "Paired"))(nb.cols <- length(niches))
+  names(niche_col) <- levels(niches)
+  
+  ggplot(ct_table, aes(x = Tissue, y = Freq, fill = Niche)) +
+         geom_bar(stat="identity", position='stack', width = 0.8) +
+         scale_fill_manual(name = "Niche", values = niche_col) +
+         xlab("") +
+         ylab("Cell count") +
+         theme_classic() +
+         theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1))
+  
+})
+
+plot_list
+
+```
+
+### Plotting by sample
+
+```{r, message = F, warning = F, fig.width = 12, fig.height = 4, eval = F}
+
+plot_list <- lapply(seq(3, 8), function(niche){
+  niche_column <- paste0("niche_k", niche, "_n20")
+  niches <- seq(1, niche)
+  seurat_data@meta.data[,niche_column] <- factor(seurat_data@meta.data[,niche_column],
+                                                 levels = niches)
+  niche_col <- colorRampPalette(brewer.pal(10, "Paired"))(nb.cols <- length(niches))
+  names(niche_col) <- levels(niches)
+  
+  create_barplot(seurat_data,
+                 plot_var = niche_column,
+                 group_var = "Sample",
+                 plot_levels = niches,
+                 group_levels = sort(unique(seurat_data$Sample)),
+                 plot_colors = niche_col,
+                 var_names =  c("Frequency (%)", ""),
+                 legend_title = "Niche")
+  
+})
+
+plot_list
+
+```
+
+### Plotting by sample, Arm 3 tumors only
+
+```{r, message = F, warning = F, fig.width = 10, fig.height = 4}
+
+arm3 <- subset(seurat_data, subset = Arm == "Arm3" &
+                 Tissue == "Tumor")
+
+plot_list <- lapply(seq(3, 8), function(niche){
+  niche_column <- paste0("niche_k", niche, "_n20")
+  niches <- seq(1, niche)
+  arm3@meta.data[,niche_column] <- factor(arm3@meta.data[,niche_column],
+                                            levels = niches)
+  niche_col <- colorRampPalette(brewer.pal(10, "Paired"))(nb.cols <- length(niches))
+  names(niche_col) <- levels(niches)
+  
+  create_barplot(arm3,
+                 plot_var = niche_column,
+                 group_var = "Sample",
+                 plot_levels = niches,
+                 group_levels = sort(unique(arm3$Sample)),
+                 plot_colors = niche_col,
+                 var_names =  c("Frequency (%)", ""),
+                 legend_title = "Niche")
+  
+})
+
+plot_list
+
+```
+
+### Plotting by sample, Arm 3 tumor adjacent only
+
+```{r, message = F, warning = F, fig.width = 10, fig.height = 4}
+
+arm3 <- subset(seurat_data, subset = Arm == "Arm3" &
+                 Tissue == "Normal")
+
+plot_list <- lapply(seq(3, 8), function(niche){
+  niche_column <- paste0("niche_k", niche, "_n20")
+  niches <- seq(1, niche)
+  arm3@meta.data[,niche_column] <- factor(arm3@meta.data[,niche_column],
+                                            levels = niches)
+  niche_col <- colorRampPalette(brewer.pal(10, "Paired"))(nb.cols <- length(niches))
+  names(niche_col) <- levels(niches)
+  
+  create_barplot(arm3,
+                 plot_var = niche_column,
+                 group_var = "Sample",
+                 plot_levels = niches,
+                 group_levels = sort(unique(arm3$Sample)),
+                 plot_colors = niche_col,
+                 var_names =  c("Frequency (%)", ""),
+                 legend_title = "Niche")
+  
+})
+
+plot_list
+
+```
+
+### Spatial plots of niches
+
+```{r, message = F, warning = F, fig.width = 8, fig.height = 5}
+
+plot_list <- lapply(seq(3, 8), function(niche){
+  
+  niche_column <- paste0("niche_k", niche, "_n20")
+  niches <- seq(1, niche)
+  niches <- factor(niches, levels = niches)
+  #niches <- sort(unique(seurat_data@meta.data[, niche_col]))
+  niche_col <- colorRampPalette(brewer.pal(10, "Paired"))(nb.cols <- length(niches))
+  names(niche_col) <- levels(niches)
+  
+  DimPlot(seurat_data,
+          group.by = niche_column,
+          cols = niche_col,
+          reduction = "sp_adj") +
+  coord_fixed()
+  
+})
+
+plot_list
+
+```

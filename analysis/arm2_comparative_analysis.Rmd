@@ -1,0 +1,102 @@
+---
+title: "PIPAC Arm 2 comparative analysis"
+author: "heinin"
+date: "2025-03-19"
+output:
+  workflowr::wflow_html:
+    code_folding: hide
+  html_notebook: default
+editor_options:
+  chunk_output_type: console
+---
+
+### Packages and environment variables
+
+```{r, warning=F, message=F}
+
+suppressPackageStartupMessages({
+  library(workflowr)
+  library(arrow)
+  library(Seurat)
+  library(SeuratObject)
+  library(SeuratDisk)
+  library(tidyverse)
+  library(tibble)
+  library(ggplot2)
+  library(ggpubr)
+  library(ggrepel)
+  library(googlesheets4)
+  library(workflowr)
+  library(patchwork)})
+
+```
+
+### Environment variables and helper functions
+
+```{r, message = F, warning = F}
+
+setwd("/home/hnatri/PIPAC_spatial/")
+set.seed(9999)
+options(scipen = 99999)
+options(ggrepel.max.overlaps = Inf)
+
+source("/home/hnatri/PIPAC_spatial/code/PIPAC_colors_themes.R")
+source("/home/hnatri/PIPAC_spatial/code/plot_functions.R")
+
+```
+
+### Import and subset data
+
+```{r, message = F, warning = F, fig.width = 8, fig.height = 4}
+
+seurat_data <- readRDS("/tgen_labs/banovich/PIPAC/Seurat/PIPAC_NC50_NN20_PC20_Seurat_annotated_metadata_niches.rds")
+seurat_data <- subset(seurat_data, subset = Arm == "Arm2")
+
+length(unique(seurat_data$Patient_ID))
+length(unique(seurat_data$Sample))
+
+```
+
+### Cell type proportions by sample and sample type
+
+```{r, message = F, warning = F, fig.width = 24, fig.height = 6}
+
+create_barplot(seurat_data,
+               group_var = "Sample",
+               plot_var = "Annotation",
+               plot_levels = sort((unique(seurat_data$Annotation))),
+               group_levels = sort(unique(seurat_data$Sample)),
+               plot_colors = pipac_celltype_col,
+               var_names =  c("Frequency (%)", ""),
+               legend_title = "Celltype")
+
+```
+
+### Cell numbers in tumor and normal
+
+```{r, message = F, warning = F, fig.width = 5, fig.height = 5}
+
+ct_table <- as.data.frame(table(seurat_data$Annotation, seurat_data$Tissue))
+colnames(ct_table) <- c("Celltype", "Tissue", "Freq")
+ct_table <- spread(ct_table, Celltype, Freq)
+# Converting to percetange
+#ct_table[,2:length(ct_table)] <- (ct_table[,2:length(ct_table)]/rowSums(ct_table[,2:length(ct_table)]))*100
+ct_table <- gather(ct_table, Celltype, Freq, names(ct_table)[2:length(names(ct_table))], factor_key=TRUE)
+    
+ct_table$Tissue <- factor(ct_table$Tissue, levels = c("Normal", "Tumor"))
+
+ggplot(ct_table, aes(x = Tissue, y = Freq, fill = Celltype)) +
+       geom_bar(stat="identity", position='stack', width = 0.8) +
+       scale_fill_manual(name = "Celltype", values = pipac_celltype_col) +
+       xlab("") +
+       ylab("Cell count") +
+       theme_classic() +
+       theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1))
+
+```
+
+### Cell type proportions by response
+
+#### In baseline tumor
+
+#### After treatment tumor

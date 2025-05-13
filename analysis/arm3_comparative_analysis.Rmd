@@ -1,0 +1,773 @@
+---
+title: "PIPAC Arm 3 comparative analysis"
+author: "heinin"
+date: "2025-03-19"
+output:
+  workflowr::wflow_html:
+    code_folding: hide
+  html_notebook: default
+editor_options:
+  chunk_output_type: console
+---
+
+## Load packages
+
+```{r, warning=F, message=F}
+
+suppressPackageStartupMessages({
+  library(workflowr)
+  library(arrow)
+  library(Seurat)
+  library(SeuratObject)
+  library(SeuratDisk)
+  library(tidyverse)
+  library(tibble)
+  library(ggplot2)
+  library(ggpubr)
+  library(ggrepel)
+  library(googlesheets4)
+  library(workflowr)
+  library(patchwork)
+  library(ggpmisc)
+  library(scProportionTest)})
+
+```
+
+## Environment variables and helper functions
+
+```{r, message = F, warning = F}
+
+setwd("/home/hnatri/PIPAC_spatial/")
+set.seed(9999)
+options(scipen = 99999)
+options(ggrepel.max.overlaps = Inf)
+
+source("/home/hnatri/PIPAC_spatial/code/PIPAC_colors_themes.R")
+source("/home/hnatri/PIPAC_spatial/code/plot_functions.R")
+
+```
+
+## Marker information
+
+```{r, message = F, warning = F, fig.width = 6, fig.height = 4}
+
+gs4_deauth()
+metadata  <- gs4_get("https://docs.google.com/spreadsheets/d/1sXXwOreLxjMSUoPt79c6jmaQpluWkaxA5P5HfDsed3I/edit?usp=sharing")
+markers <- read_sheet(metadata, sheet = "Markers")
+second_pass_nonimmune <- read_sheet(metadata, sheet = "Tumor 2nd pass")
+second_pass_immune <- read_sheet(metadata, sheet = "Immune 2nd pass")
+
+# Cell type markers by group
+gs4_deauth()
+markers_by_group  <- gs4_get("https://docs.google.com/spreadsheets/d/1w0wrL-5KwNEWi_VpmriN7YmfwpBPlEYX0MKlwI2ZQu8/edit?usp=sharing")
+markers_by_group <- read_sheet(markers_by_group, sheet = "Markers by group")
+
+```
+
+## Import and subset data
+
+```{r, message = F, warning = F, fig.width = 8, fig.height = 4}
+
+seurat_data <- readRDS("/tgen_labs/banovich/PIPAC/Seurat/PIPAC_NC50_NN20_PC20_Seurat_annotated_metadata_niches.rds")
+DefaultAssay(seurat_data) <- "RNA"
+seurat_data <- seurat_data %>%
+  NormalizeData() %>%
+  ScaleData()
+
+seurat_arm3 <- subset(seurat_data, subset = Arm == "Arm3")
+seurat_arm3 <- seurat_arm3 %>%
+  NormalizeData() %>%
+  ScaleData()
+
+length(unique(seurat_arm3$Patient_ID))
+length(unique(seurat_arm3$Sample))
+unique(seurat_arm3$Timepoint)
+
+```
+
+## All tumors
+
+### Cell type proportions by sample and sample type
+
+```{r, message = F, warning = F, fig.width = 24, fig.height = 6}
+
+create_barplot(seurat_arm3,
+               group_var = "Sample",
+               plot_var = "Annotation",
+               plot_levels = sort((unique(seurat_arm3$Annotation))),
+               group_levels = sort(unique(seurat_arm3$Sample)),
+               plot_colors = pipac_celltype_col,
+               var_names =  c("Frequency (%)", ""),
+               legend_title = "Celltype")
+
+```
+
+### Cell type proportions by timepoint in tumors
+
+```{r, message = F, warning = F, fig.width = 5, fig.height = 5}
+
+create_barplot(subset(seurat_arm3, subset = Tissue == "Tumor"),
+               group_var = "Timepoint",
+               plot_var = "Annotation",
+               plot_levels = sort((unique(seurat_arm3$Annotation))),
+               group_levels = sort(unique(seurat_arm3$Timepoint)),
+               plot_colors = pipac_celltype_col,
+               var_names =  c("Frequency (%)", ""),
+               legend_title = "Celltype")
+
+```
+
+### Cell type proportions by timepoint in tumor-adjacent samples
+
+```{r, message = F, warning = F, fig.width = 5, fig.height = 5}
+
+create_barplot(subset(seurat_arm3, subset = Tissue == "Normal"),
+               group_var = "Timepoint",
+               plot_var = "Annotation",
+               plot_levels = sort((unique(seurat_arm3$Annotation))),
+               group_levels = sort(unique(seurat_arm3$Timepoint)),
+               plot_colors = pipac_celltype_col,
+               var_names =  c("Frequency (%)", ""),
+               legend_title = "Celltype")
+
+```
+
+### Cell numbers in tumor and normal
+
+```{r, message = F, warning = F, fig.width = 5, fig.height = 5}
+
+ct_table <- as.data.frame(table(seurat_arm3$Annotation, seurat_arm3$Tissue))
+colnames(ct_table) <- c("Celltype", "Tissue", "Freq")
+ct_table <- spread(ct_table, Celltype, Freq)
+# Converting to percetange 
+#ct_table[,2:length(ct_table)] <- (ct_table[,2:length(ct_table)]/rowSums(ct_table[,2:length(ct_table)]))*100
+ct_table <- gather(ct_table, Celltype, Freq, names(ct_table)[2:length(names(ct_table))], factor_key=TRUE)
+    
+ct_table$Tissue <- factor(ct_table$Tissue, levels = c("Normal", "Tumor"))
+
+ggplot(ct_table, aes(x = Tissue, y = Freq, fill = Celltype)) +
+       geom_bar(stat="identity", position='stack', width = 0.8) +
+       scale_fill_manual(name = "Celltype", values = pipac_celltype_col) +
+       xlab("") +
+       ylab("Cell count") +
+       theme_classic() +
+       theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1))
+
+```
+
+### Tumor cell type proportions by response
+
+```{r, message = F, warning = F, fig.width = 4, fig.height = 5}
+
+arm3_tumor <- subset(seurat_arm3, subset = Tissue == "Tumor")
+arm3_tumor <- arm3_tumor %>%
+  NormalizeData() %>%
+  ScaleData()
+
+table(arm3_tumor$Patient_ID)
+table(as.character(arm3_tumor$Sample))
+
+arm3_tumor@meta.data %>%
+  dplyr::select(c("Patient_ID", "Sample")) %>%
+  distinct()
+
+table(arm3_tumor$BestResponse)
+
+create_barplot(arm3_tumor,
+               group_var = "BestResponse",
+               plot_var = "Annotation",
+               plot_levels = sort((unique(arm3_tumor$Annotation))),
+               group_levels = sort(unique(arm3_tumor$BestResponse)),
+               plot_colors = pipac_celltype_col,
+               var_names =  c("Frequency (%)", ""),
+               legend_title = "Celltype")
+
+```
+
+#### Testing for significance with scProportionTest
+
+```{r, message = F, warning = F, fig.width = 6, fig.height = 6}
+
+prop_test <- sc_utils(arm3_tumor)
+prop_test <- permutation_test(
+	prop_test, cluster_identity = "Annotation",
+	sample_1 = "PR", sample_2 = "SD",
+	sample_identity = "BestResponse")
+
+permutation_plot(prop_test) +
+  ggtitle("All tumors")
+
+```
+
+### Tumor-adjacent cell type proportions by response
+
+```{r, message = F, warning = F, fig.width = 4, fig.height = 5}
+
+arm3_normal <- subset(seurat_arm3, subset = Tissue == "Normal")
+arm3_normal <- arm3_normal %>%
+  NormalizeData() %>%
+  ScaleData()
+
+table(arm3_normal$Patient_ID)
+table(as.character(arm3_normal$Sample))
+
+arm3_normal@meta.data %>%
+  dplyr::select(c("Patient_ID", "Sample")) %>%
+  distinct()
+
+table(arm3_normal$BestResponse)
+
+create_barplot(arm3_normal,
+               group_var = "BestResponse",
+               plot_var = "Annotation",
+               plot_levels = sort((unique(arm3_tumor$Annotation))),
+               group_levels = sort(unique(arm3_tumor$BestResponse)),
+               plot_colors = pipac_celltype_col,
+               var_names =  c("Frequency (%)", ""),
+               legend_title = "Celltype")
+
+```
+
+#### Testing for significance with scProportionTest
+
+```{r, message = F, warning = F, fig.width = 6, fig.height = 6}
+
+prop_test <- sc_utils(arm3_normal)
+prop_test <- permutation_test(
+	prop_test, cluster_identity = "Annotation",
+	sample_1 = "PR", sample_2 = "SD",
+	sample_identity = "BestResponse")
+
+permutation_plot(prop_test) +
+  ggtitle("All tumors")
+
+```
+
+### Cell type proportion correlations with survival time
+
+Linear regression
+
+```{r, message = F, warning = F, fig.width = 12, fig.height = 30}
+
+metadata <- seurat_arm3@meta.data %>%
+  dplyr::select("Patient_ID", "DISEASESITE", "osmonths", "pfsmonths", "No_of_PIPACs") %>%
+  distinct()
+
+prop_table <- as.data.frame(table(seurat_arm3@meta.data$Annotation, as.character(seurat_arm3@meta.data$Patient_ID)))
+colnames(prop_table) <- c("Annotation", "Patient_ID", "Freq")
+prop_table <- spread(prop_table, Annotation, Freq)
+# Converting to percentage
+prop_table[,2:length(prop_table)] <- (prop_table[,2:length(prop_table)]/rowSums(prop_table[,2:length(prop_table)]))*100
+prop_table <- gather(prop_table, Annotation, Freq, names(prop_table)[2:length(names(prop_table))], factor_key=TRUE)
+
+# Adding survival data
+prop_survival <- merge(prop_table, metadata, by = "Patient_ID")
+prop_survival$osmonths <- unlist(prop_survival$osmonths)
+prop_survival$pfmonths <- unlist(prop_survival$pfmonths)
+
+# Plotting
+plot_list <- lapply(sort(unique(seurat_arm3$Annotation)), function(ct){
+  prop_survival %>%
+    filter(Annotation == ct) %>%
+    ggplot(aes(x = Freq, y = osmonths, color = Annotation)) +
+    geom_point() +
+    scale_color_manual(name = "Annotation", values = pipac_celltype_col) +
+    stat_poly_line() +
+    stat_poly_eq(formula = y ~ x,
+                 rr.digits = 3, p.digits = 3, small.p = T,
+                 aes(label = paste(after_stat(rr.label), after_stat(p.value.label), sep = "*`,`~")),
+                 label.x = 0.01, label.y = 1, parse = T) +
+    ylab("Overall Survival") +
+    xlab(paste0("% of ", ct, " cells")) +
+    theme_classic() +
+    theme(axis.text.x = element_text(color = "black"),
+          axis.text.y = element_text(color = "black")) +
+    NoLegend()
+})
+
+wrap_plots(plot_list, ncol = 3)
+
+names(plot_list) <- sort(unique(seurat_arm3$Annotation))
+
+```
+
+### Fibroblast marker expression
+
+```{r, message = F, warning = F, fig.width = 6, fig.height = 5, eval = F}
+
+DotPlot(subset(seurat_arm3, subset = Annotation %in% paste0("F", seq(1,5))),
+        group.by = "Annotation",
+        features = unique(markers_by_group[which(markers_by_group$annotation1 == "CAFs"),]$feature),
+        cols = c("azure", "tomato3")) +
+  coord_flip() +
+  ggtitle("CAFs, all timepoints")
+
+```
+
+## Baseline tumors
+
+### Cell type proportions by sample
+
+```{r, message = F, warning = F, fig.width = 8, fig.height = 5}
+
+unique(seurat_arm3$Timepoint)
+baseline_tumor <- subset(seurat_arm3, subset = Tissue == "Tumor" &
+                           Timepoint == 0)
+baseline_tumor <- baseline_tumor %>%
+  NormalizeData() %>%
+  ScaleData()
+
+table(baseline_tumor$Patient_ID)
+table(as.character(baseline_tumor$Sample))
+
+baseline_tumor@meta.data %>%
+  dplyr::select(c("Patient_ID", "Sample")) %>%
+  distinct()
+
+table(baseline_tumor$BestResponse)
+
+create_barplot(baseline_tumor,
+               group_var = "Sample",
+               plot_var = "Annotation",
+               plot_levels = sort((unique(baseline_tumor$Annotation))),
+               group_levels = sort(unique(baseline_tumor$Sample)),
+               plot_colors = pipac_celltype_col,
+               var_names =  c("Frequency (%)", ""),
+               legend_title = "Celltype")
+
+```
+
+### Cell type proportions by response
+
+```{r, message = F, warning = F, fig.width = 4, fig.height = 5}
+
+create_barplot(baseline_tumor,
+               group_var = "BestResponse",
+               plot_var = "Annotation",
+               plot_levels = sort((unique(baseline_tumor$Annotation))),
+               group_levels = sort(unique(baseline_tumor$BestResponse)),
+               plot_colors = pipac_celltype_col,
+               var_names =  c("Frequency (%)", ""),
+               legend_title = "Celltype")
+
+```
+
+#### Testing for significance with scProportionTest
+
+```{r, message = F, warning = F, fig.width = 6, fig.height = 6}
+
+prop_test <- sc_utils(baseline_tumor)
+prop_test <- permutation_test(
+	prop_test, cluster_identity = "Annotation",
+	sample_1 = "PR", sample_2 = "SD",
+	sample_identity = "BestResponse")
+
+permutation_plot(prop_test) +
+  ggtitle("Baseline tumors")
+
+```
+
+### Cell type proportions by response in tumor-adjacent
+
+```{r, message = F, warning = F, fig.width = 4, fig.height = 5}
+
+baseline_normal <- subset(seurat_arm3, subset = Tissue == "Normal" &
+                           Timepoint == 0)
+baseline_normal <- baseline_normal %>%
+  NormalizeData() %>%
+  ScaleData()
+
+table(baseline_normal$Patient_ID)
+table(as.character(baseline_normal$Sample))
+
+baseline_normal@meta.data %>%
+  dplyr::select(c("Patient_ID", "Sample")) %>%
+  distinct()
+
+table(baseline_normal$BestResponse)
+table(baseline_normal$Annotation)
+
+create_barplot(baseline_normal,
+               group_var = "BestResponse",
+               plot_var = "Annotation",
+               plot_levels = sort((unique(baseline_normal$Annotation))),
+               group_levels = sort(unique(baseline_normal$BestResponse)),
+               plot_colors = pipac_celltype_col,
+               var_names =  c("Frequency (%)", ""),
+               legend_title = "Celltype")
+
+```
+
+#### Testing for significance with scProportionTest
+
+```{r, message = F, warning = F, fig.width = 6, fig.height = 6}
+
+prop_test <- sc_utils(baseline_normal)
+prop_test <- permutation_test(
+	prop_test, cluster_identity = "Annotation",
+	sample_1 = "PR", sample_2 = "SD",
+	sample_identity = "BestResponse")
+
+permutation_plot(prop_test) +
+  ggtitle("Baseline tumor-adjacent")
+
+```
+
+### Tumor cell type proportion correlations with survival time
+
+Linear regression
+
+```{r, message = F, warning = F, fig.width = 12, fig.height = 30}
+
+metadata <- baseline_tumor@meta.data %>%
+  dplyr::select("Patient_ID", "DISEASESITE", "osmonths", "pfsmonths", "No_of_PIPACs") %>%
+  distinct()
+
+prop_table <- as.data.frame(table(baseline_tumor@meta.data$Annotation, as.character(baseline_tumor@meta.data$Patient_ID)))
+colnames(prop_table) <- c("Annotation", "Patient_ID", "Freq")
+prop_table <- spread(prop_table, Annotation, Freq)
+# Converting to percentage
+prop_table[,2:length(prop_table)] <- (prop_table[,2:length(prop_table)]/rowSums(prop_table[,2:length(prop_table)]))*100
+prop_table <- gather(prop_table, Annotation, Freq, names(prop_table)[2:length(names(prop_table))], factor_key=TRUE)
+
+# Adding survival data
+prop_survival <- merge(prop_table, metadata, by = "Patient_ID")
+prop_survival$osmonths <- unlist(prop_survival$osmonths)
+prop_survival$pfmonths <- unlist(prop_survival$pfmonths)
+
+# Plotting
+plot_list <- lapply(sort(unique(baseline_tumor$Annotation)), function(ct){
+  prop_survival %>%
+    filter(Annotation == ct) %>%
+    ggplot(aes(x = Freq, y = osmonths, color = Annotation)) +
+    geom_point() +
+    scale_color_manual(name = "Annotation", values = pipac_celltype_col) +
+    stat_poly_line() +
+    stat_poly_eq(formula = y ~ x,
+                 rr.digits = 3, p.digits = 3, small.p = T,
+                 aes(label = paste(after_stat(rr.label), after_stat(p.value.label), sep = "*`,`~")),
+                 label.x = 0.01, label.y = 1, parse = T) +
+    ylab("Overall Survival") +
+    xlab(paste0("% of ", ct, " cells")) +
+    theme_classic() +
+    theme(axis.text.x = element_text(color = "black"),
+          axis.text.y = element_text(color = "black")) +
+    NoLegend()
+})
+
+wrap_plots(plot_list, ncol = 3)
+
+```
+
+## After treatment tumor
+
+### Cell type proportions by sample
+
+```{r, message = F, warning = F, fig.width = 12, fig.height = 5}
+
+unique(seurat_arm3$Timepoint)
+post_treatment_tumor <- subset(seurat_arm3, subset = Tissue == "Tumor" &
+                                 Timepoint %in% c(6, 12))
+post_treatment_tumor <- post_treatment_tumor %>%
+  NormalizeData() %>%
+  ScaleData()
+
+table(post_treatment_tumor$Patient_ID)
+table(as.character(post_treatment_tumor$Sample))
+
+post_treatment_tumor@meta.data %>%
+  dplyr::select(c("Patient_ID", "Sample")) %>%
+  distinct()
+
+table(post_treatment_tumor$BestResponse)
+
+create_barplot(post_treatment_tumor,
+               group_var = "Sample",
+               plot_var = "Annotation",
+               plot_levels = sort((unique(post_treatment_tumor$Annotation))),
+               group_levels = sort(unique(post_treatment_tumor$Sample)),
+               plot_colors = pipac_celltype_col,
+               var_names =  c("Frequency (%)", ""),
+               legend_title = "Celltype")
+
+```
+
+### Cell type proportions by response
+
+```{r, message = F, warning = F, fig.width = 4, fig.height = 5}
+
+create_barplot(post_treatment_tumor,
+               group_var = "BestResponse",
+               plot_var = "Annotation",
+               plot_levels = sort((unique(post_treatment_tumor$Annotation))),
+               group_levels = sort(unique(post_treatment_tumor$BestResponse)),
+               plot_colors = pipac_celltype_col,
+               var_names =  c("Frequency (%)", ""),
+               legend_title = "Celltype")
+
+```
+
+#### Testing for significance with scProportionTest
+
+```{r, message = F, warning = F, fig.width = 6, fig.height = 6}
+
+prop_test <- sc_utils(post_treatment_tumor)
+prop_test <- permutation_test(
+	prop_test, cluster_identity = "Annotation",
+	sample_1 = "PR", sample_2 = "SD",
+	sample_identity = "BestResponse")
+
+permutation_plot(prop_test) +
+  ggtitle("Post-treatment tumors")
+
+```
+
+### Cell type proportions by response in tumor-adjacent
+
+```{r, message = F, warning = F, fig.width = 4, fig.height = 5}
+
+unique(seurat_arm3$Timepoint)
+treated_normal <- subset(seurat_arm3, subset = Tissue == "Normal" &
+                           Timepoint == c(6, 12))
+treated_normal <- treated_normal %>%
+  NormalizeData() %>%
+  ScaleData()
+
+table(treated_normal$Patient_ID)
+table(as.character(treated_normal$Sample))
+
+treated_normal@meta.data %>%
+  dplyr::select(c("Patient_ID", "Sample")) %>%
+  distinct()
+
+table(treated_normal$BestResponse)
+table(treated_normal$Annotation)
+
+create_barplot(treated_normal,
+               group_var = "BestResponse",
+               plot_var = "Annotation",
+               plot_levels = sort((unique(treated_normal$Annotation))),
+               group_levels = sort(unique(treated_normal$BestResponse)),
+               plot_colors = pipac_celltype_col,
+               var_names =  c("Frequency (%)", ""),
+               legend_title = "Celltype")
+
+```
+
+#### Testing for significance with scProportionTest
+
+```{r, message = F, warning = F, fig.width = 6, fig.height = 6}
+
+prop_test <- sc_utils(treated_normal)
+prop_test <- permutation_test(
+	prop_test, cluster_identity = "Annotation",
+	sample_1 = "PR", sample_2 = "SD",
+	sample_identity = "BestResponse")
+
+permutation_plot(prop_test) +
+  ggtitle("Post-treatment tumor-adjacent")
+
+```
+
+#### Tumor cell type proportion correlations with survival time
+
+Linear regression
+
+```{r, message = F, warning = F, fig.width = 12, fig.height = 30}
+
+metadata <- post_treatment_tumor@meta.data %>%
+  dplyr::select("Patient_ID", "DISEASESITE", "osmonths", "pfsmonths", "No_of_PIPACs") %>%
+  distinct()
+
+prop_table <- as.data.frame(table(post_treatment_tumor@meta.data$Annotation, as.character(post_treatment_tumor@meta.data$Patient_ID)))
+colnames(prop_table) <- c("Annotation", "Patient_ID", "Freq")
+prop_table <- spread(prop_table, Annotation, Freq)
+# Converting to percentage
+prop_table[,2:length(prop_table)] <- (prop_table[,2:length(prop_table)]/rowSums(prop_table[,2:length(prop_table)]))*100
+prop_table <- gather(prop_table, Annotation, Freq, names(prop_table)[2:length(names(prop_table))], factor_key=TRUE)
+
+# Adding survival data
+prop_survival <- merge(prop_table, metadata, by = "Patient_ID")
+prop_survival$osmonths <- unlist(prop_survival$osmonths)
+prop_survival$pfmonths <- unlist(prop_survival$pfmonths)
+
+# Plotting
+plot_list <- lapply(sort(unique(post_treatment_tumor$Annotation)), function(ct){
+  prop_survival %>%
+    filter(Annotation == ct) %>%
+    ggplot(aes(x = Freq, y = osmonths, color = Annotation)) +
+    geom_point() +
+    scale_color_manual(name = "Annotation", values = pipac_celltype_col) +
+    stat_poly_line() +
+    stat_poly_eq(formula = y ~ x,
+                 rr.digits = 3, p.digits = 3, small.p = T,
+                 aes(label = paste(after_stat(rr.label), after_stat(p.value.label), sep = "*`,`~")),
+                 label.x = 0.01, label.y = 1, parse = T) +
+    ylab("Overall Survival") +
+    xlab(paste0("% of ", ct, " cells")) +
+    theme_classic() +
+    theme(axis.text.x = element_text(color = "black"),
+          axis.text.y = element_text(color = "black")) +
+    NoLegend()
+})
+
+wrap_plots(plot_list, ncol = 3)
+
+names(plot_list) <- sort(unique(post_treatment_tumor$Annotation))
+
+```
+
+```{r, message = F, warning = F, fig.width = 4, fig.height = 3}
+
+plot_list[["F5"]]
+
+```
+
+Calculating Hazard ratios
+
+```{r, message = F, warning = F, fig.width = 5, fig.height = 5, eval = F}
+
+prop_table <- as.data.frame(table(immune_fibro@meta.data$celltype, as.character(immune_fibro@meta.data$UPN)))
+colnames(prop_table) <- c("celltype", "UPN", "Freq")
+prop_table <- spread(prop_table, celltype, Freq)
+# Converting to percentage
+prop_table[,2:length(prop_table)] <- (prop_table[,2:length(prop_table)]/rowSums(prop_table[,2:length(prop_table)]))*100
+prop_table <- gather(prop_table, celltype, Freq, names(prop_table)[2:length(names(prop_table))], factor_key=TRUE)
+
+prop_table <- prop_table %>% pivot_wider(names_from = celltype,
+                                         values_from = Freq)
+
+# Adding survival data
+metadata <- immune_fibro@meta.data %>%
+  dplyr::select("UPN",
+                "Death.Status",
+                "Survival.time.in.Months.from.surgery",
+                "binary_response",
+                "Grade",
+                "Diagnosis.Histology",
+                "EGFR.Amplification",
+                "EGFRvIII..Exon.2.7.deletion",
+                "EGFR.Missense",
+                "TP53.Frameshift",
+                "TP53.Missense",
+                "TP53.Nonsense",
+                "IDH1.Missense",
+                "IDH2.Missense",
+                "TERT.Promoter.Mutation",
+                "PTEN.Codon.Deletion",
+                "PTEN.Frameshift",
+                "PTEN.Interference.of.splice.acceptor.site.in.Intron.6") %>%
+  distinct()
+
+prop_survival <- merge(prop_table, metadata, by = "UPN")
+
+# Fit survival data using the Kaplan-Meier method
+surv_object <- Surv(time = prop_survival$Survival.time.in.Months.from.surgery,
+                    event = prop_survival$Death.Status)
+surv_object 
+
+# Fit a Cox proportional hazards model for a single gene
+fit.coxph <- coxph(surv_object ~ M1 + M2 + M3 + M4 + M5 + M6 + M7 + M8 + M9 + N1 +
+                     L1 + L2 + L3 + L4 + L5 + L6 + L7 + L8 + L8 + L9 + L10 + B1 +
+                     F1 + F2 + F3,
+                   data = prop_survival)
+
+p1 <- ggforest(fit.coxph, data = prop_survival)
+
+p1
+
+```
+
+### Inspecting F5
+
+#### Fibroblast marker expression
+
+```{r, message = F, warning = F, fig.width = 6, fig.height = 6}
+
+DotPlot(subset(post_treatment_tumor, subset = Annotation %in% paste0("F", seq(1,5))),
+        group.by = "Annotation",
+        features = c(unique(markers_by_group[which(markers_by_group$annotation1 == "CAFs"),]$feature), "DCN", "LUM", "EPCAM"),
+        cols = c("gray88", "tomato3")) +
+  coord_flip() +
+  ggtitle("CAFs, post-treatment (D6/12)")
+
+#Idents(seurat_data) <- seurat_data$Annotation
+#celltype_markers <- FindAllMarkers(seurat_data,
+#                                   return.thresh = 0.01,
+#                                   logfc.threshold = 0.5,
+#                                   min.pct = 0.20,
+#                                   only.pos = T,
+#                                   verbose = F)
+#
+#table(celltype_markers$cluster)
+#
+#output_celltype_markers <- celltype_markers %>%
+#  arrange(dplyr::desc(abs(avg_log2FC))) %>%
+#  group_by(cluster) %>%
+#  dplyr::slice(1:30)
+#
+#output_celltype_markers <- merge(output_celltype_markers, markers, by.x = "gene", by.y = "Gene")
+
+```
+
+## Tumor cell type proportion differences between timepoints (before and after treatment)
+
+```{r, message = F, warning = F, fig.width = 4, fig.height = 5}
+
+arm3_tumor$PrePost <- ifelse(arm3_tumor$Timepoint == 0, "Baseline", "Treated")
+
+create_barplot(arm3_tumor,
+               group_var = "PrePost",
+               plot_var = "Annotation",
+               plot_levels = sort((unique(arm3_tumor$Annotation))),
+               group_levels = sort(unique(arm3_tumor$PrePost)),
+               plot_colors = pipac_celltype_col,
+               var_names =  c("Frequency (%)", ""),
+               legend_title = "Celltype")
+
+```
+
+```{r, message = F, warning = F, fig.width = 6, fig.height = 6}
+
+prop_test <- sc_utils(arm3_tumor)
+prop_test <- permutation_test(
+	prop_test, cluster_identity = "Annotation",
+	sample_1 = "Baseline", sample_2 = "Treated",
+	sample_identity = "PrePost")
+
+permutation_plot(prop_test) +
+  ggtitle("Baseline vs. treated")
+
+```
+
+## Tumor-adjacent cell type proportion differences between timepoints (before and after treatment)
+
+```{r, message = F, warning = F, fig.width = 4, fig.height = 5}
+
+arm3_normal$PrePost <- ifelse(arm3_normal$Timepoint == 0, "Baseline", "Treated")
+
+create_barplot(arm3_normal,
+               group_var = "PrePost",
+               plot_var = "Annotation",
+               plot_levels = sort((unique(arm3_normal$Annotation))),
+               group_levels = sort(unique(arm3_normal$PrePost)),
+               plot_colors = pipac_celltype_col,
+               var_names =  c("Frequency (%)", ""),
+               legend_title = "Celltype")
+
+```
+
+```{r, message = F, warning = F, fig.width = 6, fig.height = 6}
+
+
+prop_test <- sc_utils(arm3_normal)
+prop_test <- permutation_test(
+	prop_test, cluster_identity = "Annotation",
+	sample_1 = "Baseline", sample_2 = "Treated",
+	sample_identity = "PrePost")
+
+permutation_plot(prop_test) +
+  ggtitle("Baseline vs. treated")
+
+```
+

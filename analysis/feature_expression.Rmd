@@ -1,0 +1,415 @@
+---
+title: "Plotting gene expression in the PIPAC data"
+author: "heinin"
+date: "2025-03-04"
+output:
+  workflowr::wflow_html:
+    code_folding: hide
+  html_notebook: default
+editor_options:
+  chunk_output_type: console
+---
+
+### Packages and environment variables
+
+```{r, warning=F, message=F}
+
+suppressPackageStartupMessages({
+  library(workflowr)
+  library(arrow)
+  library(Seurat)
+  library(SeuratObject)
+  library(SeuratDisk)
+  library(tidyverse)
+  library(tibble)
+  library(ggplot2)
+  library(ggpubr)
+  library(ggrepel)
+  library(googlesheets4)
+  library(workflowr)
+  library(patchwork)})
+
+```
+
+### Environment variables and helper functions
+
+```{r, message = F, warning = F}
+
+setwd("/home/hnatri/PIPAC_spatial/")
+set.seed(9999)
+options(scipen = 99999)
+options(ggrepel.max.overlaps = Inf)
+
+source("/home/hnatri/PIPAC_spatial/code/PIPAC_colors_themes.R")
+source("/home/hnatri/PIPAC_spatial/code/plot_functions.R")
+
+# Cell type markers by group
+gs4_deauth()
+markers_by_group  <- gs4_get("https://docs.google.com/spreadsheets/d/1w0wrL-5KwNEWi_VpmriN7YmfwpBPlEYX0MKlwI2ZQu8/edit?usp=sharing")
+markers_by_group <- read_sheet(markers_by_group, sheet = "Markers by group")
+
+```
+
+### Import data
+
+```{r, message = F, warning = F, fig.width = 8, fig.height = 4}
+
+seurat_data <- readRDS("/tgen_labs/banovich/PIPAC/Seurat/PIPAC_NC50_NN20_PC20_Seurat_annotated_metadata_niches.rds")
+#immune <- readRDS("/tgen_labs/banovich/PIPAC/Seurat/PIPAC_immune_NC50_NN20_PC20_Seurat_annotated_metadata.rds")
+#nonimmune <- readRDS("/tgen_labs/banovich/PIPAC/Seurat/PIPAC_nonimmune_NC50_NN20_PC20_Seurat_annotated_metadata.rds")
+
+```
+
+### CEA genes
+
+```{r, message = F, warning = F, fig.width = 6, fig.height = 7}
+
+DotPlot(seurat_data,
+        group.by = "Annotation",
+        features = grep("CEA", rownames(seurat_data), value = T),
+        cols = c("gray89", "tomato3")) +
+  RotatedAxis() +
+  xlab("") +
+  ylab("")
+
+```
+
+```{r, message = F, warning = F, fig.width = 8, fig.height = 4, eval = F}
+
+FeaturePlot(immune,
+            features = grep("CEA", rownames(nonimmune), value = T),
+            cols = c("gray89", "tomato3"),
+            order = T,
+            ncol = 3) &
+  coord_fixed(ratio = 1) &
+  theme_classic() &
+  plot_theme
+
+FeaturePlot(nonimmune,
+            features = grep("CEA", rownames(nonimmune), value = T),
+            cols = c("gray89", "tomato3"),
+            order = T,
+            ncol = 3) &
+  coord_fixed(ratio = 1) &
+  theme_classic() &
+  plot_theme
+
+```
+
+### myCAFs, iCAFs, and abCAFs
+
+Markers from https://www.biorxiv.org/content/10.1101/2025.05.02.651876v1\\
+
+F3s look more like iCAFs, others are mCAFs.
+
+```{r, message = F, warning = F, fig.width = 8, fig.height = 8}
+
+mycafs <- c("TGFB1", "ACTA2", "TAGLN")
+icafs <- c("IL6", "CXCL12", "CXCL13", "CXCL14")
+abcafs <- c("CD74", "HLA-DPB1", "HLA-DPB2", "HLA-DQA1", "HLA-DRA", "HLA-DRB1")
+
+DotPlot(seurat_data,
+        group.by = "Annotation",
+        features = c(mycafs, icafs, abcafs, c("COL1A1", "COL1A2", "FN1")),
+        cols = c("gray89", "tomato3")) +
+  RotatedAxis() +
+  ylab("") +
+  xlab("")
+
+```
+
+### Macrophages
+
+Interferon primed TAMs (IFN-TAMs)
+
+```{r, message = F, warning = F, fig.width = 8, fig.height = 8}
+
+ifn_tams <- c("CASP1", "CASP4", "CCL2", "CCL3", "CCL4", "CCL7", "CCL8", "CD274hi", "CD40", "CXCL2", "CXCL3", "CXCL9", "CXCL10", "CXCL11", "IDO1", "IFI6", "IFIT1", "IFIT2", "IFIT3", "IFITM1", "IFITM3", "IRF1", "IRF7", "LAMP3", "PDCD1LG2hi", "C1QA", "C1QC", "CD38", "IL4I1", "ISG15", "TNFSF10", "IFI44L")
+
+DotPlot(seurat_data,
+        group.by = "Annotation",
+        features = ifn_tams,
+        cols = c("gray89", "tomato3")) +
+  RotatedAxis() +
+  ylab("") +
+  xlab("")
+
+```
+
+Inflammatory cytokine-enriched TAMs (Inflam-TAMs)
+
+```{r, message = F, warning = F, fig.width = 8, fig.height = 8}
+
+inflam_tams <- c("CCL2", "CCL3", "CCL4", "CCL5", "CCL20", "CCL3L1", "CCL3L3", "CCL4L2", "CCL4L4", "CXCL1", "CXCL2", "CXCL3", "CXCL5", "CXCL8", "G0S2", "IL1B", "IL1RN", "IL6", "INHBA", "KLF2", "KLF6", "NEDD9", "PMAIP1", "S100A8", "S100A9", "SPP1")
+
+DotPlot(seurat_data,
+        group.by = "Annotation",
+        features = inflam_tams,
+        cols = c("gray89", "tomato3")) +
+  RotatedAxis() +
+  ylab("") +
+  xlab("")
+
+```
+
+Lipid-associated TAMs (LA-TAMs)
+
+```{r, message = F, warning = F, fig.width = 8, fig.height = 8}
+
+la_tams <- c("ACP5", "AOPE", "APOC1", "ATF1", "C1QA", "C1QB", "C1QC", "CCL18", "CD163", "CD36", "CD63", "CHI3L1", "CTSB", "CTSD", "CTSL", "F13A1", "FABP5", "FOLR2", "GPNMB", "IRF3", "LGALS3", "LIPA", "LPL", "MACRO", "MerTK", "MMP7", "MMP9", "MMP12", "MRC1", "NR1H3", "NRF1", "NUPR1", "PLA2G7", "RNASE1", "SPARC", "SPP1", "TFDP2", "TREM2", "ZEB1")
+
+DotPlot(seurat_data,
+        group.by = "Annotation",
+        features = la_tams,
+        cols = c("gray89", "tomato3")) +
+  RotatedAxis() +
+  ylab("") +
+  xlab("")
+
+```
+
+Proangiogenic TAMs (Angio-TAMs)
+
+```{r, message = F, warning = F, fig.width = 8, fig.height = 8}
+
+angio_tams <- c("ADAM8", "AREG", "BNIP3", "CCL2", "CCL4", "CCL20", "CD163", "CD300E", "CD44", "CD55", "CEBPB", "CLEC5A", "CTSB", "EREG", "FCN1", "FLT1", "FN1", "HES1", "IL1B", "IL1RN", "IL8", "MAF", "MIF", "NR1H3", "OLR1", "PPARG", "S100A8", "S100A9", "S100A12", "SERPINB2", "SLC2A1", "SPIC", "SPP1", "THBS1", "TIMP1", "VCAN", "VEGFA")
+
+DotPlot(seurat_data,
+        group.by = "Annotation",
+        features = angio_tams,
+        cols = c("gray89", "tomato3")) +
+  RotatedAxis() +
+  ylab("") +
+  xlab("")
+
+```
+
+Immune regulatory TAMs (Reg-TAMs)
+
+```{r, message = F, warning = F, fig.width = 6, fig.height = 8}
+
+reg_tams <- c("CCL2", "CD274", "CD40", "CD80", "CD86", "CHIT1", "CX3CR1", "HLA-A", "HLA-C", "HLA-DQA1", "HLA-DOB1", "HLA-DRA", "HLA-DRB1", "HLA-DRB5", "ICOSLG", "IL-10", "ITGA4", "LGALS9", "MACRO", "MRC1", "TGFB2")
+
+DotPlot(seurat_data,
+        group.by = "Annotation",
+        features = reg_tams,
+        cols = c("gray89", "tomato3")) +
+  RotatedAxis() +
+  ylab("") +
+  xlab("")
+
+```
+
+Proliferating TAMs (Prolif-TAMs)
+
+```{r, message = F, warning = F, fig.width = 6, fig.height = 8}
+
+prolif_tams <- c("CCNA2", "CDC45", "CDK1", "H2AFC", "HIST1H4C", "HMGB1", "HMGN2", "MKI67", "RRM2", "STMN1", "TOP2A", "TUBA1B", "TUBB", "TYMS")
+
+DotPlot(seurat_data,
+        group.by = "Annotation",
+        features = prolif_tams,
+        cols = c("gray89", "tomato3")) +
+  RotatedAxis() +
+  ylab("") +
+  xlab("")
+
+```
+
+Resident-tissue macrophage-like TAMs (RTM-TAMs)
+
+```{r, message = F, warning = F, fig.width = 6, fig.height = 8}
+
+rtm_tams <- c("C1QA", "C1QB", "C1QC", "CCL7", "CD163", "CD5L", "CD74", "CETP", "FOLR2", "HLA-DPA1", "HLA-DPB1", "HLA-DRB1", "MACRO", "MAF", "MS4A7", "SLC40A1", "VCAM1", "VSIG4")
+
+DotPlot(seurat_data,
+        group.by = "Annotation",
+        features = rtm_tams,
+        cols = c("gray89", "tomato3")) +
+  RotatedAxis() +
+  ylab("") +
+  xlab("")
+
+```
+
+### B cells
+
+```{r, message = F, warning = F, fig.width = 8, fig.height = 8}
+
+mature_b <- c("IGHM", "HLA-DR", "CD19", "CD20", "CD40")
+
+act_b <- c("IGHM", "CD19", "CD30")
+
+# XBP1 is downstream of BLIMP1 (PRDM1). MZB1 is an effector of BLIMP1.
+plasma <- c("CD38", "CD138", "IGHG1", "CD45", "CD184", "TNFRSF17", "PRDM1", "CXCR3", "CXCR4", "DCN", "XBP1", "MZB1")
+
+memory_b <- c("CD19", "CD20", "CD21", "CD27", "CD69", "CD95")
+
+b1 <- c("CD19", "IGHM", "CD1d", "CD43")
+
+margzone_b <- c("IGHM", "CD21", "CD23")
+
+follic_b <- c("IGHD", "CD19", "CD23")
+
+breg <- c("IGHM", "CD19", "CD1D", "CD21", "CD5", "GZMB", "GZMH")
+
+bcells <- c(mature_b, act_b, plasma, memory_b, b1, margzone_b, follic_b, breg,
+            c("ADAM28", "BANK1", "CD40"))
+
+DotPlot(seurat_data,
+        group.by = "Annotation",
+        features = unique(bcells),
+        cols = c("gray89", "tomato3")) +
+  RotatedAxis() +
+  ylab("") +
+  xlab("")
+
+```
+
+### T cells
+
+```{r, message = F, warning = F, fig.width = 14, fig.height = 8}
+
+# T cell markers
+gs4_deauth()
+canonical_markers  <- gs4_get("https://docs.google.com/spreadsheets/d/186PIcU3Jb0Xm3IuZgENEChluykvwsK4JnHF8FbeJASA/edit?usp=sharing")
+sheet_names(canonical_markers)
+canonical_markers <- read_sheet(canonical_markers, sheet = "T cells, gene sets")
+canonical_markers <- canonical_markers %>% filter(!is.na(Bigger_gene_sets))
+
+DotPlot(seurat_data,
+        group.by = "Annotation",
+        features = unique(c(canonical_markers$RNA, c("CD4", "LEF1", "CCR7", "SATB1", "KLF2", "SELL", "IL7R", "RORA", "CXCR1", "GZMB", "GZMH", "PRF1", "KLRG1", "GNLY", "NKG7", "S100A4", "IL7R", "EOMES", "TCF7", "SELL", "CCR7", "LEF1", "PDCD1", "CD69", "IFNG", "MKI67", "LEF1", "CCR7", "SATB1", "KLF2", "SELL", "IL7R", "CXCR1", "GZMB", "GZMH", "PRF1", "KLRG1", "GNLY", "NKG7", "GZMK", "KLRD1", "CCL5", "S100A4", "IL7R", "EOMES", "TCF7", "SELL", "CCR7", "LEF1", "PDCD1", "CCR7", "ITGAE", "ZNF683", "CD69", "IFNG", "MKI67", "HAVCR2", "TOX", "ENTPD1", "LAG3", "PDCD1", "CXCL13", "LAY"))),
+        cols = c("gray89", "tomato3")) +
+  RotatedAxis() +
+  ylab("") +
+  xlab("")
+
+```
+
+### Endothelial
+
+```{r, message = F, warning = F, fig.width = 8, fig.height = 8}
+
+endothelial <- c("CD31", "CD34",  "CD45",  "ICAM1",  "LYVE1",  "TEK",  "VCAM1",
+                 "LYVE1", "PROX1", "FLT4", "PDPN", "PECAM1", "ICAM2", "CD47",
+                 "CDH5", "NECTIN2", "ESAM", "ITGB3", "CD151", "CD248", "MCAM",
+                 "ITGA4", "MCAM", "CXCL16", "ITGB1", "PODXL", "CD44", "VEGFR2",
+                 "NOTCH1", "TIE1", "TIE2", "CD138", "VEGFA", "NOTCH2", "PTEN",
+                 "JAK1", "JAK2")
+
+DotPlot(seurat_data,
+        group.by = "Annotation",
+        features = sort(unique(endothelial)),
+        cols = c("gray89", "tomato3")) +
+  RotatedAxis() +
+  ylab("") +
+  xlab("")
+
+```
+
+### Plotting cell type markers by group
+
+```{r, message = F, warning = F, fig.width = 16, fig.height = 8, eval = T}
+
+DotPlot(seurat_data,
+        group.by = "Annotation",
+        features = unique(markers_by_group[which(markers_by_group$annotation1 == "Cell-cell crosstalk"),]$feature),
+        cols = c("azure", "tomato3")) +
+  RotatedAxis() +
+  ggtitle("Cell-cell crosstalk")
+
+```
+
+```{r, message = F, warning = F, fig.width = 6, fig.height = 8, eval = T}
+
+DotPlot(seurat_data,
+        group.by = "Annotation",
+        features = unique(markers_by_group[which(markers_by_group$annotation1 == "Macrophage signaling"),]$feature),
+        cols = c("azure", "tomato3")) +
+  RotatedAxis() +
+  ggtitle("Macrophage signaling")
+
+```
+
+```{r, message = F, warning = F, fig.width = 6, fig.height = 8, eval = T}
+
+DotPlot(seurat_data,
+        group.by = "Annotation",
+        features = unique(markers_by_group[which(markers_by_group$annotation1 == "DNA damage and cell faith"),]$feature),
+        cols = c("azure", "tomato3")) +
+  RotatedAxis() +
+  ggtitle("DNA damage and cell faith")
+
+```
+
+```{r, message = F, warning = F, fig.width = 10, fig.height = 8, eval = T}
+
+DotPlot(seurat_data,
+        group.by = "Annotation",
+        features = unique(markers_by_group[which(markers_by_group$annotation1 == "Functional markers"),]$feature),
+        cols = c("azure", "tomato3")) +
+  RotatedAxis() +
+  ggtitle("Functional markers")
+
+```
+
+```{r, message = F, warning = F, fig.width = 6, fig.height = 8, eval = T}
+
+DotPlot(seurat_data,
+        group.by = "Annotation",
+        features = unique(markers_by_group[which(markers_by_group$annotation1 == "Mesothelial"),]$feature),
+        cols = c("azure", "tomato3")) +
+  RotatedAxis() +
+  ggtitle("Mesothelial")
+
+```
+
+```{r, message = F, warning = F, fig.width = 10, fig.height = 8, eval = F}
+
+DotPlot(seurat_data,
+        group.by = "Annotation",
+        features = unique(markers_by_group[which(markers_by_group$annotation1 == "Macrophages"),]$feature),
+        cols = c("azure", "tomato3")) +
+  RotatedAxis() +
+  ggtitle("Macrophages")
+
+```
+
+```{r, message = F, warning = F, fig.width = 10, fig.height = 8, eval = T}
+
+DotPlot(seurat_data,
+        group.by = "Annotation",
+        features = unique(markers_by_group[which(markers_by_group$annotation1 == "CAFs"),]$feature),
+        cols = c("azure", "tomato3")) +
+  RotatedAxis() +
+  ggtitle("CAFs")
+
+```
+
+```{r, message = F, warning = F, fig.width = 6, fig.height = 8, eval = T}
+
+DotPlot(seurat_data,
+        group.by = "Annotation",
+        features = grep("COL", rownames(seurat_data), value = T),
+        cols = c("azure", "tomato3")) +
+  RotatedAxis() +
+  ggtitle("Collagen")
+
+```
+
+### Cell cycle markers
+
+```{r, message = F, warning = F, fig.width = 6, fig.height = 8, eval = T}
+
+s.genes <- cc.genes.updated.2019$s.genes
+g2m.genes <- cc.genes.updated.2019$g2m.genes
+
+DotPlot(seurat_data,
+        group.by = "Annotation",
+        features = c(s.genes, g2m.genes),
+        cols = c("azure", "tomato3")) +
+  RotatedAxis() +
+  ggtitle("S/G2M genes")
+
+```
