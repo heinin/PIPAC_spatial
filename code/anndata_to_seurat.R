@@ -16,11 +16,15 @@ library(anndata)
 # Convert data
 #==============================================================================
 
-data <- read_h5ad("/scratch/hnatri/PIPAC/nonimmune_complete_subset_clustered_NC50_NN20_PC20_AnnData.h5ad")
-seurat <- CreateSeuratObject(counts = t(as.matrix(data$X)), 
+data <- read_h5ad("/scratch/hnatri/PIPAC/cell_merged_spatial_filtered_splitsamples_clustered_NC50_NN20_PC20_AnnData.h5ad")
+seurat <- CreateSeuratObject(counts = t(as.matrix(data$raw)), 
                              meta.data = data$obs)
 
 head(seurat@meta.data)
+
+#cell_exp <- LayerData(seurat,
+#                      assay = "RNA",
+#                      layer = "counts")
 
 # Add PCA reduction
 pca <- data$obsm$X_pca
@@ -69,5 +73,10 @@ DimPlot(seurat,
   NoLegend() +
   ggtitle("")
 
+# Adding nuclear counts
+merged_spatial <- readRDS("/scratch/hnatri/PIPAC/cell_merged_spatial_filtered_splitsamples.rds")
+
+seurat@assays$nucleus_RNA <- merged_spatial@assays$nucleus_RNA
+
 # Saving as Seurat
-saveRDS(seurat, "/scratch/hnatri/PIPAC/nonimmune_complete_subset_clustered_NC50_NN20_PC20_Seurat.rds")
+saveRDS(seurat, "/scratch/hnatri/PIPAC/cell_merged_spatial_filtered_splitsamples_clustered_NC50_NN20_PC20_Seurat.rds")

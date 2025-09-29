@@ -395,7 +395,7 @@ aria-hidden="true"></span> </a>
 <div class="tab-content">
 <div id="summary" class="tab-pane fade in active">
 <p>
-<strong>Last updated:</strong> 2025-03-28
+<strong>Last updated:</strong> 2025-09-18
 </p>
 <p>
 <strong>Checks:</strong> <span
@@ -433,10 +433,10 @@ changes </a>
 <div id="strongRMarkdownfilestronguncommittedchanges"
 class="panel-collapse collapse">
 <div class="panel-body">
-<p>The R Markdown is untracked by Git. To know which version of the R
-Markdown file created these results, you’ll want to first commit it to
-the Git repo. If you’re still working on the analysis, you can ignore
-this warning. When you’re finished, you can run
+<p>The R Markdown file has unstaged changes. To know which version of
+the R Markdown file created these results, you’ll want to first commit
+it to the Git repo. If you’re still working on the analysis, you can
+ignore this warning. When you’re finished, you can run
 <code>wflow_publish</code> to commit the R Markdown file and build the
 HTML.</p>
 </div>
@@ -587,15 +587,15 @@ output/vardecomp.tsv
 <div class="panel panel-default">
 <div class="panel-heading">
 <p class="panel-title">
-<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomheininPIPACspatialtree281c5e5063f3db18ffb2b23cc0dfc784422dfc6btargetblank281c5e5a">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomheininPIPACspatialtree3bbda1950b67a2205d9bebb3344530d4fbf8bcbdtargetblank3bbda19a">
 <span class="glyphicon glyphicon-ok text-success"
 aria-hidden="true"></span> <strong>Repository version:</strong>
-<a href="https://github.com/heinin/PIPAC_spatial/tree/281c5e5063f3db18ffb2b23cc0dfc784422dfc6b" target="_blank">281c5e5</a>
+<a href="https://github.com/heinin/PIPAC_spatial/tree/3bbda1950b67a2205d9bebb3344530d4fbf8bcbd" target="_blank">3bbda19</a>
 </a>
 </p>
 </div>
 <div
-id="strongRepositoryversionstrongahrefhttpsgithubcomheininPIPACspatialtree281c5e5063f3db18ffb2b23cc0dfc784422dfc6btargetblank281c5e5a"
+id="strongRepositoryversionstrongahrefhttpsgithubcomheininPIPACspatialtree3bbda1950b67a2205d9bebb3344530d4fbf8bcbdtargetblank3bbda19a"
 class="panel-collapse collapse">
 <div class="panel-body">
 <p>
@@ -605,7 +605,7 @@ reproducibility.
 </p>
 <p>
 The results in this page were generated with repository version
-<a href="https://github.com/heinin/PIPAC_spatial/tree/281c5e5063f3db18ffb2b23cc0dfc784422dfc6b" target="_blank">281c5e5</a>.
+<a href="https://github.com/heinin/PIPAC_spatial/tree/3bbda1950b67a2205d9bebb3344530d4fbf8bcbd" target="_blank">3bbda19</a>.
 See the <em>Past versions</em> tab to see a history of the changes made
 to the R Markdown and HTML files.
 </p>
@@ -620,8 +620,10 @@ were generated:
 </p>
 <pre><code>
 Ignored files:
-    Ignored:    .RData
+    Ignored:    cell_annotation_top_markers_denoist.tsv
+    Ignored:    cell_main_cluster_marker_annotations_denoist.tsv
     Ignored:    celltype_markers.tsv
+    Ignored:    code/.Rhistory
     Ignored:    immune_cluster_marker_annotations.tsv
     Ignored:    immune_cluster_marker_annotations_2ndpass.tsv
     Ignored:    main_cluster_marker_annotations.tsv
@@ -629,46 +631,65 @@ Ignored files:
     Ignored:    nonimmune_cluster_marker_annotations_2ndpass.tsv
 
 Untracked files:
-    Untracked:  MR_PIPACTMA3-Rerun_highres.png
-    Untracked:  analysis/arm2_comparative_analysis.Rmd
-    Untracked:  analysis/arm3_DEGs.Rmd
-    Untracked:  analysis/arm3_comparative_analysis.Rmd
-    Untracked:  analysis/arm3_niche_comparison.Rmd
-    Untracked:  analysis/feature_expression.Rmd
-    Untracked:  analysis/pca_variance_decomp.Rmd
-    Untracked:  annotation_dimplot.pdf
-    Untracked:  code/construct_niches.R
-    Untracked:  code/construct_niches.Rout
-    Untracked:  code/plot_metadata.R
-    Untracked:  code/plot_save_pdf.R
-    Untracked:  code/run_rscript.sh
-    Untracked:  code/slurm.18348851.err
-    Untracked:  code/slurm.18348851.out
-    Untracked:  code/slurm.18351391.err
-    Untracked:  code/slurm.18351391.out
-    Untracked:  code/slurm.18632903.err
-    Untracked:  code/slurm.18632903.out
-    Untracked:  code/update_metadata.R
-    Untracked:  code/vardecomp.R
-    Untracked:  coh004.pdf
-    Untracked:  demographics_grid.pdf
-    Untracked:  output/outputFile-Meanplot.pdf
-    Untracked:  output/outputFile-Variance.csv
-    Untracked:  output/outputFile-VarianceExplained-Boxplot.pdf
-    Untracked:  output/scrna-Meanplot.pdf
-    Untracked:  output/scrna-Variance.csv
-    Untracked:  output/scrna-VarianceExplained-Boxplot.pdf
-    Untracked:  output/vardecomp.tsv
-    Untracked:  tissue_celltypeprop_scatter.pdf
+    Untracked:  Rplots.pdf
+    Untracked:  analysis/.ipynb_checkpoints/
+    Untracked:  analysis/Xenium_preprocess_wholecell.Rmd
+    Untracked:  analysis/annotation_cell.Rmd
+    Untracked:  analysis/clustering.ipynb
+    Untracked:  analysis/compare_cellular_nuclear.Rmd
+    Untracked:  analysis/compare_cellular_nuclear_denoist_annot.Rmd
+    Untracked:  analysis/denoising_cellular_transcripts.Rmd
+    Untracked:  analysis/metrics.Rmd
+    Untracked:  analysis/niche_construction_ncells3k_nneighbors20.Rmd
+    Untracked:  analysis/niche_silhouette.ipynb
+    Untracked:  analysis/plot_PRGS.Rmd
+    Untracked:  analysis/seurat_to_anndata.ipynb
+    Untracked:  code/RSC_latest_EDM_2025-08-06/
+    Untracked:  code/construct_niches_tumor.R
+    Untracked:  code/construct_niches_tumor.Rout
+    Untracked:  code/denoist.R
+    Untracked:  code/denoist.Rout
+    Untracked:  code/parse_denoist_res.R
+    Untracked:  code/seurat_to_anndata.R
+    Untracked:  code/slurm.24884614.err
+    Untracked:  code/slurm.24884614.out
+    Untracked:  code/slurm.25014505.err
+    Untracked:  code/slurm.25014505.out
+    Untracked:  code/slurm.25602907.err
+    Untracked:  code/slurm.25602907.out
+    Untracked:  niche_composition_k5_n30.pdf
+    Untracked:  timepoint_celltypeprop_barplot_arm2.pdf
+    Untracked:  timepoint_celltypeprop_barplot_arm3.pdf
+    Untracked:  timepoint_nicheprop_barplot_arm2_arm3.pdf
 
 Unstaged changes:
+    Modified:   analysis/Xenium_processing.Rmd
     Modified:   analysis/add_metadata.Rmd
-    Modified:   analysis/annotation_2nd_pass.Rmd
-    Modified:   analysis/index.Rmd
+    Modified:   analysis/annotation.Rmd
+    Modified:   analysis/arm3_DEGs.Rmd
+    Modified:   analysis/arm3_comparative_analysis.Rmd
+    Modified:   analysis/feature_expression.Rmd
     Modified:   analysis/niche_construction.Rmd
+    Modified:   analysis/pca_variance_decomp.Rmd
     Modified:   analysis/plot_by_group.Rmd
+    Modified:   analysis/post_clustering.Rmd
     Modified:   analysis/splitting_samples.Rmd
+    Modified:   annotation_dimplot.pdf
     Modified:   code/PIPAC_colors_themes.R
+    Modified:   code/anndata_to_seurat.R
+    Modified:   code/construct_niches.R
+    Modified:   code/plot_metadata.R
+    Modified:   code/plot_save_pdf.R
+    Modified:   code/rapids_pipeline/.ipynb_checkpoints/clustering-checkpoint.ipynb
+    Modified:   code/rapids_pipeline/.ipynb_checkpoints/seurat_to_anndata-checkpoint.ipynb
+    Modified:   code/rapids_pipeline/clustering.ipynb
+    Modified:   code/rapids_pipeline/seurat_to_anndata.ipynb
+    Modified:   code/run_rscript.sh
+    Modified:   code/update_metadata.R
+    Modified:   demographics_grid.pdf
+    Modified:   output/scrna-Meanplot.pdf
+    Modified:   output/scrna-Variance.csv
+    Modified:   output/scrna-VarianceExplained-Boxplot.pdf
 
 </code></pre>
 <p>
@@ -683,10 +704,74 @@ have uncommitted changes.
 <hr>
 </div>
 <div id="versions" class="tab-pane fade">
+
 <p>
-There are no past versions. Publish this analysis with
-<code>wflow_publish()</code> to start tracking its development.
+These are the previous versions of the repository in which changes were
+made to the R Markdown (<code>analysis/pca_variance_decomp.Rmd</code>)
+and HTML (<code>docs/pca_variance_decomp.html</code>) files. If you’ve
+configured a remote Git repository (see <code>?wflow_git_remote</code>),
+click on the hyperlinks in the table below to view the files as they
+were in that past version.
 </p>
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+File
+</th>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+<th>
+Message
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+Rmd
+</td>
+<td>
+<a href="https://github.com/heinin/PIPAC_spatial/blob/3bbda1950b67a2205d9bebb3344530d4fbf8bcbd/analysis/pca_variance_decomp.Rmd" target="_blank">3bbda19</a>
+</td>
+<td>
+heinin
+</td>
+<td>
+2025-05-13
+</td>
+<td>
+Updated annotations, added feature expression by celltype
+</td>
+</tr>
+<tr>
+<td>
+html
+</td>
+<td>
+<a href="https://rawcdn.githack.com/heinin/PIPAC_spatial/3bbda1950b67a2205d9bebb3344530d4fbf8bcbd/docs/pca_variance_decomp.html" target="_blank">3bbda19</a>
+</td>
+<td>
+heinin
+</td>
+<td>
+2025-05-13
+</td>
+<td>
+Updated annotations, added feature expression by celltype
+</td>
+</tr>
+</tbody>
+</table>
+</div>
 <hr>
 </div>
 </div>
@@ -737,7 +822,7 @@ markers_by_group &lt;- read_sheet(markers_by_group, sheet = &quot;Markers by gro
 </div>
 <div id="import-and-subset-data" class="section level3">
 <h3>Import and subset data</h3>
-<pre class="r"><code>seurat_data &lt;- readRDS(&quot;/tgen_labs/banovich/PIPAC/Seurat/PIPAC_NC50_NN20_PC20_Seurat_annotated_metadata_niches.rds&quot;)
+<pre class="r"><code>seurat_data &lt;- readRDS(&quot;/tgen_labs/banovich/PIPAC/Seurat/cell_merged_spatial_filtered_splitsamples_clustered_NC50_NN20_PC20_Seurat_denoIST_metadata.rds&quot;)
 DefaultAssay(seurat_data) &lt;- &quot;RNA&quot;
 seurat_data &lt;- seurat_data %&gt;%
   NormalizeData() %&gt;%
@@ -758,7 +843,7 @@ seurat_arm3 &lt;- seurat_arm3 %&gt;%
 #                    layer = &quot;data&quot;)
 
 pseudobulk &lt;- LayerData(seurat_arm3,
-                        assay = &quot;RNA&quot;,
+                        assay = &quot;denoist_RNA&quot;,
                         layer = &quot;data&quot;,
                         features = rownames(seurat_arm3))
 pseudobulk &lt;- pseudobulk %&gt;% t() %&gt;% as.data.frame()
@@ -866,10 +951,47 @@ ggplot(var_decomp, aes(x = Variable, y = VarExplained, fill = Variable)) +
   theme_classic() +
   RotatedAxis()</code></pre>
 <p><img src="figure/pca_variance_decomp.Rmd/unnamed-chunk-7-1.png" width="768" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-7-1">
+Past versions of unnamed-chunk-7-1.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-7-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/heinin/PIPAC_spatial/blob/3bbda1950b67a2205d9bebb3344530d4fbf8bcbd/docs/figure/pca_variance_decomp.Rmd/unnamed-chunk-7-1.png" target="_blank">3bbda19</a>
+</td>
+<td>
+heinin
+</td>
+<td>
+2025-05-13
+</td>
+</tr>
+</tbody>
+</table>
 </div>
 </div>
-<div id="pca" class="section level3">
-<h3>PCA</h3>
+</div>
+</div>
+<div id="pca-pseudobulk-by-sample-and-celltype" class="section level3">
+<h3>PCA, pseudobulk by sample and celltype</h3>
 <pre class="r"><code>pseudobulk &lt;- apply(pseudobulk, 2, as.numeric)
 
 pcs &lt;- prcomp(pseudobulk)
@@ -878,31 +1000,6 @@ pcres &lt;- as.data.frame(pcs$rotation)
 pcres$Sample_Annotation &lt;- rownames(pcres)
 
 pcs_metadata &lt;- merge(pcres, metadata_mx, by = &quot;Sample_Annotation&quot;)
-
-#pcs_metadata %&gt;% ggplot(aes(x = PC1, y = PC2, color = Annotation)) +
-#  geom_point() +
-#  scale_color_manual(name = &quot;Annotation&quot;, values = pipac_celltype_col) +
-#  theme_classic()
-
-p1 &lt;- pcs_metadata %&gt;% ggplot(aes(x = PC1, y = PC2, color = Annotation)) +
-  geom_point() +
-  scale_color_manual(name = &quot;Annotation&quot;, values = pipac_celltype_col) +
-  theme_classic()
-
-p2 &lt;- pcs_metadata %&gt;% ggplot(aes(x = PC1, y = PC2, color = Patient_ID)) +
-  geom_point() +
-  #scale_color_manual(name = &quot;Annotation&quot;, values = pipac_celltype_col) +
-  theme_classic()
-
-p3 &lt;- pcs_metadata %&gt;% ggplot(aes(x = PC1, y = PC2, color = Tissue)) +
-  geom_point() +
-  scale_color_manual(name = &quot;Tissue&quot;, values = tissue_col) +
-  theme_classic()
-
-p4 &lt;- pcs_metadata %&gt;% ggplot(aes(x = PC1, y = PC2, color = BestResponse)) +
-  geom_point() +
-  #scale_color_manual(name = &quot;Tissue&quot;, values = tissue_col) +
-  theme_classic()
 
 annot_plot_list &lt;- lapply(seq(1, 4), function(pc){
   #pc1 &lt;- paste0(&quot;PC&quot;, pc)
@@ -917,6 +1014,43 @@ annot_plot_list &lt;- lapply(seq(1, 4), function(pc){
 patchwork::wrap_plots(annot_plot_list, ncol = 4) +
   plot_layout(guides = &quot;collect&quot;) &amp; theme(legend.position = &#39;right&#39;)</code></pre>
 <p><img src="figure/pca_variance_decomp.Rmd/unnamed-chunk-8-1.png" width="1536" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-8-1">
+Past versions of unnamed-chunk-8-1.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-8-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/heinin/PIPAC_spatial/blob/3bbda1950b67a2205d9bebb3344530d4fbf8bcbd/docs/figure/pca_variance_decomp.Rmd/unnamed-chunk-8-1.png" target="_blank">3bbda19</a>
+</td>
+<td>
+heinin
+</td>
+<td>
+2025-05-13
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 <pre class="r"><code>tissue_plot_list &lt;- lapply(seq(1, 4), function(pc){
   #pc1 &lt;- paste0(&quot;PC&quot;, pc)
   pc2 &lt;- paste0(&quot;PC&quot;, (pc+1))
@@ -930,6 +1064,43 @@ patchwork::wrap_plots(annot_plot_list, ncol = 4) +
 patchwork::wrap_plots(tissue_plot_list, ncol = 4) +
   plot_layout(guides = &quot;collect&quot;) &amp; theme(legend.position = &#39;right&#39;)</code></pre>
 <p><img src="figure/pca_variance_decomp.Rmd/unnamed-chunk-8-2.png" width="1536" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-8-2">
+Past versions of unnamed-chunk-8-2.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-8-2" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/heinin/PIPAC_spatial/blob/3bbda1950b67a2205d9bebb3344530d4fbf8bcbd/docs/figure/pca_variance_decomp.Rmd/unnamed-chunk-8-2.png" target="_blank">3bbda19</a>
+</td>
+<td>
+heinin
+</td>
+<td>
+2025-05-13
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 <pre class="r"><code>patient_plot_list &lt;- lapply(seq(1, 4), function(pc){
   #pc1 &lt;- paste0(&quot;PC&quot;, pc)
   pc2 &lt;- paste0(&quot;PC&quot;, (pc+1))
@@ -943,6 +1114,98 @@ patchwork::wrap_plots(tissue_plot_list, ncol = 4) +
 patchwork::wrap_plots(patient_plot_list, ncol = 4) +
   plot_layout(guides = &quot;collect&quot;) &amp; theme(legend.position = &#39;right&#39;)</code></pre>
 <p><img src="figure/pca_variance_decomp.Rmd/unnamed-chunk-8-3.png" width="1536" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-8-3">
+Past versions of unnamed-chunk-8-3.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-8-3" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/heinin/PIPAC_spatial/blob/3bbda1950b67a2205d9bebb3344530d4fbf8bcbd/docs/figure/pca_variance_decomp.Rmd/unnamed-chunk-8-3.png" target="_blank">3bbda19</a>
+</td>
+<td>
+heinin
+</td>
+<td>
+2025-05-13
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+<div id="pseudobulk-by-sample-only" class="section level3">
+<h3>Pseudobulk by sample only</h3>
+<pre class="r"><code>pseudobulk &lt;- LayerData(seurat_arm3,
+                        assay = &quot;RNA&quot;,
+                        layer = &quot;data&quot;,
+                        features = rownames(seurat_arm3))
+pseudobulk &lt;- pseudobulk %&gt;% t() %&gt;% as.data.frame()
+pseudobulk$Sample &lt;- seurat_arm3$Sample
+
+pseudobulk &lt;- pseudobulk %&gt;% group_by(Sample) %&gt;%
+  summarise_at(vars(-group_cols()), mean) %&gt;%
+  as.data.frame()
+
+pseudobulk &lt;- t(pseudobulk) %&gt;%
+  as.data.frame()
+  
+colnames(pseudobulk) &lt;- pseudobulk[1,]
+pseudobulk &lt;- pseudobulk[2:nrow(pseudobulk),]
+
+pseudobulk &lt;- apply(pseudobulk, 2, as.numeric)
+
+pcs &lt;- prcomp(pseudobulk)
+
+pcres &lt;- as.data.frame(pcs$rotation)
+pcres$Sample &lt;- rownames(pcres)
+
+pcs_metadata &lt;- merge(pcres, metadata_mx, by = &quot;Sample&quot;)
+
+tissue_plot_list &lt;- lapply(seq(1, 4), function(pc){
+  #pc1 &lt;- paste0(&quot;PC&quot;, pc)
+  pc2 &lt;- paste0(&quot;PC&quot;, (pc+1))
+  
+  pcs_metadata %&gt;% ggplot(aes_string(x = &quot;PC1&quot;, y = pc2, color = &quot;Tissue&quot;)) +
+  geom_point() +
+  scale_color_manual(name = &quot;Tissue&quot;, values = tissue_col) +
+  theme_classic()
+})
+
+patchwork::wrap_plots(tissue_plot_list, ncol = 4) +
+  plot_layout(guides = &quot;collect&quot;) &amp; theme(legend.position = &#39;right&#39;)</code></pre>
+<p><img src="figure/pca_variance_decomp.Rmd/unnamed-chunk-9-1.png" width="1536" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>patient_plot_list &lt;- lapply(seq(1, 4), function(pc){
+  #pc1 &lt;- paste0(&quot;PC&quot;, pc)
+  pc2 &lt;- paste0(&quot;PC&quot;, (pc+1))
+  
+  pcs_metadata %&gt;% ggplot(aes_string(x = &quot;PC1&quot;, y = pc2, color = &quot;Patient_ID&quot;)) +
+  geom_point() +
+  #scale_color_manual(name = &quot;Tissue&quot;, values = tissue_col) +
+  theme_classic()
+})
+
+patchwork::wrap_plots(patient_plot_list, ncol = 4) +
+  plot_layout(guides = &quot;collect&quot;) &amp; theme(legend.position = &#39;right&#39;)</code></pre>
+<p><img src="figure/pca_variance_decomp.Rmd/unnamed-chunk-9-2.png" width="1536" style="display: block; margin: auto;" /></p>
 <br>
 <p>
 <button type="button" class="btn btn-default btn-workflowr btn-workflowr-sessioninfo" data-toggle="collapse" data-target="#workflowr-sessioninfo" style="display: block;">

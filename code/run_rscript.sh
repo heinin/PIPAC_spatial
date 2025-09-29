@@ -6,10 +6,10 @@
 ##SBATCH --mail-user=hnatri@tgen.org # send-to address
 #SBATCH -n 1
 #SBATCH -N 1
-#SBATCH --cpus-per-task=16
-#SBATCH --mem=300G
+#SBATCH --cpus-per-task=1
+#SBATCH --mem=600G
 ##SBATCH --part=hmem
-#SBATCH -t 5-0:00:00
+#SBATCH -t 7-0:00:00
 
 export SIMG_FILE_NAME=rstudio-4.3.0-4-with_modules.sif
 
@@ -101,6 +101,6 @@ fi
 
 module load singularity;
 
-RSTUDIO_PASSWORD=$PASSWORD singularity exec -B /tgen_labs,/opt,$RSTMP:/tmp,$RSLIB:/var/lib/rstudio-server/,$RSRUN:/var/run/rstudio-server/,${RPRIHOME}/.Renviron:$HOME/.Renviron,${RPRIHOME}/.rstudio:$HOME/.rstudio,${RPRIHOME}/.config:$HOME/.config $SIMG_IMAGE R CMD BATCH construct_niches.R
+RSTUDIO_PASSWORD=$PASSWORD singularity exec -B /tgen_labs,/opt,$RSTMP:/tmp,$RSLIB:/var/lib/rstudio-server/,$RSRUN:/var/run/rstudio-server/,${RPRIHOME}/.Renviron:$HOME/.Renviron,${RPRIHOME}/.rstudio:$HOME/.rstudio,${RPRIHOME}/.config:$HOME/.config $SIMG_IMAGE R CMD BATCH pairwise_proximity_chunk.R
 
 

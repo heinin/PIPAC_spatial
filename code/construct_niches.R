@@ -81,7 +81,7 @@ mod_BuildNicheAssay <- function(
 # Import data
 #==============================================================================#
 
-seurat_data <- readRDS("/tgen_labs/banovich/PIPAC/Seurat/PIPAC_NC50_NN20_PC20_Seurat_annotated_metadata_niches.rds")
+seurat_data <- readRDS("/tgen_labs/banovich/PIPAC/Seurat/PIPAC_NC50_NN20_PC20_Seurat_annotated_metadata_ncells3k_nneighbors20.rds")
 
 #==============================================================================#
 # Adjusting coordinates
@@ -129,6 +129,28 @@ DimPlot(seurat_data,
   coord_fixed()
 
 #==============================================================================#
+# Excluding samples with few cells
+#==============================================================================#
+
+table(seurat_data$Sample) %>%
+  as.data.frame() %>%
+  ggplot(aes(x = reorder(Var1, -Freq), y = Freq)) +
+  geom_bar(stat = "identity") +
+  theme_classic() +
+  RotatedAxis() +
+  xlab("") +
+  ylab("# cells")
+
+# Keeping samples with at least 5000 cells
+keep_samples <- table(seurat_data$Sample) %>%
+  as.data.frame() %>%
+  filter(Freq >= 3000) %>%
+  dplyr::select(Var1) %>%
+  unlist()
+
+seurat_data <- subset(seurat_data, subset = Sample %in% keep_samples)
+
+#==============================================================================#
 # Checking nearest neighbors for each cell
 #==============================================================================#
 
@@ -139,7 +161,7 @@ rownames(coords) <- colnames(seurat_data)
 coords <- as.matrix(coords[ , c("adj_x_centroid", "adj_y_centroid")])
 
 nns <- nn2(coords, coords,
-           k = 30,
+           k = 20,
            treetype = "kd",
            searchtype = "standard",
            radius = 0,
@@ -152,7 +174,7 @@ cellnames$cellname <- rownames(coords)
 cellnames$index <- seq(1, nrow(cellnames))
 
 rownames(nns$nn.idx) <- rownames(coords)
-colnames(nns$nn.idx) <- paste0("neighbor", seq(1, 30))
+colnames(nns$nn.idx) <- paste0("neighbor", seq(1, 20))
 
 neighbors_mx <- nns$nn.idx
 
@@ -207,8 +229,8 @@ seurat_with_niches[["niche"]] <- merged_niches
 seurat_with_niches <- ScaleData(seurat_with_niches,
                          assay = "niche")
 
-for(k in seq(3, 8)){
-  niche_column <- paste0("niche_k", k, "_n20")
+for(k in seq(9, 12)){
+  niche_column <- paste0("ncells3k_niche_k", k, "_n20")
   kmeans_res <- kmeans(
     x = t(seurat_with_niches[["niche"]]@scale.data),
     centers = k,
@@ -217,5 +239,5 @@ for(k in seq(3, 8)){
 }
 
 # Saving the Seurat object with niche annotations
-saveRDS(seurat_with_niches, "/tgen_labs/banovich/PIPAC/Seurat/PIPAC_NC50_NN20_PC20_Seurat_annotated_metadata_niches20.rds")
+saveRDS(seurat_with_niches, "/tgen_labs/banovich/PIPAC/Seurat/PIPAC_NC50_NN20_PC20_Seurat_annotated_metadata_ncells3k_nneighbors20.rds")
 

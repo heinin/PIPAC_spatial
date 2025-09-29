@@ -10,7 +10,7 @@ editor_options:
   chunk_output_type: console
 ---
 
-### Packages and environment variables
+### Import packages
 
 ```{r, warning=F, message=F}
 
@@ -127,7 +127,7 @@ xenium_paths <- list("MR_PIPAC-TMA1" = "output-XETG00048__0034123__MR_PIPACTMA1_
                      "MR_PIPAC-TMA9" = "output-XETG00048__0041382__MR_PIPACTMA9__20250109__205856")
 
 # Cell stats
-cellstat_path <- "/tgen_labs/banovich/PIPAC/"
+cellstat_path <- "/tgen_labs/banovich/PIPAC/Cell_stats/"
 
 seurat_data_list <- lapply(names(xenium_paths), function(tma){
   # Subsetting data
@@ -238,8 +238,11 @@ DimPlot(merged_spatial,
   RotatedAxis()
 
 # Saving the object for clustering with ScanPy
-#merged_spatial <- JoinLayers(merged_spatial)
-#saveRDS(merged_spatial, "/scratch/hnatri/PIPAC/merged_spatial_filtered_split.rds")
+names(merged_spatial@assays) <- c("nucleus_RNA", "RNA")
+DefaultAssay(merged_spatial) <- "nucleus_RNA"
+merged_spatial <- JoinLayers(merged_spatial)
+DefaultAssay(merged_spatial) <- "RNA"
+#saveRDS(merged_spatial, "/scratch/hnatri/PIPAC/cell_merged_spatial_filtered_splitsamples.rds")
 
 ```
 
@@ -247,7 +250,7 @@ DimPlot(merged_spatial,
 
 ```{r, message = F, warning = F, fig.width = 3, fig.height = 7}
 
-merged_spatial <- readRDS("/scratch/hnatri/PIPAC/merged_spatial_filtered_split.rds")
+#merged_spatial <- readRDS("/scratch/hnatri/PIPAC/cell_merged_spatial_filtered_splitsamples.rds")
 
 sp_plots <- lapply(unique(merged_spatial$TMA), function(tma){
   sample_subset <- subset(merged_spatial, subset = TMA == tma)
@@ -293,7 +296,6 @@ table(merged_spatial$Sample) %>%
   theme_bw() +
   RotatedAxis() +
   coord_flip()
-
 
 ```
 

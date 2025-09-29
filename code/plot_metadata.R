@@ -37,7 +37,7 @@ source("/home/hnatri/PIPAC_spatial/code/plot_functions.R")
 # Import data
 #==============================================================================#
 
-seurat_data <- readRDS("/tgen_labs/banovich/PIPAC/Seurat/PIPAC_NC50_NN20_PC20_Seurat_annotated_metadata.rds")
+seurat_data <- readRDS("/tgen_labs/banovich/PIPAC/Seurat/PIPAC_NC50_NN20_PC20_Seurat_annotated_metadata_niches.rds")
 
 unique(seurat_data$osmonths)
 
@@ -55,7 +55,8 @@ keep_cols <- c("Patient_ID",
                "Arm",
                "DISEASESITE",
                "DXHISTOLOGY",
-               "No_of_PIPACs")
+               "No_of_PIPACs",
+               "Arm")
 
 plot_data <- seurat_data@meta.data %>% dplyr::select(all_of(keep_cols)) %>%
   distinct() %>%
@@ -85,6 +86,7 @@ unique(plot_data$Gender)
 unique(plot_data$`Disease Site`)
 unique(plot_data$`Histological Diagnosis`)
 unique(plot_data$`Number of PIPACs`)
+unique(plot_data$Arm)
 
 plot_data$`Overall Survival (mo)` <- unlist(plot_data$`Overall Survival (mo)`)
 plot_data$`Progress-free Survival (mo)` <- unlist(plot_data$`Progress-free Survival (mo)`)
@@ -103,6 +105,8 @@ ethnicity_col <- c("Non-Hispanic or Non-Latino" = "lightpink1",
                    "Hispanic or Latino" = "lemonchiffon2")
 site_col <- c("Colorectal" = "darkblue",
               "Appendiceal" = "lightblue3")
+arm_col <- c("Arm2" = "purple1",
+             "Arm3" = "steelblue")
 
 age_col <- colorRamp2(c(0, max(as.numeric(plot_data$Age))), c("white", "brown3"))
 
@@ -125,9 +129,11 @@ col <- list(Gender = gender_col,
             "Number of PIPACs" = n_PIPACs_col,
             os = survival_col,
             pfs = survival_col,
-            "Number of Samples" = samples_col)
+            "Number of Samples" = samples_col,
+            "Arm" = arm_col)
 
 ha <- HeatmapAnnotation(Patient = anno_text(as.character(plot_data$Patient_ID)),
+                        Arm = plot_data$Arm,
                         Gender = plot_data$Gender,
                         Race = plot_data$Race,
                         Ethnicity = plot_data$Ethnicity,

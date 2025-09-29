@@ -173,7 +173,7 @@ for (tma in tma_ids) {
 
 obj_list <- list()
 obj_list <- sapply(tma_ids, function(XX) {
-  # Create a Seurat object containing the RNA adata
+  # Create a Seurat object containing the RNA data
   sobj <- CreateSeuratObject(counts = nuc_transcripts[[XX]], 
                              assay = "RNA")
   
@@ -429,6 +429,9 @@ DimPlotCompare("MR_PIPACTMA9")
 
 # Saving the object for clustering with ScanPy
 merged_spatial <- JoinLayers(merged_spatial)
+names(merged_spatial@assays) <- c("nucleus_RNA", "RNA")
+DefaultAssay(merged_spatial) <- "RNA"
+
 saveRDS(merged_spatial, "/scratch/hnatri/PIPAC/merged_spatial_filtered.rds")
 
 # To build on command line, run Rscript -e "rmarkdown::render('/home/hnatri/PIPAC_Xenium/analysis/Xenium_processing.Rmd')"

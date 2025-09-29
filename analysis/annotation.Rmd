@@ -49,9 +49,14 @@ source("/home/hnatri/PIPAC_spatial/code/plot_functions.R")
 ```{r, message = F, warning = F, fig.width = 6, fig.height = 4}
 
 # Copied to isilon /tgen_labs/banovich/PIPAC/Seurat
+# /tgen_labs/banovich/PIPAC/Seurat/merged_spatial_filtered_split_clustered_NC50_NN20_PC20_Seurat.rds
 seurat_data <- readRDS("/tgen_labs/banovich/PIPAC/Seurat/merged_spatial_filtered_split_clustered_NC50_NN20_PC20_Seurat.rds")
 head(seurat_data@meta.data)
 unique(seurat_data$leiden_res0.5)
+
+#cell_seurat_data <- readRDS("/tgen_labs/banovich/PIPAC/Seurat/cell_merged_spatial_filtered_splitsamples_clustered_NC5#0_NN20_PC20_Seurat_denoIST.rds")
+#head(cell_seurat_data@meta.data)
+#unique(cell_seurat_data$leiden_res0.5)
 
 DimPlot(seurat_data,
         group.by = "leiden_res0.5",

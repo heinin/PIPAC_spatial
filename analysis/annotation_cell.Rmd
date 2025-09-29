@@ -1,0 +1,246 @@
+---
+title: "Cell type annotation on data with all transcripts"
+author: "heinin"
+date: "2025-07-09"
+output:
+  workflowr::wflow_html:
+    code_folding: hide
+  html_notebook: default
+editor_options:
+  chunk_output_type: console
+---
+
+### Import packages
+
+```{r, warning=F, message=F}
+
+suppressPackageStartupMessages({
+  library(workflowr)
+  library(arrow)
+  library(Seurat)
+  library(SeuratObject)
+  library(SeuratDisk)
+  library(tidyverse)
+  library(tibble)
+  library(ggplot2)
+  library(ggpubr)
+  library(ggrepel)
+  library(googlesheets4)
+  library(workflowr)})
+
+```
+
+### Environment variables and helper functions
+
+```{r, message = F, warning = F}
+
+setwd("/home/hnatri/PIPAC_spatial/")
+set.seed(9999)
+options(scipen = 99999)
+options(ggrepel.max.overlaps = Inf)
+
+source("/home/hnatri/PIPAC_spatial/code/PIPAC_colors_themes.R")
+source("/home/hnatri/PIPAC_spatial/code/plot_functions.R")
+
+```
+
+### Import data
+
+```{r, message = F, warning = F, fig.width = 4, fig.height = 4}
+
+# Copied to isilon /tgen_labs/banovich/PIPAC/Seurat
+# /tgen_labs/banovich/PIPAC/Seurat/cell_merged_spatial_filtered_splitsamples_clustered_NC50_NN20_PC20_Seurat.rds.rds
+seurat_data <- readRDS("/tgen_labs/banovich/PIPAC/Seurat/cell_merged_spatial_filtered_splitsamples_clustered_NC50_NN20_PC20_Seurat_denoIST.rds")
+head(seurat_data@meta.data)
+unique(seurat_data$leiden_res0.5)
+
+DimPlot(seurat_data,
+        group.by = "leiden_res0.5",
+        cols = pipac_cluster_20_col,
+        reduction = "umap",
+        raster = T,
+        label = T) +
+  coord_fixed(ratio = 1) +
+  theme_minimal() +
+  NoLegend()
+
+```
+
+### Marker information
+
+```{r, message = F, warning = F, fig.width = 6, fig.height = 4}
+
+gs4_deauth()
+metadata  <- gs4_get("https://docs.google.com/spreadsheets/d/1sXXwOreLxjMSUoPt79c6jmaQpluWkaxA5P5HfDsed3I/edit?usp=sharing")
+markers <- read_sheet(metadata, sheet = "Markers")
+
+```
+
+### Feature expression
+
+```{r, message = F, warning = F, fig.width = 10, fig.height = 4}
+
+plot_features <- c("PTPRC",
+                   "CD3D", "CD3E", "CD4", "CD8A", # T cells
+                   "STAT4", "STAT3", "TIGIT", "GZMB",
+                   "SELL", "CD19", # B cells
+                   "CD68", "CD44", "MARCO", "APOE", # Macrophages
+                   "C1QB", "C1QBP",
+                   "MUC5AC", "NOTCH3", "MS4A1", "PGA5", # Lineage markers
+                   "FN1", "DCN", "LUM", # Fibroblasts
+                   "EGR3", "TP53", "JUN", "KIT", # Tumor
+                   "SOX9", "RNF43", "EPCAM")
+
+DotPlot(seurat_data,
+        group.by = "leiden_res0.5",
+        features = plot_features,
+        cols = c("azure", "tomato3")) +
+  RotatedAxis()
+
+```
+
+```{r, message = F, warning = F, fig.width = 12, fig.height = 18}
+
+DefaultAssay(seurat_data) <- "RNA"
+FeaturePlot(seurat_data,
+            slot = "data",
+            features = plot_features,
+            order = T,
+            ncol = 5,
+            reduction = "umap",
+            raster = T,
+            cols = c("gray89", "tomato3")) &
+  coord_fixed(ratio = 1) &
+  theme_bw() &
+  NoLegend()
+
+```
+
+### DenoIST
+
+```{r, message = F, warning = F, fig.width = 10, fig.height = 4}
+
+plot_features <- c("PTPRC",
+                   "CD3D", "CD3E", "CD4", "CD8A", # T cells
+                   "STAT4", "STAT3", "TIGIT", "GZMB",
+                   "SELL", "CD19", # B cells
+                   "CD68", "CD44", "MARCO", "APOE", # Macrophages
+                   "C1QB", "C1QBP",
+                   "MUC5AC", "NOTCH3", "MS4A1", "PGA5", # Lineage markers
+                   "FN1", "DCN", "LUM", # Fibroblasts
+                   "EGR3", "TP53", "JUN", "KIT", # Tumor
+                   "SOX9", "RNF43", "EPCAM")
+
+DefaultAssay(seurat_data) <- "denoist_RNA"
+DotPlot(seurat_data,
+        group.by = "leiden_res0.5",
+        features = plot_features,
+        cols = c("azure", "tomato3")) +
+  RotatedAxis()
+
+```
+
+```{r, message = F, warning = F, fig.width = 12, fig.height = 18}
+
+FeaturePlot(seurat_data,
+            slot = "data",
+            features = plot_features,
+            order = T,
+            ncol = 5,
+            reduction = "umap",
+            raster = T,
+            cols = c("gray89", "tomato3")) &
+  coord_fixed(ratio = 1) &
+  theme_bw() &
+  NoLegend()
+
+```
+
+### Top cluster markers
+
+```{r, message = F, warning = F, fig.width = 5, fig.height = 4}
+
+Idents(seurat_data) <- seurat_data$leiden_res0.5
+cluster_markers <- FindAllMarkers(seurat_data,
+                                  return.thresh = 0.01,
+                                  logfc.threshold = 0.5,
+                                  min.pct = 0.20,
+                                  verbose = T)
+
+table(cluster_markers$cluster)
+
+hist(cluster_markers$avg_log2FC, main = "", xlab = "avg_log2FC", breaks = 100)
+hist(cluster_markers$p_val, main = "", xlab = "p_val", breaks = 100)
+hist(cluster_markers$p_val_adj, main = "", xlab = "p_val_adj", breaks = 100)
+
+top_cluster_markers <- cluster_markers %>%
+  arrange(dplyr::desc(avg_log2FC)) %>%
+  group_by(cluster) %>%
+  dplyr::slice(1:10)
+
+```
+
+
+```{r, message = F, warning = F, fig.width = 6, fig.height = 18}
+
+create_dotplot_heatmap(seurat_object = seurat_data,
+                       plot_features = unique(top_cluster_markers$gene),
+                       group_var = "leiden_res0.5",
+                       group_colors = pipac_cluster_20_col,
+                       column_title = "",
+                       row_km = 5,
+                       col_km = 5,
+                       row.order = NULL,
+                       col.order = NULL)
+
+```
+
+### Saving top markers and annotations
+
+```{r, message = F, warning = F, fig.width = 6, fig.height = 6, eval = T}
+
+output_cluster_markers <- cluster_markers %>%
+  arrange(dplyr::desc(avg_log2FC)) %>%
+  group_by(cluster) %>%
+  dplyr::slice(1:30)
+
+output_cluster_markers <- merge(top_cluster_markers, markers, by.x = "gene", by.y = "Gene")
+
+write.table(output_cluster_markers, "/home/hnatri/PIPAC_spatial/cell_main_cluster_marker_annotations_denoist.tsv",
+            quote = F, row.names = F, sep = "\t")
+
+# Saving DenoIST top markers by original annotation
+Idents(seurat_data) <- seurat_data$Annotation
+cluster_markers <- FindAllMarkers(seurat_data,
+                                  return.thresh = 0.01,
+                                  logfc.threshold = 0.5,
+                                  min.pct = 0.20,
+                                  verbose = T)
+
+output_cluster_markers <- cluster_markers %>%
+  arrange(dplyr::desc(avg_log2FC)) %>%
+  group_by(cluster) %>%
+  dplyr::slice(1:30)
+
+output_cluster_markers <- merge(top_cluster_markers, markers, by.x = "gene", by.y = "Gene")
+
+write.table(output_cluster_markers, "/home/hnatri/PIPAC_spatial/cell_annotation_top_markers_denoist.tsv",
+            quote = F, row.names = F, sep = "\t")
+
+```
+
+### Subsetting immune and non-immune cells for subclustering
+
+```{r, message = F, warning = F, fig.width = 6, fig.height = 6, eval = F}
+
+seurat_data$Lineage <- ifelse(seurat_data$leiden_res0.5 %in% c(2, 4, 6, 7, 12, 14),
+                              "Immune", "TumorStroma")
+
+immune_subset <- subset(seurat_data, subset = Lineage == "Immune")
+nonimmune_subset <- subset(seurat_data, subset = Lineage == "TumorStroma")
+
+saveRDS(immune_subset, "/scratch/hnatri/PIPAC/cell_immune_subset.rds")
+saveRDS(nonimmune_subset, "/scratch/hnatri/PIPAC/cell_nonimmune_subset.rds")
+
+```
+

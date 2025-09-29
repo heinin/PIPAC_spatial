@@ -69,7 +69,7 @@ markers_by_group <- read_sheet(markers_by_group, sheet = "Markers by group")
 
 ```{r, message = F, warning = F, fig.width = 8, fig.height = 4}
 
-seurat_data <- readRDS("/tgen_labs/banovich/PIPAC/Seurat/PIPAC_NC50_NN20_PC20_Seurat_annotated_metadata_niches.rds")
+seurat_data <- readRDS("/tgen_labs/banovich/PIPAC/Seurat/cell_merged_spatial_filtered_splitsamples_clustered_NC50_NN20_PC20_Seurat_denoIST_metadata.rds")
 DefaultAssay(seurat_data) <- "RNA"
 seurat_data <- seurat_data %>%
   NormalizeData() %>%
@@ -94,7 +94,7 @@ seurat_arm3$Sample_Annotation <- paste0(seurat_arm3$Sample, "_",
 #                    layer = "data")
 
 pseudobulk <- LayerData(seurat_arm3,
-                        assay = "RNA",
+                        assay = "denoist_RNA",
                         layer = "data",
                         features = rownames(seurat_arm3))
 pseudobulk <- pseudobulk %>% t() %>% as.data.frame()

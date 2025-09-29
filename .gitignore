@@ -4,9 +4,17 @@
 .Ruserdata
 .Rapp.history
 .DS_Store
+*.Rout
 analysis/figure
 analysis/*png
 analysis/*html
 analysis/*_cache
 analysis/site_libs
 *marker*.tsv
+code/RSC_latest_EDM_2025-08-06/*
+code/rapids_pipeline/*
+code/Proximity_analysis/output/*
+code/Proximity_analysis/data/*
+code/Proximity_analysis/data/*_input.csv
+code/pairwise_proximity.Rout
+*PIPAC_proximity_input.csv

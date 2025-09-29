@@ -43,6 +43,11 @@ data_clusters <- as.factor(c(0, seq(1:14)))
 pipac_cluster_col <- colorRampPalette(brewer.pal(10, "Paired"))(nb.cols <- length(data_clusters))
 names(pipac_cluster_col) <- levels(data_clusters)
 
+# Cell-based object has 20 clusters
+cell_data_clusters <- as.factor(c(0, seq(1:19)))
+pipac_cluster_20_col <- colorRampPalette(brewer.pal(10, "Paired"))(nb.cols <- length(cell_data_clusters))
+names(pipac_cluster_20_col) <- levels(cell_data_clusters)
+
 immune_clusters <- as.factor(c(0, seq(1:21)))
 
 pipac_immune_cluster_col <- colorRampPalette(brewer.pal(10, "Paired"))(nb.cols <- length(immune_clusters))

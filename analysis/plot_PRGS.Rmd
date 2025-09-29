@@ -1,0 +1,132 @@
+---
+title: "Plotting by PRGS"
+author: "heinin"
+date: "2025-09-16"
+output:
+  workflowr::wflow_html:
+    code_folding: hide
+  html_notebook: default
+editor_options:
+  chunk_output_type: console
+---
+
+### Packages and environment variables
+
+```{r, warning=F, message=F}
+
+suppressPackageStartupMessages({
+  library(workflowr)
+  library(Seurat)
+  library(SeuratObject)
+  library(SeuratDisk)
+  library(tidyverse)
+  library(tibble)
+  library(ggplot2)
+  library(ggpubr)
+  library(ggrepel)
+  library(googlesheets4)
+  library(workflowr)})
+
+```
+
+### Environment variables and helper functions
+
+```{r, message = F, warning = F}
+
+setwd("/home/hnatri/PIPAC_spatial/")
+set.seed(9999)
+options(scipen = 99999)
+options(ggrepel.max.overlaps = Inf)
+
+source("/home/hnatri/PIPAC_spatial/code/PIPAC_colors_themes.R")
+source("/home/hnatri/PIPAC_spatial/code/plot_functions.R")
+
+```
+
+### Import data
+
+```{r, message = F, warning = F, fig.width = 6, fig.height = 4}
+
+seurat_data <- readRDS("/tgen_labs/banovich/PIPAC/Seurat/cell_merged_spatial_filtered_splitsamples_clustered_NC50_NN20_PC20_Seurat_denoIST_metadata.rds")
+
+#unique(seurat_data$Sample)
+#head(seurat_data@meta.data)
+
+#seurat_data$prgs_avg1 <- as.numeric(as.character(gsub("015", 0.15, seurat_data$prgs_avg1)))
+#seurat_data$prgs_avg2 <- as.numeric(as.character(gsub("015", 0.15, seurat_data$prgs_avg2)))
+#seurat_data$prgs_avg3 <- as.numeric(as.character(gsub("015", 0.15, seurat_data$prgs_avg3)))
+
+#as.numeric(unlist(prgs_info$prgs_avg1))
+
+#saveRDS(seurat_data, "/tgen_labs/banovich/PIPAC/Seurat/cell_merged_spatial_filtered_splitsamples_clustered_NC50_NN20_PC20_Seurat_denoIST_metadata.rds")
+
+```
+
+### PRGS scores
+
+Grade 1 indicating a complete response (no residual cancer) and Grade 4
+indicating no response to treatment.
+
+```{r, message = F, warning = F, fig.width = 6, fig.height = 4}
+
+gs4_deauth()
+metadata  <- gs4_get("https://docs.google.com/spreadsheets/d/1sXXwOreLxjMSUoPt79c6jmaQpluWkaxA5P5HfDsed3I/edit?usp=sharing")
+prgs_info <- read_sheet(metadata, sheet = "PRGS")
+
+```
+
+### Number of cells and PRGS
+
+```{r, message = F, warning = F, fig.width = 5, fig.height = 4, message = F}
+
+# Number of cells per sample
+ncells <- table(seurat_data$Sample) %>%
+  as.data.frame()
+colnames(ncells) <- c("Sample", "ncells")
+ncells$Patient_ID <- mapvalues(ncells$Sample,
+                               from = seurat_data$Sample,
+                               to = seurat_data$Patient_ID)
+
+ncells$prgs_avg1 <- mapvalues(ncells$Sample,
+                              from = seurat_data$Sample,
+                              to = seurat_data$prgs_avg1)
+ncells$prgs_avg2 <- mapvalues(ncells$Sample,
+                              from = seurat_data$Sample,
+                              to = seurat_data$prgs_avg2)
+ncells$prgs_avg3 <- mapvalues(ncells$Sample,
+                              from = seurat_data$Sample,
+                              to = seurat_data$prgs_avg3)
+
+cor.test(ncells$ncells, as.numeric(as.character(ncells$prgs_avg1)))
+
+ncells %>%
+  ggplot(aes(y = ncells, x = as.numeric(as.character(prgs_avg1)))) +
+  geom_point() +
+  geom_smooth(method = 'lm', formula = y ~ x) +
+  theme_classic() +
+  xlab("PRGS avg1") +
+  ylab("# cells")
+
+cor.test(ncells$ncells, as.numeric(as.character(ncells$prgs_avg2)))
+
+ncells %>%
+  ggplot(aes(y = ncells, x = as.numeric(as.character(prgs_avg2)))) +
+  geom_point() +
+  geom_smooth(method='lm') +
+  theme_classic() +
+  xlab("PRGS avg2") +
+  ylab("# cells")
+
+cor.test(ncells$ncells, as.numeric(as.character(ncells$prgs_avg3)))
+
+ncells %>%
+  ggplot(aes(y = ncells, x = as.numeric(as.character(prgs_avg3)))) +
+  geom_point() +
+  geom_smooth(method='lm') +
+  theme_classic() +
+  xlab("PRGS avg3") +
+  ylab("# cells")
+
+```
+
+

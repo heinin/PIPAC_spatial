@@ -1,0 +1,237 @@
+---
+title: "Proximity analysis on PIPAC Xenium data"
+author: "heinin"
+date: "2025-09-19"
+output:
+  workflowr::wflow_html:
+    code_folding: hide
+  html_notebook: default
+editor_options:
+  chunk_output_type: console
+---
+
+### Load packages
+
+```{r, warning=F, message=F}
+
+suppressPackageStartupMessages({
+  library(workflowr)
+  library(Seurat)
+  library(SeuratObject)
+  library(SeuratDisk)
+  library(tidyverse)
+  library(tibble)
+  library(ggplot2)
+  library(ggpubr)
+  library(ggrepel)
+  library(googlesheets4)
+  library(workflowr)
+  library(patchwork)
+  library(spatstat)})
+
+```
+
+### Environment variables and helper functions
+
+```{r, message = F, warning = F}
+
+setwd("/home/hnatri/PIPAC_spatial/")
+set.seed(9999)
+options(future.globals.maxSize = 30000 * 1024^2)
+options(scipen = 99999)
+options(ggrepel.max.overlaps = Inf)
+
+source("/home/hnatri/PIPAC_spatial/code/PIPAC_colors_themes.R")
+source("/home/hnatri/PIPAC_spatial/code/plot_functions.R")
+
+calc_enrichment <- function(summary_table, anchor_celltype){
+  enrich_score_ct <- c()
+  for(j in 1:nrow(summary_table)){
+    
+    ct <- summary_table[j, 1] %>% unlist() %>% unname() %>% as.character()
+    total <- summary_table[j, 4] %>% unlist() %>% unname()
+    list1 <- summary_table[j, 2] %>% unlist() %>% unname()
+    list2 <- summary_table[j, 5] %>% unlist() %>% unname()
+    overlap <- summary_table[j, 3] %>% unlist() %>% unname()
+    res <- fisher.test(matrix(c((total - (list1 + list2) + overlap),  (list1-overlap),  (list2 - overlap), overlap), nrow=2))
+    
+    tmp0 <- data.frame(prox_to = anchor_celltype, prox_ct = ct, 
+                       pval = res$p.value, or = res$estimate, or05 = res$conf.int[1], or95 = res$conf.int[2])
+    enrich_score_ct <- rbind(enrich_score_ct, tmp0)
+  }
+  enrich_score_ct <- within(enrich_score_ct, {
+    log_or = log(or)
+    log_or05 = log(or05)
+    log_or95 = log(or95)
+  })
+  enrich_score_ct$prox_ct <- factor(enrich_score_ct$prox_ct, levels = as.character(enrich_score_ct[order(enrich_score_ct$or, decreasing = F),]$prox_ct))
+  return(enrich_score_ct)
+}
+
+```
+
+### Import data
+
+```{r, message = F, warning = F, fig.width = 8, fig.height = 4}
+
+seurat_data <- readRDS("/tgen_labs/banovich/PIPAC/Seurat/cell_merged_spatial_filtered_splitsamples_clustered_NC50_NN20_PC20_Seurat_denoIST_metadata_ncells3k_nk20_niches.rds")
+
+```
+
+### Creating inputs
+
+```{r, message = F, warning = F, fig.width = 8, fig.height = 4, eval = F}
+
+# The code is set to run as an array job on each individual cell 
+# Input required is a data frame with the following:
+# 1. spatial coordinates 
+# 2. cell labels
+# 3. sample ids 
+# 4. unique cell ids as rownames 
+#                    x_centroid y_centroid             cell_id               final_CT   sample
+##VUILD106_aaaaiafn-1   2620.048   6594.044 VUILD106_aaaaiafn-1                    AT2 VUILD106
+##VUILD110_aaabapik-1   3787.849   4875.265 VUILD110_aaabapik-1 Activated Fibrotic FBs VUILD110
+
+# For testing
+#seurat_data <- subset(seurat_data, subset = Annotation == "B1")
+
+proximity_input <- seurat_data@meta.data %>%
+  dplyr::select(c("adj_x_centroid", "adj_y_centroid", "cell_id", "Annotation", "Sample"))
+
+colnames(proximity_input) <- c("x_centroid", "y_centroid", "cell_id", "final_CT", "sample")
+
+write.csv(proximity_input, "/home/hnatri/PIPAC_spatial/code/Proximity_analysis/data/PIPAC_proximity_input.csv")
+
+# Celltypes
+dt <- table(proximity_input$final_CT) %>% as.data.frame()
+write.table(dt[,1], file.path("/home/hnatri/PIPAC_spatial/code/Proximity_analysis/data/", "example_celltype_list.txt"),
+            append = F, quote = F,row.names = F,col.names = F, sep = "\t")
+
+```
+
+### Running the proximity analysis
+
+In /code/Proximity_analysis/
+
+### Parsing outputs
+
+```{r, message = F, warning = F, fig.width = 8, fig.height = 4, eval = F}
+
+outputs <- list.files("/home/hnatri/PIPAC_spatial/code/Proximity_analysis/output")
+
+outputs <- setdiff(outputs, c("Activated Fibrotic FBs_cell_dist_adjdegree.rds",
+                              "AT2_cell_dist_adjdegree.rds",
+                              "B cells_cell_dist_adjdegree.rds",
+                              "SPP1+ Macrophages_cell_dist_adjdegree.rds"))
+
+test_output <- readRDS("/home/hnatri/PIPAC_spatial/code/Proximity_analysis/output/Stromal1_cell_dist_adjdegree.rds")
+
+#cells <- readRDS(file.path('/scratch/nhadad/lung_datasets/prox_analysis_av/spp_proximity_analysis/input/', "AV_metadata_clean_wFAPanno.rds"))
+
+```
+
+### Constructing distance matrices and distances by sample
+
+```{r, message = F, warning = F, fig.width = 8, fig.height = 4}
+
+# Overall proximity
+cell_types <- unique(seurat_data$Annotation)
+celltype_pairs <- combn(cell_types, 2, simplify = FALSE) 
+n <- length(celltype_pairs)
+pb <- txtProgressBar(min = 1, max = n, style = 3)
+proximity_results <- c()
+
+for(ii in seq_along(celltype_pairs)){
+  message(celltype_pairs[[ii]])
+  
+  ct_pairs <- celltype_pairs[[ii]]
+  ct_pairs_out <- paste(ct_pairs, collapse = "-")
+  celltypeA <- ct_pairs[1]
+  celltypeB <- ct_pairs[2]
+  samples <- unique(seurat_data$Sample)
+  
+  for(sample_id in samples){
+    message(sample_id)
+    
+    cells_sample <- subset(seurat_data, Sample == sample_id)
+    # sample_affect_status <- unique(cells_sample$sample_affect)
+    if(sum(cells_sample$Annotation == celltypeA) < 1 | sum(cells_sample$Annotation == celltypeB) < 1){
+      message('no cells found in sample: ', sample_id)
+      results_df <- data.frame(sample = sample_id,
+                               pair = ct_pairs_out,
+                               binary_S = NA, 
+                               normalized_T = NA)
+      proximity_results <- rbind(proximity_results, results_df)
+      next
+    }
+    
+    # create sample window
+    min_x <- min(cells_sample$x_centroid)
+    max_x <- max(cells_sample$x_centroid)
+    min_y <- min(cells_sample$y_centroid)
+    max_y <- max(cells_sample$y_centroid)
+    win <- owin(xrange = c(min_x, max_x), yrange = c(min_y, max_y))
+    # Subset by celltype pairs
+    cells_anchor <- subset(cells_sample, Annotation == celltypeA)
+    cells_other <- subset(cells_sample, Annotation == celltypeB)
+    X_anchor <- ppp(cells_anchor$x_centroid, cells_anchor$y_centroid, window = win, marks = cells_anchor$cell_id)
+    X_other <- ppp(cells_other$x_centroid, cells_other$y_centroid, window = win, marks = cells_other$cell_id)
+    # Calculate distances and angles to all other events
+    dists <- sqrt(outer(X_anchor$x, X_other$x, "-")^2 + outer(X_anchor$y, X_other$y, "-")^2)
+    rownames(dists) <- marks(X_anchor)
+    colnames(dists) <- marks(X_other)
+    
+    # compute summary stats binary
+    dists_binary <- dists
+    d <- 50 # distance threshold 
+    dists_binary[dists_binary<d] = 1
+    dists_binary[dists_binary>d] = 0
+    P=sum(as.matrix(dists_binary))
+    S=0.5 * (P/nrow(dists_binary) + P/ncol(dists_binary))
+    
+    # compute summary stat for none binary dist matrix
+    D_ref <- median(as.matrix(dists))
+    dists_normalized <- dists/D_ref
+    n_A <- nrow(dists_normalized)
+    n_B <- ncol(dists_normalized)
+    min_A_to_B <- apply(dists_normalized, 1, min)
+    avg_A_to_B <- mean(min_A_to_B)
+    min_B_to_A <- apply(dists_normalized, 2, min)
+    avg_B_to_A <- mean(min_B_to_A)
+    T <- 0.5 * (avg_A_to_B + avg_B_to_A)
+    
+    results_df <- data.frame(sample = sample_id,
+                             pair = ct_pairs_out,
+                             binary_S = S, 
+                             normalized_T = T)
+    proximity_results <- rbind(proximity_results, results_df)
+    # progress bar
+    Sys.sleep(0.01)
+    setTxtProgressBar(pb, ii)
+  }
+}
+
+```
+
+### Constructing distance matrices and distances by sample
+
+```{r, message = F, warning = F, fig.width = 8, fig.height = 4, eval = F}
+
+# Converting into a pairwise matrix and binarizing
+test_mx <- test_output %>% 
+  dplyr::select(c("distance", "cell.a", "cell.b")) %>%
+  pivot_wider(names_from = cell.b, values_from = distance) %>%
+  as.data.frame() %>%
+  column_to_rownames(var = "cell.a") %>%
+  mutate_all(~replace(., !is.na(.), 1)) %>%
+  mutate_all(~replace(., is.na(.), 0)) %>%
+  as.matrix()
+
+test_mx[1:3, 1:3]
+
+write.table(sample_data, paste0("/tgen_labs/banovich/PIPAC/Proximity/", ct, "_proximity.tsv"),
+            quote = F, sep = "\t", row.names = F)
+
+```
+
+

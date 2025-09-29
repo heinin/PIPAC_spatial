@@ -1,0 +1,117 @@
+---
+title: "metrics"
+author: "heinin"
+date: "2025-06-19"
+output:
+  workflowr::wflow_html:
+    code_folding: hide
+  html_notebook: default
+editor_options:
+  chunk_output_type: console
+---
+
+### Load packages
+
+```{r, warning=F, message=F}
+
+suppressPackageStartupMessages({
+  library(workflowr)
+  library(arrow)
+  library(Seurat)
+  library(SeuratObject)
+  library(SeuratDisk)
+  library(tidyverse)
+  library(tibble)
+  library(ggplot2)
+  library(ggpubr)
+  library(ggrepel)
+  library(googlesheets4)
+  library(workflowr)
+  library(patchwork)
+  library(scIntegrationMetrics)})
+
+```
+
+### Environment variables and helper functions
+
+```{r, message = F, warning = F}
+
+setwd("/home/hnatri/PIPAC_spatial/")
+set.seed(9999)
+options(future.globals.maxSize = 30000 * 1024^2)
+options(scipen = 99999)
+options(ggrepel.max.overlaps = Inf)
+
+source("/home/hnatri/PIPAC_spatial/code/PIPAC_colors_themes.R")
+source("/home/hnatri/PIPAC_spatial/code/plot_functions.R")
+
+# Lineage info
+gs4_deauth()
+metadata  <- gs4_get("https://docs.google.com/spreadsheets/d/1sXXwOreLxjMSUoPt79c6jmaQpluWkaxA5P5HfDsed3I/edit?usp=sharing")
+lineage <- read_sheet(metadata, sheet = "Cell type annotations")
+
+```
+
+### Import data
+
+```{r, message = F, warning = F, fig.width = 8, fig.height = 4}
+
+seurat_data <- readRDS("/tgen_labs/banovich/PIPAC/Seurat/PIPAC_NC50_NN20_PC20_Seurat_annotated_metadata_ncells3k_nneighbors20.rds")
+
+```
+
+### Niche coherence metrics
+
+#### NASW
+
+"Third, it is important that niches are biologically meaningful, and do not merely consist of a random colocated group of cells, which is the case when molecular features are not considered (Supplementary Fig. 12e). For this, we measure on the one hand how compact niches are within themselves while being distinct from neighboring niches, using the Niche Average Silhouette Width (NASW)"
+
+"We define the Niche Average Silhouette Width (NASW) to measure the separability of latent clusters identified via clustering of the latent space of a model. To compute the NASW, we construct a k-nearest neighbor graph based on the latent space and perform three clusterings by varying resolutions between 0.1 and 1.0 at increments of 0.45. We then compute the Average Silhouette Width over all three clusterings and report the mean as NASW." https://www.biorxiv.org/content/10.1101/2024.02.21.581428v3.full
+
+```{r, message = F, warning = F, fig.width = 8, fig.height = 4}
+
+#metrics <- getIntegrationMetrics(subset(seurat_data, subset = TMA %in% c("MR_PIPAC-TMA1", "MR_PIPAC-TMA2")),
+#                                 meta.label = "ncells3k_niche_k5_n20",
+#                                 meta.batch = "TMA",
+#                                 iLISI_perplexity = 20,
+#                                 method.reduction = "sp_adj",
+#                                 metricsLabels = c(1, 2, 3, 4, 5))
+#
+#unlist(metrics)
+
+#def compute_ASW(adata,pred_key,spatial_key='spatial'):
+#    d = squareform(pdist(adata.obsm[spatial_key]))
+#    return silhouette_score(X=d,labels=adata.obs[pred_key],metric='precomputed')
+
+compute_silhouette <- function(X, meta_data, label_colnames) {
+  
+  N <- nrow(meta_data)
+  sil_df <- data.frame(matrix(NA, N, length(label_colnames)))
+  sil_df <- Reduce(cbind, lapply(label_colnames, function(label_colname) {
+    labels <- data.frame(meta_data)[, label_colname, drop = TRUE]
+    if (any(is.na(labels))) {
+      message(paste("ASW: Cannot compute silhouette on missing values.","Skipping",label_colname))
+      return(rep(NA, N))
+    } else if(sum(table(labels)>0) < 2){
+      message(paste("ASW: Cannot compute silhouette without at least 2 label levels.","Skipping",label_colname))
+      return(rep(NA, N))
+    }
+    else {
+      dists <- vegdist(X, method="euclidean")
+      labels.num <- as.numeric(as.factor(labels))
+      sil <- as.data.frame(silhouette(labels.num, dists))
+      return(sil$sil_width)
+    }
+  }))
+  sil_df <- as.data.frame(sil_df)
+  colnames(sil_df) <- label_colnames
+  row.names(sil_df) <- row.names(meta_data)
+  
+  return(sil_df)
+  
+}
+
+```
+
+
+

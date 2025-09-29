@@ -104,13 +104,17 @@ F3s look more like iCAFs, others are mCAFs.
 
 ```{r, message = F, warning = F, fig.width = 8, fig.height = 8}
 
-mycafs <- c("TGFB1", "ACTA2", "TAGLN")
+grep("HOP", rownames(seurat_data), value = T)
+
+mycafs <- c("TGFB1", "ACTA2", "TAGLN", "HOPX", "MYL9")
 icafs <- c("IL6", "CXCL12", "CXCL13", "CXCL14")
 abcafs <- c("CD74", "HLA-DPB1", "HLA-DPB2", "HLA-DQA1", "HLA-DRA", "HLA-DRB1")
 
 DotPlot(seurat_data,
         group.by = "Annotation",
-        features = c(mycafs, icafs, abcafs, c("COL1A1", "COL1A2", "FN1")),
+        features = unique(c(mycafs, icafs, abcafs, c("COL1A1", "COL1A2", "FN1",
+                                              "SFRP2", "SMAD3", "PDPN", "COMP",
+                                              "PLA2G2A", "ASPN"))),
         cols = c("gray89", "tomato3")) +
   RotatedAxis() +
   ylab("") +
@@ -315,7 +319,7 @@ DotPlot(seurat_data,
 DotPlot(seurat_data,
         group.by = "Annotation",
         features = unique(markers_by_group[which(markers_by_group$annotation1 == "Cell-cell crosstalk"),]$feature),
-        cols = c("azure", "tomato3")) +
+        cols = c("gray90", "tomato3")) +
   RotatedAxis() +
   ggtitle("Cell-cell crosstalk")
 
@@ -326,7 +330,7 @@ DotPlot(seurat_data,
 DotPlot(seurat_data,
         group.by = "Annotation",
         features = unique(markers_by_group[which(markers_by_group$annotation1 == "Macrophage signaling"),]$feature),
-        cols = c("azure", "tomato3")) +
+        cols = c("gray90", "tomato3")) +
   RotatedAxis() +
   ggtitle("Macrophage signaling")
 
@@ -337,7 +341,7 @@ DotPlot(seurat_data,
 DotPlot(seurat_data,
         group.by = "Annotation",
         features = unique(markers_by_group[which(markers_by_group$annotation1 == "DNA damage and cell faith"),]$feature),
-        cols = c("azure", "tomato3")) +
+        cols = c("gray90", "tomato3")) +
   RotatedAxis() +
   ggtitle("DNA damage and cell faith")
 
@@ -348,7 +352,7 @@ DotPlot(seurat_data,
 DotPlot(seurat_data,
         group.by = "Annotation",
         features = unique(markers_by_group[which(markers_by_group$annotation1 == "Functional markers"),]$feature),
-        cols = c("azure", "tomato3")) +
+        cols = c("gray90", "tomato3")) +
   RotatedAxis() +
   ggtitle("Functional markers")
 
@@ -359,7 +363,7 @@ DotPlot(seurat_data,
 DotPlot(seurat_data,
         group.by = "Annotation",
         features = unique(markers_by_group[which(markers_by_group$annotation1 == "Mesothelial"),]$feature),
-        cols = c("azure", "tomato3")) +
+        cols = c("gray90", "tomato3")) +
   RotatedAxis() +
   ggtitle("Mesothelial")
 
@@ -370,7 +374,7 @@ DotPlot(seurat_data,
 DotPlot(seurat_data,
         group.by = "Annotation",
         features = unique(markers_by_group[which(markers_by_group$annotation1 == "Macrophages"),]$feature),
-        cols = c("azure", "tomato3")) +
+        cols = c("gray90", "tomato3")) +
   RotatedAxis() +
   ggtitle("Macrophages")
 
@@ -381,7 +385,7 @@ DotPlot(seurat_data,
 DotPlot(seurat_data,
         group.by = "Annotation",
         features = unique(markers_by_group[which(markers_by_group$annotation1 == "CAFs"),]$feature),
-        cols = c("azure", "tomato3")) +
+        cols = c("gray90", "tomato3")) +
   RotatedAxis() +
   ggtitle("CAFs")
 
@@ -392,7 +396,7 @@ DotPlot(seurat_data,
 DotPlot(seurat_data,
         group.by = "Annotation",
         features = grep("COL", rownames(seurat_data), value = T),
-        cols = c("azure", "tomato3")) +
+        cols = c("gray90", "tomato3")) +
   RotatedAxis() +
   ggtitle("Collagen")
 
@@ -408,7 +412,7 @@ g2m.genes <- cc.genes.updated.2019$g2m.genes
 DotPlot(seurat_data,
         group.by = "Annotation",
         features = c(s.genes, g2m.genes),
-        cols = c("azure", "tomato3")) +
+        cols = c("gray90", "tomato3")) +
   RotatedAxis() +
   ggtitle("S/G2M genes")
 

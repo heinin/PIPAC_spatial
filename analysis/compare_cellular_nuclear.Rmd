@@ -1,0 +1,336 @@
+---
+title: "Comparing gene expression in cellular vs. nuclear transcripts"
+author: "heinin"
+date: "2025-07-20"
+output:
+  workflowr::wflow_html:
+    code_folding: hide
+  html_notebook: default
+editor_options:
+  chunk_output_type: console
+---
+
+### Import packages
+
+```{r, warning=F, message=F}
+
+suppressPackageStartupMessages({
+  library(workflowr)
+  library(arrow)
+  library(Seurat)
+  library(SeuratObject)
+  library(SeuratDisk)
+  library(tidyverse)
+  library(tibble)
+  library(ggplot2)
+  library(ggpubr)
+  library(ggrepel)
+  library(ggpointdensity)
+  library(ggrastr)
+  library(googlesheets4)
+  library(workflowr)})
+
+```
+
+### Environment variables and helper functions
+
+```{r, message = F, warning = F}
+
+setwd("/home/hnatri/PIPAC_spatial/")
+set.seed(9999)
+options(scipen = 99999)
+options(ggrepel.max.overlaps = Inf)
+
+source("/home/hnatri/PIPAC_spatial/code/PIPAC_colors_themes.R")
+source("/home/hnatri/PIPAC_spatial/code/plot_functions.R")
+
+```
+
+### Import data
+
+```{r, message = F, warning = F, fig.width = 6, fig.height = 4}
+
+# Copied to isilon /tgen_labs/banovich/PIPAC/Seurat
+# /tgen_labs/banovich/PIPAC/Seurat/cell_merged_spatial_filtered_splitsamples_clustered_NC50_NN20_PC20_Seurat.rds.rds
+#cell_seurat_data <- readRDS("/tgen_labs/banovich/PIPAC/Seurat/cell_merged_spatial_filtered_splitsamples_clustered_NC50_NN20_PC20_Seurat.rds")
+#nucl_seurat_data <- readRDS("/tgen_labs/banovich/PIPAC/Seurat/PIPAC_NC50_NN20_PC20_Seurat_annotated_metadata_niches.rds")
+seurat_data <- readRDS("/tgen_labs/banovich/PIPAC/Seurat/cell_merged_spatial_filtered_splitsamples_clustered_NC50_NN20_PC20_Seurat_denoIST.rds")
+
+# Normalizing and scaling all assays
+DefaultAssay(seurat_data) <- "RNA"
+seurat_data <- seurat_data %>%
+  JoinLayers() %>%
+  NormalizeData() %>%
+  ScaleData()
+
+DefaultAssay(seurat_data) <- "nucleus_RNA"
+seurat_data <- seurat_data %>%
+  JoinLayers() %>%
+  NormalizeData() %>%
+  ScaleData()
+
+DefaultAssay(seurat_data) <- "denoist_RNA"
+seurat_data <- JoinLayers(seurat_data)
+seurat_data@assays$denoist_RNA$counts <- seurat_data@assays$denoist_RNA$data
+seurat_data@assays$denoist_RNA$data <- NULL
+seurat_data <- seurat_data %>%
+  NormalizeData() %>%
+  ScaleData()
+
+# saveRDS(seurat_data, "/tgen_labs/banovich/PIPAC/Seurat/cell_merged_spatial_filtered_splitsamples_clustered_NC50_NN20_PC20_Seurat_denoIST.rds")
+
+
+```
+
+### Plotting expression of all genes
+
+```{r, message = F, warning = F, fig.width = 4, fig.height = 4}
+
+# Only looking at one sample
+seurat_data_subset <- subset(seurat_data,
+                             subset = Sample == "S21-24369_2A")
+
+# Cellular
+cell_exp <- LayerData(seurat_data_subset,
+                      assay = "RNA",
+                      layer = "data")
+
+cell_exp <- as.data.frame(cell_exp) %>%
+  rownames_to_column(var = "gene") %>%
+  #t() %>%
+  as_tibble() %>%
+  pivot_longer(cols = colnames(cell_exp), names_to = "cell", values_to = "exp")
+
+# Nuclear
+nucl_exp <- LayerData(seurat_data_subset,
+                      assay = "nucleus_RNA",
+                      layer = "data")
+
+nucl_exp <- as.data.frame(nucl_exp) %>%
+  rownames_to_column(var = "gene") %>%
+  #t() %>%
+  as_tibble() %>%
+  pivot_longer(cols = colnames(nucl_exp), names_to = "cell", values_to = "exp")
+
+# Denoist
+denoist_exp <- LayerData(seurat_data_subset,
+                         assay = "denoist_RNA",
+                         layer = "data")
+
+denoist_exp <- as.data.frame(denoist_exp) %>%
+  rownames_to_column(var = "gene") %>%
+  #t() %>%
+  as_tibble() %>%
+  pivot_longer(cols = colnames(denoist_exp), names_to = "cell", values_to = "exp")
+
+#identical(rownames(cell_exp), rownames(nucl_exp))
+#identical(rownames(cell_exp), rownames(denoist_exp))
+#identical(rownames(nucl_exp), rownames(denoist_exp))
+
+# Merging
+merged_exp <- cbind(cell_exp, nucl_exp, denoist_exp)
+colnames(merged_exp) <- c("gene1", "cell1", "cell_exp", "gene2", "cell2", "nucl_exp", "gene3", "cell3", "denoist_exp")
+
+#identical(merged_exp$cell1, merged_exp$cell2)
+#identical(merged_exp$cell3, merged_exp$cell2)
+
+#identical(merged_exp$gene1, merged_exp$gene2)
+#identical(merged_exp$gene3, merged_exp$gene2)
+
+merged_exp <- merged_exp[,c(1, 2, 3, 6, 9)]
+
+p1 <- merged_exp %>%
+  ggplot(aes(x = cell_exp, y = nucl_exp)) +
+  #geom_pointdensity() +
+  geom_point(alpha = 0.2) +
+  #stat_summary(fun.data = mean_cl_normal) + 
+  geom_smooth(method='lm', formula= y~x) +
+  theme_classic() +
+  ylab("Nuclear transcripts") +
+  xlab("All transcripts")
+
+rasterize(p1, layers='Point', dpi = 300)
+
+p2 <- merged_exp %>%
+  ggplot(aes(x = cell_exp, y = denoist_exp)) +
+  geom_point(alpha = 0.2) +
+  geom_smooth(method='lm', formula= y~x) +
+  theme_classic() +
+  ylab("DenoIST transcripts") +
+  xlab("All transcripts")
+
+rasterize(p2, layers='Point', dpi = 300)
+
+p3 <- merged_exp %>%
+  ggplot(aes(x = denoist_exp, y = nucl_exp)) +
+  geom_point(alpha = 0.2) +
+  geom_smooth(method='lm', formula= y~x) +
+  theme_classic() +
+  ylab("Nuclear transcripts") +
+  xlab("DenoIST transcripts")
+
+rasterize(p3, layers='Point', dpi = 300)
+
+```
+
+### Examining zero count genes
+
+#### All transcripts vs. DenoIST transcripts
+
+```{r, message = F, warning = F, fig.width = 8, fig.height = 4}
+
+merged_exp %>%
+  filter(cell_exp > 0,
+         denoist_exp == 0) %>%
+  dplyr::select(gene1) %>%
+  unlist() %>%
+  as.character() %>%
+  unique() %>%
+  length()
+
+merged_exp %>%
+  filter(cell_exp > 0,
+         denoist_exp == 0) %>%
+  dplyr::select(gene1) %>%
+  unlist() %>%
+  as.character() %>%
+  table() %>%
+  as.data.frame() %>%
+  arrange(-Freq) %>%
+  head(n=50)
+
+```
+
+#### Nuclear transcripts vs. all transcripts
+
+```{r, message = F, warning = F, fig.width = 8, fig.height = 4}
+
+merged_exp %>%
+  filter(nucl_exp > 0,
+         cell_exp == 0) %>%
+  dplyr::select(gene1) %>%
+  unlist() %>%
+  as.character() %>%
+  unique() %>%
+  length()
+
+merged_exp %>%
+  filter(nucl_exp > 0,
+         cell_exp == 0) %>%
+  dplyr::select(gene1) %>%
+  unlist() %>%
+  as.character() %>%
+  table() %>%
+  as.data.frame() %>%
+  arrange(-Freq) %>%
+  head(n=50)
+
+```
+
+#### All transcripts vs. nuclear transcripts
+
+```{r, message = F, warning = F, fig.width = 8, fig.height = 4}
+
+merged_exp %>%
+  filter(cell_exp > 0,
+         nucl_exp == 0) %>%
+  dplyr::select(gene1) %>%
+  unlist() %>%
+  as.character() %>%
+  unique() %>%
+  length()
+
+merged_exp %>%
+  filter(cell_exp > 0,
+         nucl_exp == 0) %>%
+  dplyr::select(gene1) %>%
+  unlist() %>%
+  as.character() %>%
+  table() %>%
+  as.data.frame() %>%
+  arrange(-Freq) %>%
+  head(n=50)
+
+```
+
+#### DenoIST transcripts vs. nuclear transcripts
+
+```{r, message = F, warning = F, fig.width = 8, fig.height = 4}
+
+merged_exp %>%
+  filter(denoist_exp > 0,
+         nucl_exp == 0) %>%
+  dplyr::select(gene1) %>%
+  unlist() %>%
+  as.character() %>%
+  unique() %>%
+  length()
+
+merged_exp %>%
+  filter(denoist_exp > 0,
+         nucl_exp == 0) %>%
+  dplyr::select(gene1) %>%
+  unlist() %>%
+  as.character() %>%
+  table() %>%
+  as.data.frame() %>%
+  arrange(-Freq) %>%
+  head(n=50)
+
+```
+
+#### Nuclear transcripts vs. DenoIST transcripts
+
+```{r, message = F, warning = F, fig.width = 8, fig.height = 4}
+
+merged_exp %>%
+  filter(nucl_exp > 0,
+         denoist_exp == 0) %>%
+  dplyr::select(gene1) %>%
+  unlist() %>%
+  as.character() %>%
+  unique() %>%
+  length()
+
+merged_exp %>%
+  filter(nucl_exp > 0,
+         denoist_exp == 0) %>%
+  dplyr::select(gene1) %>%
+  unlist() %>%
+  as.character() %>%
+  table() %>%
+  as.data.frame() %>%
+  arrange(-Freq) %>%
+  head(n=50)
+
+```
+
+### Cluster overlap
+
+```{r, message = F, warning = F, fig.width = 8, fig.height = 4}
+
+create_barplot(seurat_data,
+               plot_var = "Annotation",
+               group_var = "leiden_res0.5",
+               plot_levels = sort(unique(seurat_data$Annotation)),
+               group_levels = sort(unique(seurat_data$leiden_res0.5)),
+               plot_colors = pipac_celltype_col,
+               var_names = c("Annotation", "leiden_res0.5"),
+               legend_title = "")
+
+create_barplot(seurat_data,
+               group_var = "Annotation",
+               plot_var = "leiden_res0.5",
+               group_levels = sort(unique(seurat_data$Annotation)),
+               plot_levels = sort(unique(seurat_data$leiden_res0.5)),
+               plot_colors = pipac_cluster_20_col,
+               var_names = c("leiden_res0.5", "Annotation"),
+               legend_title = "")
+
+# Saving with nuclear annotations
+#saveRDS(cell_seurat_data, "/tgen_labs/banovich/PIPAC/Seurat/cell_merged_spatial_filtered_splitsamples_clustered_NC50_NN20_PC20_Seurat.rds")
+
+# To build on command line, run Rscript -e "rmarkdown::render('compare_cellular_nuclear.Rmd')"
+# Then "mv *.html /home/hnatri/PIPAC_spatial/docs/"
+
+```

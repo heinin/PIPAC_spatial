@@ -581,3 +581,55 @@ VlnPlot(subset(treated_fibro, subset = BestResponse %in% c("SD", "PR")),
 
 ```
 
+### DEGs with likely contaminants removed
+
+```{r, message = F, warning = F, fig.width = 8, fig.height = 5}
+
+cell_expr <- arm3[["RNA"]]$counts
+cell_object_meta <- arm3@meta.data
+
+sample_celltype_levels <-  paste0(as.character(cell_object_meta$Sample),"_",
+                                  as.character(cell_object_meta$niche_k5_n30))
+
+cell_RNA_expr_perCT <- t(sapply(by(t(cell_expr),sample_celltype_levels,colSums),identity))
+dim(cell_RNA_expr_perCT)
+
+celltype_levels <- cell_object_meta$niche_k5_n30
+cell_expr_count_per1K <- apply(cell_expr,2,function(x){
+  res = x/sum(x)
+  res * 1000
+})
+
+prop_thresh <- t(sapply(by(t(cell_expr_count_per1K), celltype_levels, 
+                           function(x){
+                             colSums(x >= 3)/nrow(x) 
+                           }),identity))
+
+test_gene_prop_thresh <- data.frame(prop_thresh,
+                                    check.names = FALSE) %>% 
+  mutate(niche = rownames(prop_thresh)) %>%
+  tidyr::pivot_longer(1:480,
+                      names_to = "gene",
+                      values_to = "prop_cell_expressing_min3")
+
+test_gene_prop_thresh_filter <- test_gene_prop_thresh %>% 
+  filter(prop_cell_expressing_min3 >= 0.1)
+
+table(test_gene_prop_thresh_filter$niche)
+
+niche_DEGs_filtered <- lapply(seq(1, 5), function(xx){
+  keep_genes <- test_gene_prop_thresh_filter %>%
+    filter(niche == xx)
+  
+  DEGs <- niche_DEGs %>%
+    filter(niche_k5_n30 == xx,
+           feature %in% keep_genes$gene)
+  
+  DEGs$FDR <- p.adjust(DEGs$p_val, n = length(DEGs$p_val))
+  
+  DEGs
+})
+niche_DEGs_filtered <- as.data.frame(do.call(rbind, niche_DEGs_filtered))
+
+```
+

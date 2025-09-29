@@ -1,0 +1,442 @@
+---
+title: "Xenium data preprocessing, whole cell transcripts"
+author: "heinin"
+date: "2025-07-01"
+output:
+  workflowr::wflow_html:
+    code_folding: hide
+  html_notebook: default
+editor_options:
+  chunk_output_type: console
+---
+
+### Packages and environment variables
+
+```{r, warning=F, message=F}
+
+suppressPackageStartupMessages({
+  library(workflowr)
+  library(arrow)
+  library(Seurat)
+  library(SeuratObject)
+  library(SeuratDisk)
+  library(tidyverse)
+  library(tibble)
+  library(ggplot2)
+  library(ggpubr)
+  library(ggrepel)
+  library(workflowr)})
+
+```
+
+### Environment variables and helper functions
+
+```{r, message = F, warning = F}
+
+setwd("/home/hnatri/PIPAC_spatial/")
+set.seed(9999)
+options(scipen = 99999)
+options(ggrepel.max.overlaps = Inf)
+
+# Colors, themes, and cell type markers
+#source("/home/hnatri/PIPAC_spatial/code/colors_themes.R")
+
+# A simplified VlnPlot
+BetterVlnPlot <- function(data, features, group_by, ylim = NA){
+  VlnPlot(data, pt.size = 0, features = features, 
+          group.by = group_by, y.max = ylim) + labs(x = "") + NoLegend()
+}
+
+# DimPlots of before and after for each sample
+DimPlotCompare <- function(tma){
+  bf_cells <- ncol(subset(merged_spatial_unfiltered, subset = TMA == tma))
+  a <- DimPlot(subset(merged_spatial_unfiltered, subset = TMA == tma),
+               reduction = "sp") + NoLegend() +
+    labs(title = paste0(tma, ", Unfiltered, ", bf_cells, " nuclei"))
+  
+  aft_cells <- ncol(subset(merged_spatial, subset = TMA == tma))
+  b <- DimPlot(subset(merged_spatial, subset = TMA == tma),
+               reduction = "sp") + NoLegend() +
+    labs(title = paste0(tma, ", Filtered, ", aft_cells, " nuclei"))
+  ggarrange(a,b)
+}
+
+```
+
+### Import data
+
+```{r, message = F, warning = F, eval = F}
+
+# /tgen_labs/banovich/xenium_run_folders/output-XETG00048__0034123__MR_PIPACTMA1__20240911_210055
+# /tgen_labs/banovich/xenium_run_folders/PIPACTMA
+data_dir <- "/tgen_labs/banovich/xenium_run_folders/PIPACTMA/"
+tma_list <- c(
+  TMA1 = "output-XETG00048__0034123__MR_PIPACTMA1__20240911__210055",
+  TMA2 = "output-XETG00048__0034221__MR_PIPACTMA2-Rerun__20241107__213721",
+  TMA3 = "output-XETG00048__0024823__MR_PIPACTMA3-Rerun__20241115__191438",
+  TMA4 = "output-XETG00048__0033982__MR_PIPACTMA4__20240920__231140",
+  TMA5 = "output-XETG00048__0033981__MR_PIPACTMA5__20240920__231140",
+  TMA6 = "output-XETG00048__0034149__MR_PIPACTMA6__20240923__231239",
+  TMA7 = "output-XETG00048__0034152__MR_PIPACTMA7__20240923__231239",
+  TMA8 = "output-XETG00048__0033448__MR_PIPACTMA8__20241224__204450",
+  TMA9 = "output-XETG00048__0041382__MR_PIPACTMA9__20250109__205856")
+
+# Get subdirectory names for obtaining file paths
+subdirs <- unname(tma_list)
+
+# Get transcript counts and metadata
+all_files <- list.files(file.path(data_dir, subdirs), full.names = TRUE)
+h5_files <- all_files[grep(".h5", all_files)]
+transcript_files <- all_files[grep("transcripts.parquet", all_files)]
+meta_files <- all_files[grep("cells.csv.gz", all_files)]
+
+# Get sample IDs
+tma_ids <- names(tma_list)
+
+# Read in files
+counts <- lapply(h5_files, Read10X_h5)
+
+transcripts <- lapply(transcript_files, function(XX) {
+  read_parquet(XX) })
+
+metadata <- lapply(meta_files, function(XX) {
+  tmp_meta <- read.delim(XX, sep = ",", colClasses = c(cell_id = "character"))
+  rownames(tmp_meta) <- tmp_meta$cell_id
+  tmp_meta })
+
+# Rename files in lists
+tma_ids <- unlist(lapply(str_split(meta_files, "__"), function(XX) { XX[3] }))
+names(counts) <- tma_ids
+names(transcripts) <- tma_ids
+names(metadata) <- tma_ids
+
+```
+
+### Get all transcripts, create cell x gene matrix, and count the number of blanks per cell
+
+```{r, message = F, warning = F, eval = F}
+
+all_transcripts <- list()
+#nuc_transcripts <- list()
+updated_metadata <- list()
+for (tma in tma_ids) {
+  message(paste("Getting cell counts for sample", tma))
+  
+  # Filter out low quality transcripts 
+  all_transcripts[[tma]] <- transcripts[[tma]][transcripts[[tma]]$qv > 20, ]
+  
+  # Find transcripts that overlap a nucleus
+  #nuc_transcripts[[tma]] <- transcripts[[tma]][transcripts[[tma]]$overlaps_nucleus == "1", ]
+  
+  # Create cell x gene dataframe
+  all_transcripts[[tma]] <- as.data.frame(table(all_transcripts[[tma]]$cell_id, 
+                                               all_transcripts[[tma]]$feature_name))
+  names(all_transcripts[[tma]]) <- c("cell_id", "feature_name", "Count")
+  all_transcripts[[tma]] <- all_transcripts[[tma]] %>% 
+    pivot_wider(names_from = "feature_name", values_from = "Count")
+  
+  # Get blanks count per cell
+  blank_ids <- all_transcripts[[tma]]$cell_id
+  blank_mat <- all_transcripts[[tma]][, grep("BLANK", 
+                                                colnames(all_transcripts[[tma]]))]
+  blank_counts <- as.data.frame(rowSums(blank_mat))
+  blank_counts$cell_id <- blank_ids
+  
+  # Remove negative controls and convert to cell x gene matrix
+  all_transcripts[[tma]] <- all_transcripts[[tma]][, grep("NegControl", 
+                                                        colnames(all_transcripts[[tma]]), 
+                                                        invert = TRUE)]
+  all_transcripts[[tma]] <- all_transcripts[[tma]][, grep("BLANK", 
+                                                        colnames(all_transcripts[[tma]]), 
+                                                        invert = TRUE)]
+  keep_cells <- all_transcripts[[tma]]$cell_id
+  all_transcripts[[tma]] <- as.data.frame(all_transcripts[[tma]])
+  rownames(all_transcripts[[tma]]) <- keep_cells
+  all_transcripts[[tma]] <- all_transcripts[[tma]][, -1]
+  all_transcripts[[tma]] <- as.matrix(t(all_transcripts[[tma]]))
+  
+  # Subset nuclear metadata to "cells" with transcripts that overlap nuclei
+  updated_metadata[[tma]] <- metadata[[tma]][metadata[[tma]]$cell_id %in% keep_cells, ]
+  
+  # Add blank counts to metadata
+  updated_metadata[[tma]] <- full_join(updated_metadata[[tma]], blank_counts,
+                                      by = "cell_id")
+  updated_metadata[[tma]] <- updated_metadata[[tma]] %>%
+    dplyr::rename(num.blank = `rowSums(blank_mat)`)
+  rownames(updated_metadata[[tma]]) <- updated_metadata[[tma]]$cell_id
+}
+
+```
+
+### Create Seurat objects
+
+```{r, message = F, warning = F, eval = F}
+
+obj_list <- list()
+obj_list <- sapply(tma_ids, function(XX) {
+  # Create a Seurat object containing the RNA adata
+  sobj <- CreateSeuratObject(counts = all_transcripts[[XX]], 
+                             assay = "RNA")
+  
+  # Add metadata
+  sobj <- AddMetaData(sobj, metadata = updated_metadata[[XX]])
+  sobj$TMA <- XX
+  #sobj$tma <- tmas[[XX]]
+  #sobj$run <- run_ids[[XX]]
+  
+  # Calculate percent blank
+  sobj$percent.blank <- sobj$num.blank/(sobj$nCount_RNA + sobj$num.blank)*100
+  
+  # Remove cells with 0 nCount_RNA
+  sobj <- subset(sobj, subset = nCount_RNA != 0)
+  
+  # Rename cells to add TMA name as prefix
+  cellid <- gsub("MR_PIPAC", "", XX)
+  cellid <- gsub("-Rerun", "", cellid)
+  sobj <- RenameCells(sobj, add.cell.id = cellid)
+  
+  # Add spatial coordinates as dimension reduction objects
+  #position_xy <- cbind(sobj$adj_x_centroid, sobj$adj_y_centroid)
+  position_xy <- cbind(sobj$x_centroid, sobj$y_centroid)
+  row.names(position_xy) <- row.names(sobj@meta.data)
+  colnames(position_xy) <- c("SP_1", "SP_2")
+  sobj[["sp"]] <- CreateDimReducObject(embeddings = position_xy, key = "SP_",
+                                       assay = DefaultAssay(sobj))
+  obj_list[[XX]] <- sobj
+
+})
+
+#saveRDS(obj_list, "/scratch/hnatri/PIPAC/obj_list.rds")
+
+# Get TMA IDs
+tma_ids <- names(obj_list)
+
+```
+
+### Visualize
+
+```{r, message = F, warning = F, fig.width = 8, fig.height = 16}
+
+obj_list <- readRDS("/scratch/hnatri/PIPAC/obj_list.rds")
+
+# Merge objects (cannot do spatial DimPlots for this)
+#merged_spatial_unfiltered <- obj_list[[1]]
+merged_spatial_unfiltered <- merge(x = obj_list[[1]], y = obj_list[2:length(obj_list)])
+
+#saveRDS(merged_spatial_unfiltered, "/scratch/hnatri/PIPAC/merged_spatial_unfiltered.rds")
+merged_spatial_unfiltered <- readRDS("/scratch/hnatri/PIPAC/merged_spatial_unfiltered.rds")
+
+# Add spatial dimension reduction object separately
+position_xy <- cbind(merged_spatial_unfiltered$x_centroid,
+                     merged_spatial_unfiltered$y_centroid)
+row.names(position_xy) <- row.names(merged_spatial_unfiltered@meta.data)
+colnames(position_xy) <- c("SP_1", "SP_2")
+merged_spatial_unfiltered[["sp"]] <- CreateDimReducObject(
+  embeddings = position_xy, key = "SP_", assay = DefaultAssay(merged_spatial_unfiltered))
+
+DimPlot(merged_spatial_unfiltered,
+        reduction = "sp",
+        group.by = "TMA",
+        label = F,
+        split.by = "TMA",
+        ncol = 3) +
+  coord_fixed() + NoLegend()
+
+#saveRDS(merged_spatial_unfiltered, "/scratch/hnatri/PIPAC/merged_spatial_unfiltered.rds")
+
+```
+
+### Add cell level count data
+
+```{r, message = F, warning = F, eval = F}
+
+# Get sample IDs
+tma_ids <- names(obj_list)
+
+cell_obj_list <- list()
+cell_obj_list <- sapply(tma_ids, function(XX) {
+  message(paste("Creating cell Seurat object for TMA", XX))
+  
+  # Create a Seurat object containing the RNA cell information
+  sobj <- CreateSeuratObject(counts = counts[[XX]]$`Gene Expression`,
+                             assay = "RNA")
+  rownames(metadata[[XX]]) <- metadata[[XX]]$cell_id
+  sobj <- AddMetaData(sobj, metadata = metadata[[XX]])
+  
+  # Rename cells to add sample ID as prefix
+  cellid <- gsub("MR_PIPAC", "", XX)
+  cellid <- gsub("-Rerun", "", cellid)
+  sobj <- RenameCells(sobj, add.cell.id = cellid)
+
+  cell_obj_list[[XX]] <- sobj
+})
+
+# Merge cell information
+#cell_merged <- cell_obj_list[[1]]
+cell_merged <- merge(cell_obj_list[[1]], y = cell_obj_list[2:length(cell_obj_list)])
+
+# Add cell information to nuclei object
+cell_merged <- JoinLayers(cell_merged)
+cell_count_matrix <- cell_merged@assays$RNA$counts
+keep_cells <- colnames(merged_spatial_unfiltered)
+cell_count_matrix <- cell_count_matrix[, keep_cells]
+merged_spatial_unfiltered[["cell_RNA"]] <- CreateAssayObject(counts = cell_count_matrix)
+
+#saveRDS(merged_spatial_unfiltered, "/scratch/hnatri/PIPAC/merged_spatial_unfiltered.rds")
+
+```
+
+### QC
+
+```{r, message = F, warning = F, fig.width = 8, fig.height = 4}
+
+merged_spatial_unfiltered <- readRDS("/scratch/hnatri/PIPAC/merged_spatial_unfiltered.rds")
+
+# Number of cells per TMA before filtering
+summary(as.factor(merged_spatial_unfiltered$TMA))
+merged_spatial_unfiltered@meta.data %>%
+  ggplot(aes(x = TMA)) +
+  geom_bar(stat = "count") +
+  theme_minimal() +
+  RotatedAxis()
+
+```
+
+```{r, message = F, warning = F, fig.width = 8, fig.height = 8}
+
+# Percent.blank
+merged_spatial_unfiltered@meta.data %>%
+  ggplot(aes(x = percent.blank, fill = TMA)) +
+  geom_histogram(bins = 50, show.legend = FALSE, color = "black") +
+  theme_classic() +
+  theme(title = element_text(color = "black"), 
+        axis.text = element_text(color = "black")) +
+  facet_wrap(~TMA, scales = "free")
+
+# nCount_RNA
+merged_spatial_unfiltered@meta.data %>%
+  ggplot(aes(x = nCount_RNA, fill = TMA)) +
+  geom_histogram(bins = 50, show.legend = FALSE, color = "black") +
+  theme_classic() +
+  theme(title = element_text(color = "black"), 
+        axis.text = element_text(color = "black")) +
+  facet_wrap(~TMA, scales = "free")
+
+# nucleus_area
+merged_spatial_unfiltered@meta.data %>%
+  ggplot(aes(x = nucleus_area, fill = TMA)) +
+  geom_histogram(bins = 50, show.legend = FALSE, color = "black") +
+  theme_classic() +
+  theme(title = element_text(color = "black"), 
+        axis.text = element_text(color = "black")) +
+  facet_wrap(~TMA, scales = "free")
+
+merged_spatial_unfiltered$TMA <- factor(merged_spatial_unfiltered$TMA,
+                                           levels = rev(sort(unique(merged_spatial_unfiltered$TMA))))
+
+```
+
+```{r, message = F, warning = F, fig.width = 8, fig.height = 4}
+
+BetterVlnPlot(merged_spatial_unfiltered,
+              features = "percent.blank", group_by = "TMA")
+BetterVlnPlot(merged_spatial_unfiltered,
+              features = "nCount_RNA", group_by = "TMA")
+BetterVlnPlot(merged_spatial_unfiltered,
+              features = "nFeature_RNA", group_by = "TMA")
+BetterVlnPlot(merged_spatial_unfiltered,
+              features = "nucleus_area", group_by = "TMA")
+
+```
+
+```{r, message = F, warning = F, fig.width = 5, fig.height = 5}
+
+## nCount_RNA vs. percent.blank
+#smoothScatter(merged_spatial_unfiltered@meta.data$percent.blank,
+#              log(merged_spatial_unfiltered@meta.data$nCount_RNA),
+#              cex = 0.5, pch = 16)
+#abline(v = 4, h = log(12), lty = "dashed", col = "black")
+#text(5, 5, col = "black", adj = c(0, -.1),
+#     "nCount_RNA >= 12 & percent.blank <= 4")
+#
+## nFeature_RNA vs. percent.blank
+#smoothScatter(merged_spatial_unfiltered@meta.data$percent.blank,
+#              log(merged_spatial_unfiltered@meta.data$nFeature_RNA),
+#              cex = 0.5, pch = 16)
+#abline(v = 4, h = log(10), lty = "dashed", col = "black")
+#text(5, 4, col = "black", adj = c(0, -.1),
+#     "nFeature_RNA >= 10 & percent.blank <= 4")
+
+# nCount_RNA vs. nFeature_RNA
+smoothScatter(log(merged_spatial_unfiltered$nCount_RNA),
+              log(merged_spatial_unfiltered$nFeature_RNA),
+              cex = 0.5, pch = 16)
+abline(v = log(10), h = log(10), lty = "dashed", col = "black")
+text(0.3, 4.6, col = "black", adj = c(0, -.1),
+     "nCount_RNA >= 10 & nFeature_RNA >= 10")
+
+smoothScatter(merged_spatial_unfiltered$nCount_RNA,
+              merged_spatial_unfiltered$nFeature_RNA,
+              cex = 0.5, pch = 16)
+abline(v = log(10), h = log(10), lty = "dashed", col = "black")
+text(0.3, 4.6, col = "black", adj = c(0, -.1),
+     "nCount_RNA >= 10 & nFeature_RNA >= 10")
+
+# nCount RNA vs. nucleus_area
+smoothScatter(merged_spatial_unfiltered$nucleus_area,
+              log(merged_spatial_unfiltered$nCount_RNA),
+              cex = 0.5, pch = 16)
+abline(v = c(5, 80), h = log(10), lty = "dashed", col = "black")
+text(120, 0.7, col = "black", adj = c(0, -.1),
+     "nCount_RNA >= 10 & nucleus_area between 5-80")
+
+# nFeature RNA vs. nucleus_area
+smoothScatter(merged_spatial_unfiltered$nucleus_area,
+              log(merged_spatial_unfiltered$nFeature_RNA),
+              cex = 0.5, pch = 16)
+abline(v = c(5, 80), h = log(10), lty = "dashed", col = "black")
+text(120, 0.4, col = "black", adj = c(0, -.1),
+     "nFeature_RNA >= 10 & & nucleus_area between 5-80")
+
+min(merged_spatial_unfiltered$nucleus_area)
+max(merged_spatial_unfiltered$nucleus_area)
+
+```
+
+### Filter
+
+```{r, message = F, warning = F, fig.width = 6, fig.height = 4}
+
+# Filter merged and individual data
+merged_spatial <- subset(merged_spatial_unfiltered,
+                          subset = nCount_RNA >= 10 & nFeature_RNA >= 10 &
+                            percent.blank <= 5 & 
+                            nucleus_area >= 5 & nucleus_area <= 80)
+
+# Number of nuclei before and after filtering
+bf_cells <- table(merged_spatial_unfiltered$TMA)
+aft_cells <- table(merged_spatial$TMA)
+diff_cells <- bf_cells - aft_cells
+prop_kept_cells <- round(aft_cells/bf_cells*100, 2)
+prop_kept_cells
+
+# DimPlots before and after filtering
+DimPlotCompare("MR_PIPACTMA1")
+DimPlotCompare("MR_PIPACTMA2-Rerun")
+DimPlotCompare("MR_PIPACTMA3-Rerun")
+DimPlotCompare("MR_PIPACTMA4")
+DimPlotCompare("MR_PIPACTMA5")
+DimPlotCompare("MR_PIPACTMA6")
+DimPlotCompare("MR_PIPACTMA7")
+DimPlotCompare("MR_PIPACTMA8")
+DimPlotCompare("MR_PIPACTMA9")
+
+# Saving the object for clustering with ScanPy
+merged_spatial <- JoinLayers(merged_spatial)
+saveRDS(merged_spatial, "/scratch/hnatri/PIPAC/merged_spatial_filtered.rds")
+
+# To build on command line, run Rscript -e "rmarkdown::render('/home/hnatri/PIPAC_Xenium/analysis/Xenium_processing.Rmd')"
+# Then "mv *.html /home/hnatri/PIPAC_Xenium/docs/"
+
+```
+

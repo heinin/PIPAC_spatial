@@ -48,7 +48,7 @@ source("/home/hnatri/PIPAC_spatial/code/plot_functions.R")
 
 ```{r, message = F, warning = F, fig.width = 6, fig.height = 4}
 
-seurat_data <- readRDS("/scratch/hnatri/PIPAC/merged_spatial_filtered_split_clustered_NC50_NN20_PC20_Seurat.rds")
+seurat_data <- readRDS("/scratch/hnatri/PIPAC/cell_merged_spatial_filtered_splitsamples_clustered_NC50_NN20_PC20_Seurat.rds")
 head(seurat_data@meta.data)
 unique(seurat_data$leiden_res0.5)
 
@@ -86,7 +86,7 @@ for(column in c("Institution", "Patient_ID", "Timepoint", "Tissue", "Location_Qu
 # Normalizing
 seurat_data <- NormalizeData(seurat_data)
 
-#saveRDS(seurat_data, "/scratch/hnatri/PIPAC/merged_spatial_filtered_split_clustered_NC50_NN20_PC20_Seurat.rds")
+#saveRDS(seurat_data, "/scratch/hnatri/PIPAC/cell_merged_spatial_filtered_splitsamples_clustered_NC50_NN20_PC20_Seurat.rds")
 
 ```
 

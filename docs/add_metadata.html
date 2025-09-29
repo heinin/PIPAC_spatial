@@ -395,7 +395,7 @@ aria-hidden="true"></span> </a>
 <div class="tab-content">
 <div id="summary" class="tab-pane fade in active">
 <p>
-<strong>Last updated:</strong> 2025-03-04
+<strong>Last updated:</strong> 2025-09-16
 </p>
 <p>
 <strong>Checks:</strong> <span
@@ -571,15 +571,15 @@ code/plot_functions.R
 <div class="panel panel-default">
 <div class="panel-heading">
 <p class="panel-title">
-<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomheininPIPACspatialtree281c5e5063f3db18ffb2b23cc0dfc784422dfc6btargetblank281c5e5a">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomheininPIPACspatialtree3bbda1950b67a2205d9bebb3344530d4fbf8bcbdtargetblank3bbda19a">
 <span class="glyphicon glyphicon-ok text-success"
 aria-hidden="true"></span> <strong>Repository version:</strong>
-<a href="https://github.com/heinin/PIPAC_spatial/tree/281c5e5063f3db18ffb2b23cc0dfc784422dfc6b" target="_blank">281c5e5</a>
+<a href="https://github.com/heinin/PIPAC_spatial/tree/3bbda1950b67a2205d9bebb3344530d4fbf8bcbd" target="_blank">3bbda19</a>
 </a>
 </p>
 </div>
 <div
-id="strongRepositoryversionstrongahrefhttpsgithubcomheininPIPACspatialtree281c5e5063f3db18ffb2b23cc0dfc784422dfc6btargetblank281c5e5a"
+id="strongRepositoryversionstrongahrefhttpsgithubcomheininPIPACspatialtree3bbda1950b67a2205d9bebb3344530d4fbf8bcbdtargetblank3bbda19a"
 class="panel-collapse collapse">
 <div class="panel-body">
 <p>
@@ -589,7 +589,7 @@ reproducibility.
 </p>
 <p>
 The results in this page were generated with repository version
-<a href="https://github.com/heinin/PIPAC_spatial/tree/281c5e5063f3db18ffb2b23cc0dfc784422dfc6b" target="_blank">281c5e5</a>.
+<a href="https://github.com/heinin/PIPAC_spatial/tree/3bbda1950b67a2205d9bebb3344530d4fbf8bcbd" target="_blank">3bbda19</a>.
 See the <em>Past versions</em> tab to see a history of the changes made
 to the R Markdown and HTML files.
 </p>
@@ -605,7 +605,11 @@ were generated:
 <pre><code>
 Ignored files:
     Ignored:    .RData
+    Ignored:    analysis/figure/
+    Ignored:    cell_annotation_top_markers_denoist.tsv
+    Ignored:    cell_main_cluster_marker_annotations_denoist.tsv
     Ignored:    celltype_markers.tsv
+    Ignored:    code/.Rhistory
     Ignored:    immune_cluster_marker_annotations.tsv
     Ignored:    immune_cluster_marker_annotations_2ndpass.tsv
     Ignored:    main_cluster_marker_annotations.tsv
@@ -613,18 +617,56 @@ Ignored files:
     Ignored:    nonimmune_cluster_marker_annotations_2ndpass.tsv
 
 Untracked files:
-    Untracked:  analysis/feature_expression.Rmd
-    Untracked:  code/construct_niches.R
-    Untracked:  code/construct_niches.Rout
-    Untracked:  code/run_rscript.sh
-    Untracked:  code/slurm.16507254.err
-    Untracked:  code/slurm.16507254.out
+    Untracked:  analysis/.ipynb_checkpoints/
+    Untracked:  analysis/Xenium_preprocess_wholecell.Rmd
+    Untracked:  analysis/annotation_cell.Rmd
+    Untracked:  analysis/clustering.ipynb
+    Untracked:  analysis/compare_cellular_nuclear.Rmd
+    Untracked:  analysis/compare_cellular_nuclear_denoist_annot.Rmd
+    Untracked:  analysis/denoising_cellular_transcripts.Rmd
+    Untracked:  analysis/metrics.Rmd
+    Untracked:  analysis/niche_construction_ncells3k_nneighbors20.Rmd
+    Untracked:  analysis/niche_silhouette.ipynb
+    Untracked:  analysis/plot_PRGS.Rmd
+    Untracked:  analysis/seurat_to_anndata.ipynb
+    Untracked:  code/RSC_latest_EDM_2025-08-06/
+    Untracked:  code/denoist.R
+    Untracked:  code/denoist.Rout
+    Untracked:  code/parse_denoist_res.R
+    Untracked:  code/seurat_to_anndata.R
+    Untracked:  code/slurm.24884614.err
+    Untracked:  code/slurm.24884614.out
+    Untracked:  code/slurm.25014505.err
+    Untracked:  code/slurm.25014505.out
+    Untracked:  niche_composition_k5_n30.pdf
+    Untracked:  timepoint_celltypeprop_barplot_arm2.pdf
+    Untracked:  timepoint_celltypeprop_barplot_arm3.pdf
+    Untracked:  timepoint_nicheprop_barplot_arm2_arm3.pdf
 
 Unstaged changes:
+    Modified:   analysis/Xenium_processing.Rmd
     Modified:   analysis/add_metadata.Rmd
-    Modified:   analysis/annotation_2nd_pass.Rmd
+    Modified:   analysis/annotation.Rmd
+    Modified:   analysis/arm3_DEGs.Rmd
+    Modified:   analysis/arm3_comparative_analysis.Rmd
+    Modified:   analysis/feature_expression.Rmd
     Modified:   analysis/niche_construction.Rmd
     Modified:   analysis/plot_by_group.Rmd
+    Modified:   analysis/post_clustering.Rmd
+    Modified:   analysis/splitting_samples.Rmd
+    Modified:   annotation_dimplot.pdf
+    Modified:   code/PIPAC_colors_themes.R
+    Modified:   code/anndata_to_seurat.R
+    Modified:   code/construct_niches.R
+    Modified:   code/plot_metadata.R
+    Modified:   code/plot_save_pdf.R
+    Modified:   code/rapids_pipeline/.ipynb_checkpoints/clustering-checkpoint.ipynb
+    Modified:   code/rapids_pipeline/.ipynb_checkpoints/seurat_to_anndata-checkpoint.ipynb
+    Modified:   code/rapids_pipeline/clustering.ipynb
+    Modified:   code/rapids_pipeline/seurat_to_anndata.ipynb
+    Modified:   code/run_rscript.sh
+    Modified:   code/update_metadata.R
+    Modified:   demographics_grid.pdf
 
 </code></pre>
 <p>
@@ -670,6 +712,40 @@ Message
 </tr>
 </thead>
 <tbody>
+<tr>
+<td>
+Rmd
+</td>
+<td>
+<a href="https://github.com/heinin/PIPAC_spatial/blob/3bbda1950b67a2205d9bebb3344530d4fbf8bcbd/analysis/add_metadata.Rmd" target="_blank">3bbda19</a>
+</td>
+<td>
+heinin
+</td>
+<td>
+2025-05-13
+</td>
+<td>
+Updated annotations, added feature expression by celltype
+</td>
+</tr>
+<tr>
+<td>
+html
+</td>
+<td>
+<a href="https://rawcdn.githack.com/heinin/PIPAC_spatial/3bbda1950b67a2205d9bebb3344530d4fbf8bcbd/docs/add_metadata.html" target="_blank">3bbda19</a>
+</td>
+<td>
+heinin
+</td>
+<td>
+2025-05-13
+</td>
+<td>
+Updated annotations, added feature expression by celltype
+</td>
+</tr>
 <tr>
 <td>
 Rmd
@@ -777,10 +853,10 @@ source(&quot;/home/hnatri/PIPAC_spatial/code/plot_functions.R&quot;)</code></pre
 </div>
 <div id="import-data" class="section level3">
 <h3>Import data</h3>
-<pre class="r"><code>seurat_data &lt;- readRDS(&quot;/tgen_labs/banovich/PIPAC/Seurat/PIPAC_NC50_NN20_PC20_Seurat_annotated.rds&quot;)
+<pre class="r"><code>seurat_data &lt;- readRDS(&quot;/tgen_labs/banovich/PIPAC/Seurat/cell_merged_spatial_filtered_splitsamples_clustered_NC50_NN20_PC20_Seurat_denoIST.rds&quot;)
 
-immune &lt;- readRDS(&quot;/tgen_labs/banovich/PIPAC/Seurat/nonimmune_complete_subset_clustered_NC50_NN20_PC20_Seurat_annotated.rds&quot;)
-nonimmune &lt;- readRDS(&quot;/tgen_labs/banovich/PIPAC/Seurat/immune_complete_subset_clustered_NC50_NN20_PC20_Seurat_annotated.rds&quot;)
+#immune &lt;- readRDS(&quot;/tgen_labs/banovich/PIPAC/Seurat/nonimmune_complete_subset_clustered_NC50_NN20_PC20_Seurat_annotated.rds&quot;)
+#nonimmune &lt;- readRDS(&quot;/tgen_labs/banovich/PIPAC/Seurat/immune_complete_subset_clustered_NC50_NN20_PC20_Seurat_annotated.rds&quot;)
 
 DimPlot(seurat_data,
         group.by = &quot;Annotation&quot;,
@@ -818,6 +894,17 @@ Date
 <tbody>
 <tr>
 <td>
+<a href="https://github.com/heinin/PIPAC_spatial/blob/3bbda1950b67a2205d9bebb3344530d4fbf8bcbd/docs/figure/add_metadata.Rmd/unnamed-chunk-3-1.png" target="_blank">3bbda19</a>
+</td>
+<td>
+heinin
+</td>
+<td>
+2025-05-13
+</td>
+</tr>
+<tr>
+<td>
 <a href="https://github.com/heinin/PIPAC_spatial/blob/64482047ae9660d08678b8cd1d99c7695b427aaa/docs/figure/add_metadata.Rmd/unnamed-chunk-3-1.png" target="_blank">6448204</a>
 </td>
 <td>
@@ -834,7 +921,93 @@ heinin
 </div>
 <div id="adding-metadata" class="section level3">
 <h3>Adding metadata</h3>
-<pre class="r"><code>gs4_deauth()
+<pre class="r"><code># Metadata
+gs4_deauth()
+metadata  &lt;- gs4_get(&quot;https://docs.google.com/spreadsheets/d/1Oq09oGVTst_X-oC6-TGnteuSxtmsr_t6pQa0fklx6lk/edit?usp=sharing&quot;)
+sheet_names(metadata)</code></pre>
+<pre><code>[1] &quot;All TMAs&quot;             &quot;SSM_TMA_Map&quot;          &quot;Tissue_19184&quot;        
+[4] &quot;TIssue_19184_Arm3&quot;    &quot;COH_TMA_Map&quot;          &quot;Metadata_from_Aimin&quot; 
+[7] &quot;AW_interpretation&quot;    &quot;Rec_Samples_20231212&quot; &quot;Rec_Samples_20240822&quot;</code></pre>
+<pre class="r"><code>metadata &lt;- read_sheet(metadata, sheet = &quot;All TMAs&quot;)
+
+intersect(seurat_data$TMA, metadata$TMA)</code></pre>
+<pre><code>[1] &quot;MR_PIPAC-TMA1&quot; &quot;MR_PIPAC-TMA2&quot; &quot;MR_PIPAC-TMA3&quot; &quot;MR_PIPAC-TMA4&quot;
+[5] &quot;MR_PIPAC-TMA5&quot; &quot;MR_PIPAC-TMA6&quot; &quot;MR_PIPAC-TMA7&quot; &quot;MR_PIPAC-TMA8&quot;
+[9] &quot;MR_PIPAC-TMA9&quot;</code></pre>
+<pre class="r"><code>setdiff(seurat_data$TMA, metadata$TMA)</code></pre>
+<pre><code>character(0)</code></pre>
+<pre class="r"><code>setdiff(metadata$TMA, seurat_data$TMA)</code></pre>
+<pre><code>character(0)</code></pre>
+<pre class="r"><code>colnames(metadata) &lt;- gsub(&quot; &quot;, &quot;_&quot;, colnames(metadata))
+colnames(metadata) &lt;- gsub(&quot;_-_&quot;, &quot;_&quot;, colnames(metadata))
+
+metadata$Block_ID &lt;- gsub(&quot; &quot;, &quot;_&quot;, metadata$Block_ID)
+metadata$Block_ID &lt;- gsub(&quot;\\/&quot;, &quot;_&quot;, metadata$Block_ID)
+  
+intersect(seurat_data$Sample, metadata$Block_ID)</code></pre>
+<pre><code>  [1] &quot;S21-24369_2A&quot;         &quot;S21-7951_5A&quot;          &quot;S21-19972_5A&quot;        
+  [4] &quot;S21-12164_1A&quot;         &quot;S20-08642-A1&quot;         &quot;S21-00034-C1&quot;        
+  [7] &quot;S21-7886_1A&quot;          &quot;S21-12261_1A&quot;         &quot;S20-09742-B1&quot;        
+ [10] &quot;S21-08053-B1&quot;         &quot;S20-11269-A1&quot;         &quot;S21-00056-C1&quot;        
+ [13] &quot;FF-22-564_D1&quot;         &quot;FF-22-95_C1&quot;          &quot;S20-06963-K1&quot;        
+ [16] &quot;S21-00267-E1&quot;         &quot;S21-00267-A1&quot;         &quot;S21-15128_3A&quot;        
+ [19] &quot;S21-16496_4B&quot;         &quot;S20-08642-C1&quot;         &quot;S21-09793-D1&quot;        
+ [22] &quot;S20-06963-E1&quot;         &quot;S20-10024-C1&quot;         &quot;S21-24369_4A&quot;        
+ [25] &quot;S21-3057_2A&quot;          &quot;S21-12261_4A&quot;         &quot;S21-08053-A1&quot;        
+ [28] &quot;S20-08332-C1&quot;         &quot;S21-12164_5A&quot;         &quot;S21-01455-C1&quot;        
+ [31] &quot;S20-08642-E1&quot;         &quot;S20-10400-E1&quot;         &quot;FF-22-1698_C1&quot;       
+ [34] &quot;FF-22-95_B1&quot;          &quot;S21-19972_3A&quot;         &quot;S21-16496_6A&quot;        
+ [37] &quot;S21-3057_4A&quot;          &quot;S21-24369_3A&quot;         &quot;S21-7951_2A&quot;         
+ [40] &quot;S21-3057_1A&quot;          &quot;S21-00034-D1&quot;         &quot;S20-10024-G1&quot;        
+ [43] &quot;S20-10128-B1&quot;         &quot;S20-06963-C1&quot;         &quot;S20-10024-E1&quot;        
+ [46] &quot;S21-00267-B1&quot;         &quot;S21-10183-D1&quot;         &quot;S20-09742-A1&quot;        
+ [49] &quot;FF-22-1698_D1&quot;        &quot;FF-21-8775_A1&quot;        &quot;S21-08053-E1&quot;        
+ [52] &quot;FF-22-564_A1-W0&quot;      &quot;S21-09793-B1&quot;         &quot;S20-09742-D1&quot;        
+ [55] &quot;S21-12164_2A&quot;         &quot;S21-16496_2A&quot;         &quot;S20-10400-B1&quot;        
+ [58] &quot;FF-21-8775_B1&quot;        &quot;S20-08642-B1&quot;         &quot;S21-16496_1A&quot;        
+ [61] &quot;S21-7886_5A&quot;          &quot;S21-10183-E1&quot;         &quot;S20-11269-D1&quot;        
+ [64] &quot;S21-00056-B1&quot;         &quot;S21-15128_2A&quot;         &quot;S20-11269-C1&quot;        
+ [67] &quot;S21-12261_5A&quot;         &quot;S21-19972_1A&quot;         &quot;S21-19972_4A&quot;        
+ [70] &quot;S21-24369_5A&quot;         &quot;S21-7951_4A&quot;          &quot;S20-08332-A1&quot;        
+ [73] &quot;S21-12164_3A&quot;         &quot;S21-12261_2A&quot;         &quot;S20-10024-B1&quot;        
+ [76] &quot;S21-00034-F1&quot;         &quot;S21-3057_3A&quot;          &quot;S21-16496_3A&quot;        
+ [79] &quot;S21-10183-C1&quot;         &quot;S20-10024-A1&quot;         &quot;FF-22-1698_B1&quot;       
+ [82] &quot;S21-08053-C1&quot;         &quot;S21-00267-C1&quot;         &quot;FF-21-8775_D1&quot;       
+ [85] &quot;S20-10128-C1&quot;         &quot;S21-09793-C1&quot;         &quot;S21-09793-E1&quot;        
+ [88] &quot;FF-22-564_B1&quot;         &quot;S21-15128_4A&quot;         &quot;S21-12261_3A&quot;        
+ [91] &quot;S21-24369_1A&quot;         &quot;S21-12164_4B&quot;         &quot;S21-15128_5A&quot;        
+ [94] &quot;S21-00056-A1&quot;         &quot;S20-11269-B1&quot;         &quot;S21-00034-B1&quot;        
+ [97] &quot;S21-7886_6A&quot;          &quot;S21-7951_3A&quot;          &quot;S20-08642-D1&quot;        
+[100] &quot;S20-10400-A1&quot;         &quot;S20-09742-C1&quot;         &quot;FF-21-8775_C1&quot;       
+[103] &quot;S21-19972_2A&quot;         &quot;S21-7886_3A&quot;          &quot;S21-7951_1A&quot;         
+[106] &quot;S21-19972_6A&quot;         &quot;S21-10183-A1&quot;         &quot;S20-11269-E1&quot;        
+[109] &quot;S21-00034-E1&quot;         &quot;S20-08332-D1&quot;         &quot;S21-16496_5A&quot;        
+[112] &quot;S21-15128_1A&quot;         &quot;S20-06963-I1&quot;         &quot;S21-3057_5A&quot;         
+[115] &quot;S20-10400-C1&quot;         &quot;S21-01455-A1&quot;         &quot;S20-10128-A1&quot;        
+[118] &quot;S21-08053-D1&quot;         &quot;FF-22-564_C1&quot;         &quot;BSJ-38-3&quot;            
+[121] &quot;20-010121N_(3_26_24)&quot; &quot;SS-22-1&quot;              &quot;20-010121T_(2_5_24)&quot; 
+[124] &quot;20-010121T_(6_19_24)&quot; &quot;SF230912-002062&quot;      &quot;SF230915-002250&quot;     
+[127] &quot;BSJ-38-2&quot;             &quot;SF230726-002257&quot;      &quot;S20-10400-D1&quot;        
+[130] &quot;SF231027-005404&quot;      &quot;S21-09793-A1&quot;         &quot;JM-45-4&quot;             
+[133] &quot;20-010121N_(5_7_24)&quot;  &quot;SS-22-4&quot;              &quot;FF-22-564_A1&quot;        
+[136] &quot;S21-01455-D1&quot;         &quot;JM-45-1&quot;              &quot;BSJ-38-4&quot;            
+[139] &quot;SS-22-3&quot;              &quot;JM-45-2&quot;              &quot;BSJ-38-1&quot;            
+[142] &quot;S21-00267-D1&quot;         &quot;JM-45-3&quot;              &quot;SS-22-2&quot;             
+[145] &quot;20-010121T_(5_7_24)&quot;  &quot;20-010121N_(6_19_24)&quot; &quot;SF231027-005405&quot;     
+[148] &quot;SF230915-002249&quot;      &quot;20-010121N_(2_5_24)&quot;  &quot;SF230912-002063&quot;     
+[151] &quot;20-010121T_(3_26_24)&quot; &quot;SF230726-002256&quot;     </code></pre>
+<pre class="r"><code>setdiff(seurat_data$Sample, metadata$Block_ID)</code></pre>
+<pre><code>character(0)</code></pre>
+<pre class="r"><code>setdiff(metadata$Block_ID, seurat_data$Sample)</code></pre>
+<pre><code>[1] &quot;S20-08332-B1&quot;</code></pre>
+<pre class="r"><code>for(column in c(&quot;Institution&quot;, &quot;Patient_ID&quot;, &quot;Timepoint&quot;, &quot;Tissue&quot;, &quot;Location_Quadrant&quot;)){
+  message(column)
+  seurat_data[[column]] &lt;- mapvalues(x = seurat_data$Sample,
+                                     from = metadata$Block_ID,
+                                     to = unlist(metadata[,column]))
+}
+
+gs4_deauth()
 metadata  &lt;- gs4_get(&quot;https://docs.google.com/spreadsheets/d/1sXXwOreLxjMSUoPt79c6jmaQpluWkaxA5P5HfDsed3I/edit?usp=sharing&quot;)
 arm2_metadata &lt;- read_sheet(metadata, sheet = &quot;Arm 2 metadata&quot;)
 arm3_metadata &lt;- read_sheet(metadata, sheet = &quot;Arm 3 metadata&quot;)
@@ -889,8 +1062,8 @@ all_metadata$Site_abbr &lt;- ifelse(all_metadata$STUDY_SITE == &quot;Northwell H
                                  ifelse(all_metadata$STUDY_SITE == &quot;Mayo Clinic (Florida)&quot;, &quot;MFL&quot;, &quot;COH&quot;))
 
 seurat_data$Patient_ID &lt;- gsub(&quot;Mayo&quot;, &quot;MFL&quot;, seurat_data$Patient_ID)
-immune$Patient_ID &lt;- gsub(&quot;Mayo&quot;, &quot;MFL&quot;, immune$Patient_ID)
-nonimmune$Patient_ID &lt;- gsub(&quot;Mayo&quot;, &quot;MFL&quot;, nonimmune$Patient_ID)
+#immune$Patient_ID &lt;- gsub(&quot;Mayo&quot;, &quot;MFL&quot;, immune$Patient_ID)
+#nonimmune$Patient_ID &lt;- gsub(&quot;Mayo&quot;, &quot;MFL&quot;, nonimmune$Patient_ID)
 
 all_metadata$RPN &lt;- str_pad(all_metadata$RPN, 3, pad = &quot;0&quot;)
 all_metadata$Patient_ID &lt;- paste0(all_metadata$Site_abbr, &quot;-&quot;, all_metadata$RPN)
@@ -915,27 +1088,28 @@ for (m in setdiff(colnames(all_metadata), c(&quot;Obs&quot;))){
   seurat_data@meta.data[[m]][-which(seurat_data@meta.data$Patient_ID %in% all_metadata$Patient_ID)] &lt;- NA
 }
 
-saveRDS(seurat_data, &quot;/tgen_labs/banovich/PIPAC/Seurat/PIPAC_NC50_NN20_PC20_Seurat_annotated_metadata.rds&quot;)
+saveRDS(seurat_data, &quot;/tgen_labs/banovich/PIPAC/Seurat/cell_merged_spatial_filtered_splitsamples_clustered_NC50_NN20_PC20_Seurat_denoIST_metadata.rds&quot;)
 
-for (m in setdiff(colnames(all_metadata), c(&quot;Obs&quot;))){
-  immune@meta.data[[m]] = plyr::mapvalues(x = immune@meta.data$Patient_ID,
-                                          from = all_metadata$Patient_ID,
-                                          to = all_metadata[[m]])
-  
-  immune@meta.data[[m]][-which(immune@meta.data$Patient_ID %in% all_metadata$Patient_ID)] &lt;- NA
-}
-
-saveRDS(immune, &quot;/tgen_labs/banovich/PIPAC/Seurat/PIPAC_immune_NC50_NN20_PC20_Seurat_annotated_metadata.rds&quot;)
-
-for (m in setdiff(colnames(all_metadata), c(&quot;Obs&quot;))){
-  nonimmune@meta.data[[m]] = plyr::mapvalues(x = nonimmune@meta.data$Patient_ID,
-                                             from = all_metadata$Patient_ID,
-                                             to = all_metadata[[m]])
-  
-  nonimmune@meta.data[[m]][-which(nonimmune@meta.data$Patient_ID %in% all_metadata$Patient_ID)] &lt;- NA
-}
-
-saveRDS(nonimmune, &quot;/tgen_labs/banovich/PIPAC/Seurat/PIPAC_nonimmune_NC50_NN20_PC20_Seurat_annotated_metadata.rds&quot;)</code></pre>
+#for (m in setdiff(colnames(all_metadata), c(&quot;Obs&quot;))){
+#  immune@meta.data[[m]] = plyr::mapvalues(x = immune@meta.data$Patient_ID,
+#                                          from = all_metadata$Patient_ID,
+#                                          to = all_metadata[[m]])
+#  
+#  immune@meta.data[[m]][-which(immune@meta.data$Patient_ID %in% all_metadata$Patient_ID)] &lt;- NA
+#}
+#
+#saveRDS(immune, &quot;/tgen_labs/banovich/PIPAC/Seurat/PIPAC_immune_NC50_NN20_PC20_Seurat_annotated_metadata.rds&quot;)
+#
+#for (m in setdiff(colnames(all_metadata), c(&quot;Obs&quot;))){
+#  nonimmune@meta.data[[m]] = plyr::mapvalues(x = nonimmune@meta.data$Patient_ID,
+#                                             from = all_metadata$Patient_ID,
+#                                             to = all_metadata[[m]])
+#  
+#  nonimmune@meta.data[[m]][-which(nonimmune@meta.data$Patient_ID %in% all_metadata$Patient_ID)] &lt;- NA
+#}
+#
+#saveRDS(nonimmune, &quot;/tgen_labs/banovich/PIPAC/Seurat/PIPAC_nonimmune_NC50_NN20_PC20_Seurat_annotated_metadata.rds&quot;)
+#</code></pre>
 <br>
 <p>
 <button type="button" class="btn btn-default btn-workflowr btn-workflowr-sessioninfo" data-toggle="collapse" data-target="#workflowr-sessioninfo" style="display: block;">

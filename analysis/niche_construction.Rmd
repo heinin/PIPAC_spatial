@@ -27,7 +27,8 @@ suppressPackageStartupMessages({
   library(ggrepel)
   library(googlesheets4)
   library(workflowr)
-  library(patchwork)})
+  library(patchwork)
+  library(scProportionTest)})
 
 ```
 
@@ -44,6 +45,41 @@ options(ggrepel.max.overlaps = Inf)
 source("/home/hnatri/PIPAC_spatial/code/PIPAC_colors_themes.R")
 source("/home/hnatri/PIPAC_spatial/code/plot_functions.R")
 
+# Lineage info
+gs4_deauth()
+metadata  <- gs4_get("https://docs.google.com/spreadsheets/d/1sXXwOreLxjMSUoPt79c6jmaQpluWkaxA5P5HfDsed3I/edit?usp=sharing")
+lineage <- read_sheet(metadata, sheet = "Cell type annotations")
+
+# Calling DEGs between two groups for each cell type
+get_DEGs <- function(seuratdata, ctvar, celltypes, groupvar, group1, group2){
+  #message(xx)
+  DEGlist <- lapply(celltypes, function(xx){
+    seuratdata$DEGgroup <- seuratdata@meta.data[,ctvar]
+    data_subset <- subset(seuratdata, subset = DEGgroup == xx)
+    Idents(data_subset) <- as.character(unlist(data_subset[[groupvar]]))
+    
+    if (min(table(unlist(data_subset[[groupvar]])))<20){
+      return(NULL)
+    }
+    
+    if (all((c(group1, group2) %in% unlist(data_subset[[groupvar]]) == c(T, T)))){
+      markers <- FindMarkers(data_subset,
+                             ident.1 = group1,
+                             ident.2 = group2,
+                             assay = "RNA",
+                             verbose = F)
+      markers$feature <- rownames(markers)
+      markers[,ctvar] <- xx
+      
+      return(markers)
+    } else {
+      return(NULL)
+    }
+    })
+  
+  as.data.frame(do.call(rbind, DEGlist))
+}
+
 ```
 
 ### Import data
@@ -51,6 +87,8 @@ source("/home/hnatri/PIPAC_spatial/code/plot_functions.R")
 ```{r, message = F, warning = F, fig.width = 8, fig.height = 4}
 
 seurat_data <- readRDS("/tgen_labs/banovich/PIPAC/Seurat/PIPAC_NC50_NN20_PC20_Seurat_annotated_metadata_niches.rds")
+
+unique(seurat_data$Annotation)
 
 ```
 
@@ -60,7 +98,7 @@ See /code/construct_niches.R
 
 ### Plotting niche composition
 
-```{r, message = F, warning = F, fig.width = 8, fig.height = 5}
+```{r, message = F, warning = F, fig.width = 6, fig.height = 4}
 
 plot_list <- lapply(seq(3, 8), function(niche){
   niche_column <- paste0("niche_k", niche, "_n30")
@@ -149,22 +187,22 @@ plot_list
 
 ```{r, message = F, warning = F, fig.width = 10, fig.height = 4}
 
-arm3 <- subset(seurat_data, subset = Arm == "Arm3" &
-                 Tissue == "Tumor")
+arm3_tumor <- subset(seurat_data, subset = Arm == "Arm3" &
+                       Tissue == "Tumor")
 
 plot_list <- lapply(seq(3, 8), function(niche){
   niche_column <- paste0("niche_k", niche, "_n30")
   niches <- seq(1, niche)
-  arm3@meta.data[,niche_column] <- factor(arm3@meta.data[,niche_column],
-                                            levels = niches)
+  arm3_tumor@meta.data[,niche_column] <- factor(arm3_tumor@meta.data[,niche_column],
+                                                levels = niches)
   niche_col <- colorRampPalette(brewer.pal(10, "Paired"))(nb.cols <- length(niches))
   names(niche_col) <- levels(niches)
   
-  create_barplot(arm3,
+  create_barplot(arm3_tumor,
                  plot_var = niche_column,
                  group_var = "Sample",
                  plot_levels = niches,
-                 group_levels = sort(unique(arm3$Sample)),
+                 group_levels = sort(unique(arm3_tumor$Sample)),
                  plot_colors = niche_col,
                  var_names =  c("Frequency (%)", ""),
                  legend_title = "Niche")
@@ -179,22 +217,22 @@ plot_list
 
 ```{r, message = F, warning = F, fig.width = 10, fig.height = 4}
 
-arm3 <- subset(seurat_data, subset = Arm == "Arm3" &
-                 Tissue == "Normal")
+arm3_normal <- subset(seurat_data, subset = Arm == "Arm3" &
+                        Tissue == "Normal")
 
 plot_list <- lapply(seq(3, 8), function(niche){
   niche_column <- paste0("niche_k", niche, "_n30")
   niches <- seq(1, niche)
-  arm3@meta.data[,niche_column] <- factor(arm3@meta.data[,niche_column],
-                                            levels = niches)
+  arm3_normal@meta.data[,niche_column] <- factor(arm3_normal@meta.data[,niche_column],
+                                                 levels = niches)
   niche_col <- colorRampPalette(brewer.pal(10, "Paired"))(nb.cols <- length(niches))
   names(niche_col) <- levels(niches)
   
-  create_barplot(arm3,
+  create_barplot(arm3_normal,
                  plot_var = niche_column,
                  group_var = "Sample",
                  plot_levels = niches,
-                 group_levels = sort(unique(arm3$Sample)),
+                 group_levels = sort(unique(arm3_normal$Sample)),
                  plot_colors = niche_col,
                  var_names =  c("Frequency (%)", ""),
                  legend_title = "Niche")
@@ -230,8 +268,455 @@ plot_list
 
 ```
 
-### DEGs between SD and PR by niche
+### Dotplot of cell assignment to niches by celltype
+
+```{r, message = F, warning = F, fig.width = 5, fig.height = 8}
+
+niche_ct_prop <- table(seurat_data$Annotation, seurat_data$niche_k5_n30)
+niche_ct_prop <- prop.table(niche_ct_prop, margin = 2)
+niche_ct_prop <- niche_ct_prop %>%
+  as.data.frame()
+
+# Adding lineage
+niche_ct_prop$lineage <- mapvalues(niche_ct_prop$Var1,
+                                   from = lineage$Annotation,
+                                   to = lineage$Lineage)
+
+niche_ct_prop$Var1 <- factor(niche_ct_prop$Var1,
+                             levels = rev(unique(niche_ct_prop$Var1)))
+
+p1 <- ggplot(niche_ct_prop, aes(x = Var2, y = Var1)) +
+  geom_point(aes(size = Freq, 
+                 #color = value,
+                 fill = Var1), 
+             stroke = 0.5,
+             shape = 21) +
+  guides(color = FALSE) +
+  scale_fill_manual(values = pipac_celltype_col) +
+  theme_bw() +
+  xlab("") +
+  ylab("") +
+  facet_grid(lineage ~ ., scales = "free", space = "free")
+
+# k6
+niche_ct_prop <- table(seurat_data$Annotation, seurat_data$niche_k6_n30)
+niche_ct_prop <- prop.table(niche_ct_prop, margin = 2)
+niche_ct_prop <- niche_ct_prop %>%
+  as.data.frame()
+
+niche_ct_prop$lineage <- mapvalues(niche_ct_prop$Var1,
+                                   from = lineage$Annotation,
+                                   to = lineage$Lineage)
+
+niche_ct_prop$Var1 <- factor(niche_ct_prop$Var1,
+                             levels = rev(unique(niche_ct_prop$Var1)))
+
+p2 <- ggplot(niche_ct_prop, aes(x = Var2, y = Var1)) +
+  geom_point(aes(size = Freq, 
+                 #color = value,
+                 fill = Var1), 
+             stroke = 0.5,
+             shape = 21) +
+  guides(color = FALSE) +
+  scale_fill_manual(values = pipac_celltype_col) +
+  theme_bw() +
+  xlab("") +
+  ylab("") +
+  facet_grid(lineage ~ ., scales = "free", space = "free")
+
+# k7
+niche_ct_prop <- table(seurat_data$Annotation, seurat_data$niche_k7_n30)
+niche_ct_prop <- prop.table(niche_ct_prop, margin = 2)
+niche_ct_prop <- niche_ct_prop %>%
+  as.data.frame()
+
+niche_ct_prop$lineage <- mapvalues(niche_ct_prop$Var1,
+                                   from = lineage$Annotation,
+                                   to = lineage$Lineage)
+
+niche_ct_prop$Var1 <- factor(niche_ct_prop$Var1,
+                             levels = rev(unique(niche_ct_prop$Var1)))
+
+p3 <- ggplot(niche_ct_prop, aes(x = Var2, y = Var1)) +
+  geom_point(aes(size = Freq, 
+                 #color = value,
+                 fill = Var1), 
+             stroke = 0.5,
+             shape = 21) +
+  guides(color = FALSE) +
+  scale_fill_manual(values = pipac_celltype_col) +
+  theme_bw() +
+  xlab("") +
+  ylab("") +
+  facet_grid(lineage ~ ., scales = "free", space = "free")
+
+p1
+
+p2
+
+p3
+
+```
+
+### Niche proportions by timepoint in Arm 3
+
+```{r, message = F, warning = F, fig.width = 4, fig.height = 4}
+
+arm3 <- subset(seurat_data, subset = Arm == "Arm3")
+
+niches <- factor(seq(1, 5), levels = seq(1, 5))
+niche_col <- colorRampPalette(brewer.pal(10, "Paired"))(nb.cols <- length(niches))
+names(niche_col) <- as.character(niches)
+
+create_barplot(arm3,
+               plot_var = "niche_k5_n30",
+               group_var = "Timepoint",
+               plot_levels = niches,
+               group_levels = c("0", "6"),
+               plot_colors = niche_col,
+               var_names =  c("Frequency (%)", ""),
+               legend_title = "Niche") +
+  ggtitle("Arm 3, all samples")
+
+create_barplot(arm3_tumor,
+               plot_var = "niche_k5_n30",
+               group_var = "Timepoint",
+               plot_levels = niches,
+               group_levels = c("0", "6"),
+               plot_colors = niche_col,
+               var_names =  c("Frequency (%)", ""),
+               legend_title = "Niche") +
+  ggtitle("Arm 3, tumor")
+
+create_barplot(arm3_normal,
+               plot_var = "niche_k5_n30",
+               group_var = "Timepoint",
+               plot_levels = niches,
+               group_levels = c("0", "6"),
+               plot_colors = niche_col,
+               var_names =  c("Frequency (%)", ""),
+               legend_title = "Niche") +
+  ggtitle("Arm 3, tumor-adjacent")
+
+```
+
+#### Testing for significance with scProportionTest
+
+```{r, message = F, warning = F, fig.width = 5, fig.height = 4}
+
+prop_test <- sc_utils(arm3)
+prop_test <- permutation_test(
+	prop_test, cluster_identity = "niche_k5_n30",
+	sample_1 = "0", sample_2 = "6",
+	sample_identity = "Timepoint")
+
+permutation_plot(prop_test) +
+  ggtitle("All Arm 3 samples")
+
+prop_test <- sc_utils(arm3_tumor)
+prop_test <- permutation_test(
+	prop_test, cluster_identity = "niche_k5_n30",
+	sample_1 = "0", sample_2 = "6",
+	sample_identity = "Timepoint")
+
+permutation_plot(prop_test) +
+  ggtitle("Arm 3 tumors")
+
+prop_test <- sc_utils(arm3_normal)
+prop_test <- permutation_test(
+	prop_test, cluster_identity = "niche_k5_n30",
+	sample_1 = "0", sample_2 = "6",
+	sample_identity = "Timepoint")
+
+permutation_plot(prop_test) +
+  ggtitle("Arm 3 tumor-adjacent")
+
+```
+
+### Niche proportions by timepoint in Arm 2
+
+```{r, message = F, warning = F, fig.width = 4, fig.height = 4}
+
+arm2 <- subset(seurat_data, subset = Arm == "Arm2")
+
+arm2$pre_post <- ifelse(arm2$Timepoint == "0", "pre", "post")
+
+arm2_tumor <- subset(arm2, subset = Tissue == "Tumor")
+
+arm2_normal <- subset(arm2, subset = Tissue == "Normal")
+
+niches <- factor(seq(1, 5), levels = seq(1, 5))
+niche_col <- colorRampPalette(brewer.pal(10, "Paired"))(nb.cols <- length(niches))
+names(niche_col) <- as.character(niches)
+
+create_barplot(arm2,
+               plot_var = "niche_k5_n30",
+               group_var = "pre_post",
+               plot_levels = niches,
+               group_levels = c("pre", "post"),
+               plot_colors = niche_col,
+               var_names =  c("Frequency (%)", ""),
+               legend_title = "Niche") +
+  ggtitle("Arm 2, all samples")
+
+create_barplot(arm2_tumor,
+               plot_var = "niche_k5_n30",
+               group_var = "pre_post",
+               plot_levels = niches,
+               group_levels = c("pre", "post"),
+               plot_colors = niche_col,
+               var_names =  c("Frequency (%)", ""),
+               legend_title = "Niche") +
+  ggtitle("Arm 2, tumor")
+
+table(arm2_normal$pre_post, arm2_normal$niche_k5_n30)
+
+create_barplot(arm2_normal,
+               plot_var = "niche_k5_n30",
+               group_var = "pre_post",
+               plot_levels = niches,
+               group_levels = c("pre", "post"),
+               plot_colors = niche_col,
+               var_names =  c("Frequency (%)", ""),
+               legend_title = "Niche") +
+  ggtitle("Arm 2, tumor-adjacent")
+
+```
+
+```{r, message = F, warning = F, fig.width = 5, fig.height = 4}
+
+prop_test <- sc_utils(arm2)
+prop_test <- permutation_test(
+	prop_test, cluster_identity = "niche_k5_n30",
+	sample_1 = "pre", sample_2 = "post",
+	sample_identity = "pre_post")
+
+permutation_plot(prop_test) +
+  ggtitle("All Arm 2 samples")
+
+prop_test <- sc_utils(arm2_tumor)
+prop_test <- permutation_test(
+	prop_test, cluster_identity = "niche_k5_n30",
+	sample_1 = "pre", sample_2 = "post",
+	sample_identity = "pre_post")
+
+permutation_plot(prop_test) +
+  ggtitle("Arm 2 tumors")
+
+prop_test <- sc_utils(arm2_normal)
+prop_test <- permutation_test(
+	prop_test, cluster_identity = "niche_k5_n30",
+	sample_1 = "pre", sample_2 = "post",
+	sample_identity = "pre_post")
+
+permutation_plot(prop_test) +
+  ggtitle("Arm 2 tumor-adjacent")
+
+```
+
+
+### DEGs between Arm 3 timepoints by niche
+
+#### K=5 niches
+
+1: Peritoneal plasma barrier\
+2: Immune\
+3: Tumor\
+4: Vascular\
+5: TME\
 
 ```{r, message = F, warning = F, fig.width = 8, fig.height = 5}
 
+niche_DEGs <- get_DEGs(seuratdata = arm3,
+                       ctvar = "niche_k5_n30",
+                       celltypes = unique(arm3$niche_k5_n30),
+                       groupvar = "Timepoint",
+                       group1 = "0",
+                       group2 = "6")
+
+niches <- factor(seq(1, 5), levels = seq(1, 5))
+niche_col <- colorRampPalette(brewer.pal(10, "Paired"))(nb.cols <- length(niches))
+names(niche_col) <- as.character(niches)
+
+niche_DEGs %>%
+  ggplot(aes(x = p_val, fill = as.character(niche_k5_n30))) +
+  geom_histogram() +
+  scale_fill_manual(values = niche_col) +
+  facet_wrap(~niche_k5_n30) +
+  theme_classic() +
+  NoLegend()
+
+niche_DEGs %>%
+  ggplot(aes(x = p_val_adj, fill = as.character(niche_k5_n30))) +
+  geom_histogram() +
+  scale_fill_manual(values = niche_col) +
+  facet_wrap(~niche_k5_n30) +
+  theme_classic() +
+  NoLegend()
+
+niche_DEGs %>%
+  ggplot(aes(x = avg_log2FC, fill = as.character(niche_k5_n30))) +
+  geom_histogram() +
+  scale_fill_manual(values = niche_col) +
+  facet_wrap(~niche_k5_n30) +
+  theme_classic() +
+  NoLegend()
+  
 ```
+
+```{r, message = F, warning = F, fig.width = 8, fig.height = 5}
+
+niche_DEGs_sig <- niche_DEGs %>%
+  filter(p_val_adj < 0.05,
+         abs(avg_log2FC) > 1)
+
+table(niche_DEGs_sig$niche_k5_n30)
+
+niche_DEGs_sig %>%
+  filter(niche_k5_n30 == 1) %>%
+  dplyr::select(feature) %>%
+  unlist() %>%
+  as.character()
+
+niche_DEGs_sig %>%
+  filter(niche_k5_n30 == 2) %>%
+  dplyr::select(feature) %>%
+  unlist() %>%
+  as.character()
+
+niche_DEGs_sig %>%
+  filter(niche_k5_n30 == 3) %>%
+  dplyr::select(feature) %>%
+  unlist() %>%
+  as.character()
+
+niche_DEGs_sig %>%
+  filter(niche_k5_n30 == 4) %>%
+  dplyr::select(feature) %>%
+  unlist() %>%
+  as.character()
+
+niche_DEGs_sig %>%
+  filter(niche_k5_n30 == 5) %>%
+  dplyr::select(feature) %>%
+  unlist() %>%
+  as.character()
+
+```
+
+### DEGs with likely contaminants removed
+
+```{r, message = F, warning = F, fig.width = 8, fig.height = 5}
+
+cell_expr <- arm3[["RNA"]]$counts
+cell_object_meta <- arm3@meta.data
+
+sample_celltype_levels <-  paste0(as.character(cell_object_meta$Sample),"_",
+                                  as.character(cell_object_meta$niche_k5_n30))
+
+cell_RNA_expr_perCT <- t(sapply(by(t(cell_expr),sample_celltype_levels,colSums),identity))
+dim(cell_RNA_expr_perCT)
+
+celltype_levels <- cell_object_meta$niche_k5_n30
+cell_expr_count_per1K <- apply(cell_expr,2,function(x){
+  res = x/sum(x)
+  res * 1000
+})
+
+prop_thresh <- t(sapply(by(t(cell_expr_count_per1K), celltype_levels, 
+                           function(x){
+                             colSums(x >= 3)/nrow(x) 
+                           }),identity))
+
+test_gene_prop_thresh <- data.frame(prop_thresh,
+                                    check.names = FALSE) %>% 
+  mutate(niche = rownames(prop_thresh)) %>%
+  tidyr::pivot_longer(1:480,
+                      names_to = "gene",
+                      values_to = "prop_cell_expressing_min3")
+
+test_gene_prop_thresh_filter <- test_gene_prop_thresh %>% 
+  filter(prop_cell_expressing_min3 >= 0.1)
+
+table(test_gene_prop_thresh_filter$niche)
+
+niche_DEGs_filtered <- lapply(seq(1, 5), function(xx){
+  keep_genes <- test_gene_prop_thresh_filter %>%
+    filter(niche == xx)
+  
+  DEGs <- niche_DEGs %>%
+    filter(niche_k5_n30 == xx,
+           feature %in% keep_genes$gene)
+  
+  DEGs$FDR <- p.adjust(DEGs$p_val, n = length(DEGs$p_val))
+  
+  DEGs
+})
+niche_DEGs_filtered <- as.data.frame(do.call(rbind, niche_DEGs_filtered))
+
+niche_DEGs_filtered %>%
+  ggplot(aes(x = p_val, fill = as.character(niche_k5_n30))) +
+  geom_histogram() +
+  scale_fill_manual(values = niche_col) +
+  facet_wrap(~niche_k5_n30) +
+  theme_classic() +
+  NoLegend()
+
+niche_DEGs_filtered %>%
+  ggplot(aes(x = p_val_adj, fill = as.character(niche_k5_n30))) +
+  geom_histogram() +
+  scale_fill_manual(values = niche_col) +
+  facet_wrap(~niche_k5_n30) +
+  theme_classic() +
+  NoLegend()
+
+niche_DEGs_filtered %>%
+  ggplot(aes(x = avg_log2FC, fill = as.character(niche_k5_n30))) +
+  geom_histogram() +
+  scale_fill_manual(values = niche_col) +
+  facet_wrap(~niche_k5_n30) +
+  theme_classic() +
+  NoLegend()
+  
+```
+
+```{r, message = F, warning = F, fig.width = 8, fig.height = 5}
+
+niche_DEGs_filtered_sig <- niche_DEGs_filtered %>%
+  filter(FDR < 0.01,
+         abs(avg_log2FC) > 0.5)
+
+table(niche_DEGs_filtered_sig$niche_k5_n30)
+
+niche_DEGs_filtered_sig %>%
+  filter(niche_k5_n30 == 1) %>%
+  dplyr::select(feature) %>%
+  unlist() %>%
+  as.character()
+
+niche_DEGs_filtered_sig %>%
+  filter(niche_k5_n30 == 2) %>%
+  dplyr::select(feature) %>%
+  unlist() %>%
+  as.character()
+
+niche_DEGs_filtered_sig %>%
+  filter(niche_k5_n30 == 3) %>%
+  dplyr::select(feature) %>%
+  unlist() %>%
+  as.character()
+
+niche_DEGs_filtered_sig %>%
+  filter(niche_k5_n30 == 4) %>%
+  dplyr::select(feature) %>%
+  unlist() %>%
+  as.character()
+
+niche_DEGs_filtered_sig %>%
+  filter(niche_k5_n30 == 5) %>%
+  dplyr::select(feature) %>%
+  unlist() %>%
+  as.character()
+
+```
+

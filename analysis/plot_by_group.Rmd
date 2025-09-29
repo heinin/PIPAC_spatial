@@ -132,7 +132,7 @@ rm(nonimmune)
 
 ### Plotting by sample
 
-```{r, message = F, warning = F, fig.width = 12, fig.height = 24, eval = F}
+```{r, message = F, warning = F, fig.width = 12, fig.height = 24, eval = T}
 
 sample_dimplots <- lapply(sort(unique(seurat_data$Sample)), function(sample){
   message(sample)
@@ -175,7 +175,7 @@ DimPlot(seurat_data,
 
 ### Plotting each sample for each patient
 
-```{r, message = F, warning = F, fig.width = 12, fig.height = 4, eval = F}
+```{r, message = F, warning = F, fig.width = 12, fig.height = 4, eval = T}
 
 patient_dimplots <- lapply(sort(unique(seurat_data$Patient_ID)), function(patient){
   message(patient)
