@@ -13,7 +13,7 @@ editor_options:
 Project spreadsheets in [Google Sheets](https://docs.google.com/spreadsheets/d/1sXXwOreLxjMSUoPt79c6jmaQpluWkaxA5P5HfDsed3I/edit?usp=sharing).
 
 1. [Data processing](Xenium_processing.html)\
-1.2 [Compare nuclear, cellular, and denoised transcript counts](compare_cellular_nuclear_denoist.htlm)\
+1.2 [Compare nuclear, cellular, and denoised transcript counts](compare_cellular_nuclear_denoist_annotations.htlm)\
 2. [Splitting sampes on TMAs](splitting_samples.html)\
 3. Clustering using the rapids pipeline (/code/rapids_pipeline)\
 4. [Post-clustering visualization](post_clustering.html)\
