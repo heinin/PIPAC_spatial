@@ -50,6 +50,9 @@ source("/home/hnatri/PIPAC_spatial/code/plot_functions.R")
 
 seurat_data <- readRDS("/scratch/hnatri/PIPAC/merged_spatial_filtered.rds")
 
+head(seurat_data@assays$RNA$counts)
+head(seurat_data@assays$cell_RNA$counts)
+
 seurat_data@meta.data %>%
   ggplot(aes(x = rev(TMA))) +
   geom_bar(stat = "count") +
@@ -205,6 +208,9 @@ merged_spatial <- merge(x = seurat_data_list[[1]], y = seurat_data_list[1:length
 # Warning message:
 # Key 'Xenium_' taken, using 'fov2_' instead 
 
+#head(merged_spatial@assays$RNA$counts)
+#head(merged_spatial@assays$cell_RNA$counts)
+
 # Renaming cells
 merged_spatial <- RenameCells(merged_spatial,
                               new.names = paste0(merged_spatial$Sample, "_",
@@ -242,6 +248,10 @@ names(merged_spatial@assays) <- c("nucleus_RNA", "RNA")
 DefaultAssay(merged_spatial) <- "nucleus_RNA"
 merged_spatial <- JoinLayers(merged_spatial)
 DefaultAssay(merged_spatial) <- "RNA"
+
+#head(merged_spatial@assays$nucleus_RNA$counts)
+#head(merged_spatial@assays$RNA$counts)
+
 #saveRDS(merged_spatial, "/scratch/hnatri/PIPAC/cell_merged_spatial_filtered_splitsamples.rds")
 
 ```
@@ -250,7 +260,10 @@ DefaultAssay(merged_spatial) <- "RNA"
 
 ```{r, message = F, warning = F, fig.width = 3, fig.height = 7}
 
-#merged_spatial <- readRDS("/scratch/hnatri/PIPAC/cell_merged_spatial_filtered_splitsamples.rds")
+merged_spatial <- readRDS("/scratch/hnatri/PIPAC/cell_merged_spatial_filtered_splitsamples.rds")
+
+#head(merged_spatial@assays$nucleus_RNA$counts)
+#head(merged_spatial@assays$RNA$counts)
 
 sp_plots <- lapply(unique(merged_spatial$TMA), function(tma){
   sample_subset <- subset(merged_spatial, subset = TMA == tma)

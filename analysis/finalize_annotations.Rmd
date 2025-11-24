@@ -1,0 +1,613 @@
+---
+title: "Combining and finalizing annotations"
+author: "heinin"
+date: "2025-11-11"
+output:
+  workflowr::wflow_html:
+    code_folding: hide
+  html_notebook: default
+editor_options:
+  chunk_output_type: console
+---
+
+### Packages and environment variables
+
+```{r, warning=F, message=F}
+
+suppressPackageStartupMessages({
+  library(workflowr)
+  library(arrow)
+  library(dplyr)
+  library(Seurat)
+  library(SeuratObject)
+  library(SeuratDisk)
+  library(tidyverse)
+  library(tibble)
+  library(ggplot2)
+  library(ggpubr)
+  library(ggrepel)
+  library(googlesheets4)
+  library(workflowr)})
+
+```
+
+### Environment variables and helper functions
+
+```{r, message = F, warning = F}
+
+setwd("/home/hnatri/PIPAC_spatial/")
+set.seed(9999)
+options(scipen = 99999)
+options(ggrepel.max.overlaps = Inf)
+
+source("/home/hnatri/PIPAC_spatial/code/PIPAC_colors_themes.R")
+source("/home/hnatri/PIPAC_spatial/code/plot_functions.R")
+
+recluster_seurat <- function(seurat_subset, umap_pcs = 10){
+    seurat_subset <- SCTransform(seurat_subset,
+                                 vars.to.regress = c("nCount_RNA", "nFeature_RNA"),
+                                 verbose = F)
+      
+    seurat_subset <- RunPCA(seurat_subset,
+                            npcs = 50,
+                            assay = "SCT",
+                            #features = features,
+                            approx = F,
+                            verbose = F)
+    
+    integrated_data <- RunUMAP(seurat_subset,
+                               reduction = "pca",
+                               reduction.name = "umap",
+                               dims = 1:umap_pcs,
+                               return.model = TRUE,
+                            verbose = F)
+
+    integrated_data <- FindNeighbors(integrated_data,
+                                     reduction = "pca",
+                                     dims = 1:umap_pcs,
+                                     graph.name = c("SCTnn",
+                                                    "SCTsnn"),
+                            verbose = F)
+
+    integrated_data <- FindClusters(integrated_data,
+                                    resolution = c(0.1,0.2,0.3,0.5,0.8,1),
+                                    graph.name = "SCTsnn",
+                            verbose = F)
+    
+    return(integrated_data)
+}
+
+```
+
+### Marker information and metadata
+
+```{r, message = F, warning = F, fig.width = 6, fig.height = 4}
+
+# Cell type markers by group
+gs4_deauth()
+markers_by_group  <- gs4_get("https://docs.google.com/spreadsheets/d/1w0wrL-5KwNEWi_VpmriN7YmfwpBPlEYX0MKlwI2ZQu8/edit?usp=sharing")
+markers_by_group <- read_sheet(markers_by_group, sheet = "Markers by group")
+
+metadata  <- gs4_get("https://docs.google.com/spreadsheets/d/1sXXwOreLxjMSUoPt79c6jmaQpluWkaxA5P5HfDsed3I/edit?usp=sharing")
+markers <- read_sheet(metadata, sheet = "Markers")
+granular_annotations <- read_sheet(metadata, sheet = "Cell type annotations, all transcripts")
+granular_annotations_immune <- read_sheet(metadata, sheet = "Cell type annotations, all transcripts, immune")
+
+```
+
+### Import data
+
+```{r, message = F, warning = F, fig.width = 6, fig.height = 6}
+
+nonimmune <- readRDS("/scratch/hnatri/PIPAC/nonimmune_annotated.rds")
+immune <- readRDS("/scratch/hnatri/PIPAC/immune_annotated_complete.rds")
+#lymphoid <- readRDS("/scratch/hnatri/PIPAC/lymphoid_annotated.rds")
+#myeloid <- readRDS("/scratch/hnatri/PIPAC/myeloid_annotated.rds")
+
+# Fixing preliminary non-immune annotations
+nonimmune$combined_annotation <- as.character(nonimmune$combined_annotation)
+
+nonimmune$combined_annotation <- ifelse(is.na(nonimmune$combined_annotation), "NOS",
+                                        nonimmune$combined_annotation)
+
+nonimmune$combined_annotation <- ifelse(nonimmune$combined_annotation == "B1", "B1_from_nonimmune",
+                                        ifelse(nonimmune$combined_annotation == "L1", "L1_from_nonimmune", nonimmune$combined_annotation))
+
+nonimmune$combined_annotation <- factor(nonimmune$combined_annotation,
+                                        levels = sort(unique(nonimmune$combined_annotation)))
+
+# Making some labels unique
+immune$combined_annotation <- ifelse(immune$combined_annotation %in% c("F6", "F7", "F4", "B1", "F5", "F1", "F3", "L1"), paste0(immune$combined_annotation, "_from_immune"), immune$combined_annotation)
+
+immune$combined_annotation  <- factor(immune$combined_annotation,
+                                      levels = sort(unique(immune$combined_annotation)))
+
+# Normalizing
+DefaultAssay(nonimmune) <- "denoist_RNA"
+nonimmune <- NormalizeData(nonimmune)
+
+DefaultAssay(immune) <- "denoist_RNA"
+immune <- NormalizeData(immune)
+
+max(table(nonimmune$combined_annotation))
+min(table(nonimmune$combined_annotation))
+max(table(immune$combined_annotation))
+min(table(immune$combined_annotation))
+
+```
+
+### Top cluster markers, non-immune
+
+```{r, message = F, warning = F, fig.width = 5, fig.height = 4}
+
+Idents(nonimmune) <- nonimmune$combined_annotation
+cluster_markers <- FindAllMarkers(nonimmune,
+                                  return.thresh = 0.01,
+                                  logfc.threshold = 0.5,
+                                  min.pct = 0.20,
+                                  verbose = T)
+
+top_cluster_markers <- cluster_markers %>%
+  arrange(dplyr::desc(avg_log2FC)) %>%
+  group_by(cluster) %>%
+  dplyr::slice(1:15)
+
+write.table(top_cluster_markers, "/home/hnatri/PIPAC_spatial/nonimmune_prelim_annot_topmarkers.tsv",
+            sep = "\t", quote = F, row.names = T)
+
+```
+
+```{r, message = F, warning = F, fig.width = 14, fig.height = 14}
+
+plot_features <- c("PTPRC",
+                   "CD3D", "CD3E", "CD4", "CD8A", # T cells
+                   "STAT4", "STAT3", "TIGIT", "GZMB",
+                   "FOXP3", # Tregs
+                   "SELL", "CD19", # B cells
+                   "CD68", "CD44", "MARCO", "APOE", # Macrophages
+                   "C1QB", "C1QBP", "CD163",
+                   "SPP1", "VCAN",
+                   "MUC5AC", "NOTCH3", "RGS5", "MS4A1", # Lineage markers
+                   "PGA5", "PLVAP", "CCL21", "LYVE",
+                   "SPARCL1", # Endo/peri
+                   "FN1", "DCN", "LUM", # Fibroblasts
+                   "COL1A2", "PDPN", "ACTA2", "LMNA",
+                   "EGR3", "TP53", "JUN", "KIT", # Tumor
+                   "SOX9", "RNF43", "EPCAM", "PECAM", "CEACAM")
+
+DotPlot(nonimmune,
+        group.by = "combined_annotation",
+        features = plot_features,
+        cols = c("gray98", "tomato3")) +
+  RotatedAxis()
+
+```
+
+```{r, message = F, warning = F, fig.width = 22, fig.height = 33}
+
+nonimmune_prelim <- as.factor(sort(unique(nonimmune$combined_annotation)))
+nonimmune_prelim_col <- colorRampPalette(brewer.pal(10, "Paired"))(nb.cols <- length(nonimmune_prelim))
+names(nonimmune_prelim_col) <- levels(nonimmune_prelim)
+
+create_dotplot_heatmap(seurat_object = nonimmune,
+                       plot_features = unique(top_cluster_markers$gene),
+                       group_var = "combined_annotation",
+                       group_colors = nonimmune_prelim_col,
+                       column_title = "",
+                       row_km = 20,
+                       col_km = 20,
+                       row.order = NULL,
+                       col.order = NULL)
+
+```
+
+### Top cluster markers, immune
+
+```{r, message = F, warning = F, fig.width = 5, fig.height = 4}
+
+Idents(immune) <- immune$combined_annotation
+cluster_markers <- FindAllMarkers(immune,
+                                  return.thresh = 0.01,
+                                  logfc.threshold = 0.5,
+                                  min.pct = 0.20,
+                                  verbose = T)
+
+top_cluster_markers <- cluster_markers %>%
+  arrange(dplyr::desc(avg_log2FC)) %>%
+  group_by(cluster) %>%
+  dplyr::slice(1:15)
+
+write.table(top_cluster_markers, "/home/hnatri/PIPAC_spatial/immune_prelim_annot_topmarkers.tsv",
+            sep = "\t", quote = F, row.names = T)
+
+```
+
+```{r, message = F, warning = F, fig.width = 20, fig.height = 34}
+
+DotPlot(immune,
+        group.by = "combined_annotation",
+        features = plot_features,
+        cols = c("gray98", "tomato3")) +
+  RotatedAxis()
+
+```
+
+```{r, message = F, warning = F, fig.width = 30, fig.height = 33}
+
+immune_prelim <- as.factor(sort(unique(immune$combined_annotation)))
+immune_prelim_col <- colorRampPalette(brewer.pal(10, "Paired"))(nb.cols <- length(immune_prelim))
+names(immune_prelim_col) <- levels(immune_prelim)
+
+create_dotplot_heatmap(seurat_object = immune,
+                       plot_features = unique(top_cluster_markers$gene),
+                       group_var = "combined_annotation",
+                       group_colors = immune_prelim_col,
+                       column_title = "",
+                       row_km = 24,
+                       col_km = 24,
+                       row.order = NULL,
+                       col.order = NULL)
+
+```
+
+### Adding new granular annotations
+
+```{r, message = F, warning = F, fig.width = 22, fig.height = 22, eval = T}
+
+nonimmune$Annotation_Cell <- mapvalues(nonimmune$combined_annotation,
+                                       from = granular_annotations$combined_annotation,
+                                       to = granular_annotations$Annotation)
+
+immune$Annotation_Cell <- mapvalues(immune$combined_annotation,
+                                    from = granular_annotations_immune$combined_annotation,
+                                    to = granular_annotations_immune$Annotation)
+
+```
+
+### Moving immune clusters from nonimmune object
+
+```{r, message = F, warning = F, fig.width = 22, fig.height = 22, eval = T}
+
+move_clusters <- c("Myel3_stromal_ambig",
+                   "reccl11_0_F1_from_stromal",
+                   "reccl11_3_NOS_from_stromal",
+                   "reccl11_5_Myel_from_stromal",
+                   "reccl11_6_Myel_from_stromal",
+                   "reccl13_0_Myel_from_stromal",
+                   "reccl13_1_F1_from_stromal",
+                   "reccl13_3_Myel_from_stromal",
+                   "reccl13_4_Myel_from_stromal",
+                   "reccl13_5_Myel_from_stromal",
+                   "reccl13_6_Myel_from_stromal",
+                   "Plasma")
+
+immune_from_nonimmune <- subset(nonimmune, subset = combined_annotation %in% move_clusters)
+
+immune@reductions$pca <- NULL
+immune@reductions$umap <- NULL
+#immune@reductions$sp <- NULL
+
+immune_from_nonimmune@reductions$pca <- NULL
+immune_from_nonimmune@reductions$umap <- NULL
+#immune_from_nonimmune@reductions$sp <- NULL
+
+immune@meta.data <- immune@meta.data[,c("cell_id", "combined_annotation", "nCount_RNA", "nFeature_RNA", "total_counts", "cell_area", "nucleus_area", "nucleus_count", "Annotation_Cell")]
+immune_from_nonimmune@meta.data <- immune_from_nonimmune@meta.data[,c("cell_id", "combined_annotation", "nCount_RNA", "nFeature_RNA", "total_counts", "cell_area", "nucleus_area", "nucleus_count", "Annotation_Cell")]
+
+immune <- merge(immune, immune_from_nonimmune)
+nonimmune <- subset(nonimmune, subset = combined_annotation %in% move_clusters, invert = T)
+
+saveRDS(nonimmune, "/scratch/hnatri/PIPAC/nonimmune_annotated_modified.rds")
+saveRDS(immune, "/scratch/hnatri/PIPAC/immune_annotated_modified.rds")
+
+```
+
+```{r, message = F, warning = F, fig.width = 22, fig.height = 22, eval = F}
+
+move_clusters <- c("")
+
+nonimmune_from_immune <- subset(immune, subset = combined_annotation %in% move_clusters)
+
+nonimmune@reductions$pca <- NULL
+nonimmune@reductions$umap <- NULL
+#immune@reductions$sp <- NULL
+
+nonimmune_from_immune@reductions$pca <- NULL
+nonimmune_from_immune@reductions$umap <- NULL
+#immune_from_nonimmune@reductions$sp <- NULL
+
+nonimmune@meta.data <- nonimmune@meta.data[,c("cell_id", "combined_annotation", "nCount_RNA", "nFeature_RNA")]
+nonimmune_from_nonimmune@meta.data <- nonimmune_from_nonimmune@meta.data[,c("cell_id", "combined_annotation", "nCount_RNA", "nFeature_RNA")]
+
+nonimmune <- merge(nonimmune, nonimmune_from_immune)
+
+```
+
+### Selected markers
+
+```{r, message = F, warning = F, fig.width = 22, fig.height = 22, eval = T}
+
+main_plot_features <- c("PTPRC", "CD3D", "CD3E", "CD4", "CD8A", "JAK1", "JAK2", "STAT4", "STAT3", "TIGIT", "GZMB", "SELL", "CD19", "CD68", "CD44", "MARCO", "APOE", "C1QB", "C1QBP", "CD163", "SPP1", "VCAN", "MUC5AC", "NOTCH3", "RGS5", "MS4A1", "PGA5", "PLVAP", "CCL21", "LYVE", "SPARCL1", "FN1", "DCN", "LUM", "COL1A2", "PDPN", "ACTA2", "LMNA", "EGR3", "TP53", "JUN", "FOS", "BRAF", "KIT", "SOX9", "RNF43", "EPCAM", "PECAM", "CEACAM", "TGFB1", "JUNB", "TCF7", "GZMA", "GZMK", "CD47", "CD74", "LYZ", "TREM2", "CD247", "COL5A1", "SPARC", "CD36", "CTLA4", "RGS1", "CCL2", "SELENOP", "LYVE1", "CTSD", "MMP9", "CDK1", "FLT1", "RAMP2", "CCL14", "MCAM", "NRP1", "CEACAM6", "IL32", "TGFBI", "VEGFA", "LAMP1", "IGFBP7", "POSTN", "C1S", "C1R", "CSF1", "NOTCH1", "FOXP3", "IL2RB", "TUBA1B", "S100A9", "C3", "CXCR2", "SDC1", "CD38", "IGHG1", "PRDX4", "ICAM1", "GATA2", "CXCL3")
+
+mycafs <- c("TGFB1", "ACTA2", "TAGLN", "HOPX", "MYL9")
+icafs <- c("IL6", "CXCL12", "CXCL13", "CXCL14")
+abcafs <- c("CD74", "HLA-DPB1", "HLA-DPB2", "HLA-DQA1", "HLA-DRA", "HLA-DRB1")
+ficafs <- c("SFRP2", "SFRP4", "COMP", "CXCL14", "PLA2G2A", "ASPN")
+
+main_plot_features <- c(main_plot_features, mycafs, icafs, abcafs, ficafs)
+main_plot_features <- unique(main_plot_features)
+
+nonimmune_prelim <- factor(sort(unique(nonimmune$Annotation_Cell)),
+                           levels = unique(nonimmune$Annotation_Cell))
+nonimmune_prelim_col <- colorRampPalette(brewer.pal(10, "Paired"))(nb.cols <- length(nonimmune_prelim))
+names(nonimmune_prelim_col) <- levels(nonimmune_prelim)
+
+hp <- create_dotplot_heatmap(seurat_object = nonimmune,
+                             plot_features = main_plot_features,
+                             group_var = "Annotation_Cell",
+                             group_colors = nonimmune_prelim_col,
+                             column_title = "",
+                             row_km = 20,
+                             col_km = 20,
+                             row.order = NULL,
+                             col.order = NULL)
+
+row_order(hp)
+
+```
+
+```{r, message = F, warning = F, fig.width = 26, fig.height = 22, eval = T}
+
+immune_prelim <- factor(sort(unique(immune$Annotation_Cell)),
+                        levels = unique(immune$Annotation_Cell))
+immune_prelim_col <- colorRampPalette(brewer.pal(10, "Paired"))(nb.cols <- length(immune_prelim))
+names(immune_prelim_col) <- levels(immune_prelim)
+
+hp <- create_dotplot_heatmap(seurat_object = immune,
+                             plot_features = main_plot_features,
+                             group_var = "Annotation_Cell",
+                             group_colors = immune_prelim_col,
+                             column_title = "",
+                             row_km = 24,
+                             col_km = 24,
+                             row.order = NULL,
+                             col.order = NULL)
+
+row_order(hp)
+
+```
+
+### QC metrics by cell type
+
+### Cells per cell type
+
+```{r, message = F, warning = F, fig.width = 14, fig.height = 5, eval = T}
+
+ct_table <- as.data.frame(table(nonimmune$Annotation_Cell))
+colnames(ct_table) <- c("Annotation_Cell", "Freq")
+
+min(ct_table$Freq)
+
+ggplot(ct_table, aes(x = reorder(Annotation_Cell, -Freq), y = Freq, fill = Annotation_Cell)) +
+       geom_bar(stat="identity", position='stack', width = 0.8) +
+       scale_fill_manual(name = "Celltype", values = nonimmune_prelim_col) +
+       xlab("") +
+       ylab("Cell count") +
+       theme_classic() +
+       theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1)) +
+       NoLegend()
+
+```
+
+```{r, message = F, warning = F, fig.width = 20, fig.height = 5, eval = T}
+
+ct_table <- as.data.frame(table(immune$Annotation_Cell))
+colnames(ct_table) <- c("Annotation_Cell", "Freq")
+
+min(ct_table$Freq)
+
+ggplot(ct_table, aes(x = reorder(Annotation_Cell, -Freq), y = Freq, fill = Annotation_Cell)) +
+       geom_bar(stat="identity", position='stack', width = 0.8) +
+       scale_fill_manual(name = "Celltype", values = immune_prelim_col) +
+       xlab("") +
+       ylab("Cell count") +
+       theme_classic() +
+       theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1)) +
+       NoLegend()
+
+ct_table %>% filter(Freq>1000) %>%
+  ggplot(aes(x = reorder(Annotation_Cell, -Freq), y = Freq, fill = Annotation_Cell)) +
+       geom_bar(stat="identity", position='stack', width = 0.8) +
+       scale_fill_manual(name = "Celltype", values = immune_prelim_col) +
+       xlab("") +
+       ylab("Cell count") +
+       theme_classic() +
+       theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1)) +
+       NoLegend()
+
+```
+
+### Reclustering MF31
+
+```{r, message = F, warning = F, fig.width = 4, fig.height = 4, eval = F}
+
+MF31 <- subset(nonimmune, subset = Annotation_Cell == "MF31")
+MF31 <- recluster_seurat(MF31, umap_pcs = 20)
+
+DimPlot(MF31,
+        group.by = "SCTsnn_res.0.8",
+        reduction = "umap",
+        label = T) +
+  coord_fixed(ratio = 1) +
+  theme_bw() +
+  NoLegend()
+
+table(MF31$SCTsnn_res.0.8)
+
+```
+
+```{r, message = F, warning = F, fig.width = 22, fig.height = 6, eval = F}
+
+DotPlot(MF31,
+        group.by = "SCTsnn_res.0.8",
+        features = main_plot_features,
+        cols = c("gray98", "tomato3")) +
+  RotatedAxis()
+  
+```
+
+```{r, message = F, warning = F, fig.width = 9, fig.height = 6, eval = F}
+
+FeaturePlot(MF31,
+            features = c("CD68", "CD163", "COL1A2", "DCN", "FN1", "EPCAM"),
+            cols = c("gray89", "tomato3"),
+            reduction = "umap",
+            order = T,
+            raster = T,
+            ncol = 3) &
+  coord_fixed(ratio = 1) &
+  theme_bw() &
+  NoLegend()
+
+```
+
+```{r, message = F, warning = F, fig.width = 22, fig.height = 36, eval = F}
+
+FeaturePlot(MF31,
+            features = main_plot_features,
+            cols = c("gray98", "tomato3"),
+            reduction = "umap",
+            raster = T,
+            ncol = 5) &
+  coord_fixed(ratio = 1) &
+  theme_bw() &
+  NoLegend()
+
+```
+
+### Reclustering all other MF clusters
+
+```{r, message = F, warning = F, fig.width = 4, fig.height = 4, eval = F}
+
+mfs <- subset(nonimmune, subset = Annotation_Cell %in% paste0("MF", seq(1, 30)))
+mfs <- recluster_seurat(mfs, umap_pcs = 20)
+
+DimPlot(mfs,
+        group.by = "SCTsnn_res.0.8",
+        reduction = "umap",
+        label = T) +
+  coord_fixed(ratio = 1) +
+  theme_bw() +
+  NoLegend()
+
+mfss <- as.factor(paste0("MF", seq(1, 31)))
+mfs_col <- colorRampPalette(brewer.pal(10, "Paired"))(nb.cols <- length(mfss))
+names(mfs_col) <- levels(mfss)
+
+DimPlot(mfs,
+        group.by = "Annotation_Cell",
+        reduction = "umap",
+        cols = mfs_col,
+        label = T) +
+  coord_fixed(ratio = 1) +
+  theme_bw() +
+  NoLegend()
+
+```
+
+```{r, message = F, warning = F, fig.width = 9, fig.height = 6, eval = F}
+
+FeaturePlot(mfs,
+            features = c("CD68", "CD163", "COL1A2", "DCN", "FN1", "EPCAM"),
+            cols = c("gray89", "tomato3"),
+            reduction = "umap",
+            order = T,
+            raster = T,
+            ncol = 3) &
+  coord_fixed(ratio = 1) &
+  theme_bw() &
+  NoLegend()
+
+```
+
+```{r, message = F, warning = F, fig.width = 10, fig.height = 22, eval = F}
+
+create_dotplot_heatmap(seurat_object = mfs,
+                       plot_features = main_plot_features,
+                       group_var = "Annotation_Cell",
+                       group_colors = mfs_col,
+                       column_title = "",
+                       row_km = 5,
+                       col_km = 5,
+                       row.order = NULL,
+                       col.order = NULL)
+
+```
+
+### Reclustering EndoPeri2
+
+```{r, message = F, warning = F, fig.width = 4, fig.height = 4, eval = F}
+
+endoperi2 <- subset(nonimmune, subset = Annotation_Cell == "EndoPeri2")
+endoperi2 <- recluster_seurat(endoperi2, umap_pcs = 20)
+
+DimPlot(endoperi2,
+        group.by = "SCTsnn_res.0.8",
+        reduction = "umap",
+        label = T) +
+  coord_fixed(ratio = 1) +
+  theme_bw() +
+  NoLegend()
+
+```
+
+```{r, message = F, warning = F, fig.width = 9, fig.height = 6, eval = F}
+
+FeaturePlot(endoperi2,
+            features = c("RGS5", "NOTCH3", "PLVAP", "COL1A2", "DCN", "FN1", "EPCAM"),
+            cols = c("gray89", "tomato3"),
+            reduction = "umap",
+            order = T,
+            raster = T,
+            ncol = 3) &
+  coord_fixed(ratio = 1) &
+  theme_bw() &
+  NoLegend()
+
+```
+
+```{r, message = F, warning = F, fig.width = 8, fig.height = 20, eval = F}
+
+endoperis <- as.factor(sort(unique(endoperi2$SCTsnn_res.0.8)))
+endoperi_col <- colorRampPalette(brewer.pal(10, "Paired"))(nb.cols <- length(endoperis))
+names(endoperi_col) <- levels(endoperis)
+
+create_dotplot_heatmap(seurat_object = endoperi2,
+                       plot_features = main_plot_features,
+                       group_var = "SCTsnn_res.0.8",
+                       group_colors = endoperi_col,
+                       column_title = "",
+                       row_km = 5,
+                       col_km = 5,
+                       row.order = NULL,
+                       col.order = NULL)
+
+```
+
+### Combining similar cluster to less granular annotations
+
+```{r, message = F, warning = F, fig.width = 22, fig.height = 22}
+
+
+```
+
+### Saving annotated data
+
+```{r, message = F, warning = F, fig.width = 22, fig.height = 22}
+
+# Adding final annotations to the complete clustered object
+
+
+# Rscript -e "rmarkdown::render('finalize_annotations.Rmd')"
+
+```

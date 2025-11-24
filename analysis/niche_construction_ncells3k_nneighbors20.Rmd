@@ -48,7 +48,7 @@ source("/home/hnatri/PIPAC_spatial/code/plot_functions.R")
 # Lineage info
 gs4_deauth()
 metadata  <- gs4_get("https://docs.google.com/spreadsheets/d/1sXXwOreLxjMSUoPt79c6jmaQpluWkaxA5P5HfDsed3I/edit?usp=sharing")
-lineage <- read_sheet(metadata, sheet = "Cell type annotations")
+lineage <- read_sheet(metadata, sheet = "Cell type annotations, nuclear")
 
 # Calling DEGs between two groups for each cell type
 get_DEGs <- function(seuratdata, ctvar, celltypes, groupvar, group1, group2){
@@ -367,7 +367,7 @@ niche_col <- colorRampPalette(brewer.pal(10, "Paired"))(nb.cols <- length(niches
 names(niche_col) <- as.character(niches)
 
 create_barplot(arm3,
-               plot_var = "ncells3k_niche_k5_n20",
+               plot_var = "ncells3k_niche_k8_n20",
                group_var = "Timepoint",
                plot_levels = niches,
                group_levels = c("0", "6"),
@@ -377,7 +377,7 @@ create_barplot(arm3,
   ggtitle("Arm 3, all samples")
 
 create_barplot(arm3_tumor,
-               plot_var = "ncells3k_niche_k5_n20",
+               plot_var = "ncells3k_niche_k8_n20",
                group_var = "Timepoint",
                plot_levels = niches,
                group_levels = c("0", "6"),
@@ -387,7 +387,7 @@ create_barplot(arm3_tumor,
   ggtitle("Arm 3, tumor")
 
 create_barplot(arm3_normal,
-               plot_var = "ncells3k_niche_k5_n20",
+               plot_var = "ncells3k_niche_k8_n20",
                group_var = "Timepoint",
                plot_levels = niches,
                group_levels = c("0", "6"),
@@ -404,7 +404,7 @@ create_barplot(arm3_normal,
 
 prop_test <- sc_utils(arm3)
 prop_test <- permutation_test(
-	prop_test, cluster_identity = "ncells3k_niche_k5_n20",
+	prop_test, cluster_identity = "ncells3k_niche_k8_n20",
 	sample_1 = "0", sample_2 = "6",
 	sample_identity = "Timepoint")
 
@@ -413,7 +413,7 @@ permutation_plot(prop_test) +
 
 prop_test <- sc_utils(arm3_tumor)
 prop_test <- permutation_test(
-	prop_test, cluster_identity = "ncells3k_niche_k5_n20",
+	prop_test, cluster_identity = "ncells3k_niche_k8_n20",
 	sample_1 = "0", sample_2 = "6",
 	sample_identity = "Timepoint")
 
@@ -422,7 +422,7 @@ permutation_plot(prop_test) +
 
 prop_test <- sc_utils(arm3_normal)
 prop_test <- permutation_test(
-	prop_test, cluster_identity = "ncells3k_niche_k5_n20",
+	prop_test, cluster_identity = "ncells3k_niche_k8_n20",
 	sample_1 = "0", sample_2 = "6",
 	sample_identity = "Timepoint")
 
@@ -448,7 +448,7 @@ niche_col <- colorRampPalette(brewer.pal(10, "Paired"))(nb.cols <- length(niches
 names(niche_col) <- as.character(niches)
 
 create_barplot(arm2,
-               plot_var = "ncells3k_niche_k5_n20",
+               plot_var = "ncells3k_niche_k8_n20",
                group_var = "pre_post",
                plot_levels = niches,
                group_levels = c("pre", "post"),
@@ -458,7 +458,7 @@ create_barplot(arm2,
   ggtitle("Arm 2, all samples")
 
 create_barplot(arm2_tumor,
-               plot_var = "ncells3k_niche_k5_n20",
+               plot_var = "ncells3k_niche_k8_n20",
                group_var = "pre_post",
                plot_levels = niches,
                group_levels = c("pre", "post"),
@@ -470,7 +470,7 @@ create_barplot(arm2_tumor,
 table(arm2_normal$pre_post, arm2_normal$ncells3k_niche_k5_n20)
 
 create_barplot(arm2_normal,
-               plot_var = "ncells3k_niche_k5_n20",
+               plot_var = "ncells3k_niche_k8_n20",
                group_var = "pre_post",
                plot_levels = niches,
                group_levels = c("pre", "post"),
@@ -485,7 +485,7 @@ create_barplot(arm2_normal,
 
 prop_test <- sc_utils(arm2)
 prop_test <- permutation_test(
-	prop_test, cluster_identity = "ncells3k_niche_k5_n20",
+	prop_test, cluster_identity = "ncells3k_niche_k8_n20",
 	sample_1 = "pre", sample_2 = "post",
 	sample_identity = "pre_post")
 
@@ -494,7 +494,7 @@ permutation_plot(prop_test) +
 
 prop_test <- sc_utils(arm2_tumor)
 prop_test <- permutation_test(
-	prop_test, cluster_identity = "ncells3k_niche_k5_n20",
+	prop_test, cluster_identity = "ncells3k_niche_k8_n20",
 	sample_1 = "pre", sample_2 = "post",
 	sample_identity = "pre_post")
 
@@ -503,7 +503,7 @@ permutation_plot(prop_test) +
 
 prop_test <- sc_utils(arm2_normal)
 prop_test <- permutation_test(
-	prop_test, cluster_identity = "ncells3k_niche_k5_n20",
+	prop_test, cluster_identity = "ncells3k_niche_k8_n20",
 	sample_1 = "pre", sample_2 = "post",
 	sample_identity = "pre_post")
 

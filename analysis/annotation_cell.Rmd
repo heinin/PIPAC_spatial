@@ -50,12 +50,14 @@ source("/home/hnatri/PIPAC_spatial/code/plot_functions.R")
 
 # Copied to isilon /tgen_labs/banovich/PIPAC/Seurat
 # /tgen_labs/banovich/PIPAC/Seurat/cell_merged_spatial_filtered_splitsamples_clustered_NC50_NN20_PC20_Seurat.rds.rds
-seurat_data <- readRDS("/tgen_labs/banovich/PIPAC/Seurat/cell_merged_spatial_filtered_splitsamples_clustered_NC50_NN20_PC20_Seurat_denoIST.rds")
+seurat_data <- readRDS("/tgen_labs/banovich/PIPAC/Seurat/cell_merged_spatial_filtered_splitsamples_clustered_NN30_PC50_Seurat_denoIST.rds")
 head(seurat_data@meta.data)
-unique(seurat_data$leiden_res0.5)
+unique(seurat_data$leiden_0.5)
+
+DefaultAssay(seurat_data) <- "denoist_RNA"
 
 DimPlot(seurat_data,
-        group.by = "leiden_res0.5",
+        group.by = "leiden_0.5",
         cols = pipac_cluster_20_col,
         reduction = "umap",
         raster = T,
@@ -92,7 +94,7 @@ plot_features <- c("PTPRC",
                    "SOX9", "RNF43", "EPCAM")
 
 DotPlot(seurat_data,
-        group.by = "leiden_res0.5",
+        group.by = "leiden_0.5",
         features = plot_features,
         cols = c("azure", "tomato3")) +
   RotatedAxis()
@@ -118,7 +120,7 @@ FeaturePlot(seurat_data,
 
 ### DenoIST
 
-```{r, message = F, warning = F, fig.width = 10, fig.height = 4}
+```{r, message = F, warning = F, fig.width = 10, fig.height = 4, eval = F}
 
 plot_features <- c("PTPRC",
                    "CD3D", "CD3E", "CD4", "CD8A", # T cells
@@ -133,7 +135,7 @@ plot_features <- c("PTPRC",
 
 DefaultAssay(seurat_data) <- "denoist_RNA"
 DotPlot(seurat_data,
-        group.by = "leiden_res0.5",
+        group.by = "leiden_0.5",
         features = plot_features,
         cols = c("azure", "tomato3")) +
   RotatedAxis()
@@ -160,7 +162,7 @@ FeaturePlot(seurat_data,
 
 ```{r, message = F, warning = F, fig.width = 5, fig.height = 4}
 
-Idents(seurat_data) <- seurat_data$leiden_res0.5
+Idents(seurat_data) <- seurat_data$leiden_0.5
 cluster_markers <- FindAllMarkers(seurat_data,
                                   return.thresh = 0.01,
                                   logfc.threshold = 0.5,
@@ -185,7 +187,7 @@ top_cluster_markers <- cluster_markers %>%
 
 create_dotplot_heatmap(seurat_object = seurat_data,
                        plot_features = unique(top_cluster_markers$gene),
-                       group_var = "leiden_res0.5",
+                       group_var = "leiden_0.5",
                        group_colors = pipac_cluster_20_col,
                        column_title = "",
                        row_km = 5,
@@ -206,7 +208,7 @@ output_cluster_markers <- cluster_markers %>%
 
 output_cluster_markers <- merge(top_cluster_markers, markers, by.x = "gene", by.y = "Gene")
 
-write.table(output_cluster_markers, "/home/hnatri/PIPAC_spatial/cell_main_cluster_marker_annotations_denoist.tsv",
+write.table(output_cluster_markers, "/home/hnatri/PIPAC_spatial/cell_main_cluster_marker_annotations.tsv",
             quote = F, row.names = F, sep = "\t")
 
 # Saving DenoIST top markers by original annotation
@@ -224,16 +226,16 @@ output_cluster_markers <- cluster_markers %>%
 
 output_cluster_markers <- merge(top_cluster_markers, markers, by.x = "gene", by.y = "Gene")
 
-write.table(output_cluster_markers, "/home/hnatri/PIPAC_spatial/cell_annotation_top_markers_denoist.tsv",
+write.table(output_cluster_markers, "/home/hnatri/PIPAC_spatial/cell_annotation_top_markers.tsv",
             quote = F, row.names = F, sep = "\t")
 
 ```
 
 ### Subsetting immune and non-immune cells for subclustering
 
-```{r, message = F, warning = F, fig.width = 6, fig.height = 6, eval = F}
+```{r, message = F, warning = F, fig.width = 6, fig.height = 6, eval = T}
 
-seurat_data$Lineage <- ifelse(seurat_data$leiden_res0.5 %in% c(2, 4, 6, 7, 12, 14),
+seurat_data$Lineage <- ifelse(seurat_data$leiden_0.5 %in% c(5, 6),
                               "Immune", "TumorStroma")
 
 immune_subset <- subset(seurat_data, subset = Lineage == "Immune")
@@ -241,6 +243,9 @@ nonimmune_subset <- subset(seurat_data, subset = Lineage == "TumorStroma")
 
 saveRDS(immune_subset, "/scratch/hnatri/PIPAC/cell_immune_subset.rds")
 saveRDS(nonimmune_subset, "/scratch/hnatri/PIPAC/cell_nonimmune_subset.rds")
+
+# To build on command line, run Rscript -e "rmarkdown::render('annotation_cell.Rmd')"
+# Then "mv *.html /home/hnatri/PIPAC_spatial/docs/"
 
 ```
 

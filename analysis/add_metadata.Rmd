@@ -51,10 +51,22 @@ source("/home/hnatri/PIPAC_spatial/code/plot_functions.R")
 
 ```{r, message = F, warning = F, fig.width = 6, fig.height = 6}
 
-seurat_data <- readRDS("/tgen_labs/banovich/PIPAC/Seurat/cell_merged_spatial_filtered_splitsamples_clustered_NC50_NN20_PC20_Seurat_denoIST.rds")
+nucl_seurat_data <- readRDS("/tgen_labs/banovich/PIPAC/Seurat/PIPAC_NC50_NN20_PC20_Seurat_annotated_metadata_niches.rds")
+
+seurat_data <- readRDS("/tgen_labs/banovich/PIPAC/Seurat/cell_merged_spatial_filtered_splitsamples_clustered_NN30_PC50_Seurat.rds")
 
 #immune <- readRDS("/tgen_labs/banovich/PIPAC/Seurat/nonimmune_complete_subset_clustered_NC50_NN20_PC20_Seurat_annotated.rds")
 #nonimmune <- readRDS("/tgen_labs/banovich/PIPAC/Seurat/immune_complete_subset_clustered_NC50_NN20_PC20_Seurat_annotated.rds")
+
+# Transfering annotations
+#setdiff(colnames(nucl_seurat_data), colnames(seurat_data))
+#setdiff(colnames(seurat_data), colnames(nucl_seurat_data))
+#intersect(colnames(seurat_data), colnames(nucl_seurat_data))
+
+seurat_data$Annotation <- mapvalues(colnames(seurat_data),
+                                    from = colnames(nucl_seurat_data),
+                                    to = nucl_seurat_data$Annotation)
+seurat_data$Annotation[-which(colnames(seurat_data) %in% colnames(nucl_seurat_data))] <- NA
 
 DimPlot(seurat_data,
         group.by = "Annotation",
@@ -139,7 +151,7 @@ for (m in setdiff(colnames(all_metadata), c("Obs"))){
   seurat_data@meta.data[[m]][-which(seurat_data@meta.data$Patient_ID %in% all_metadata$Patient_ID)] <- NA
 }
 
-saveRDS(seurat_data, "/tgen_labs/banovich/PIPAC/Seurat/cell_merged_spatial_filtered_splitsamples_clustered_NC50_NN20_PC20_Seurat_denoIST_metadata.rds")
+saveRDS(seurat_data, "/tgen_labs/banovich/PIPAC/Seurat/cell_merged_spatial_filtered_splitsamples_clustered_NN30_PC50_Seurat_metadata.rds")
 
 #for (m in setdiff(colnames(all_metadata), c("Obs"))){
 #  immune@meta.data[[m]] = plyr::mapvalues(x = immune@meta.data$Patient_ID,

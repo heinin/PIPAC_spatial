@@ -1,0 +1,2185 @@
+---
+title: "Annotating immune cells in the PIPAC Xenium data"
+author: "heinin"
+date: "2025-10-10"
+output:
+  workflowr::wflow_html:
+    code_folding: hide
+  html_notebook: default
+editor_options:
+  chunk_output_type: console
+---
+
+### Packages and environment variables
+
+```{r, warning=F, message=F}
+
+suppressPackageStartupMessages({
+  library(workflowr)
+  library(arrow)
+  library(Seurat)
+  library(SeuratObject)
+  library(SeuratDisk)
+  library(tidyverse)
+  library(tibble)
+  library(ggplot2)
+  library(ggpubr)
+  library(ggrepel)
+  library(googlesheets4)
+  library(workflowr)})
+
+```
+
+### Environment variables and helper functions
+
+```{r, message = F, warning = F}
+
+setwd("/home/hnatri/PIPAC_spatial/")
+set.seed(9999)
+options(scipen = 99999)
+options(ggrepel.max.overlaps = Inf)
+
+source("/home/hnatri/PIPAC_spatial/code/PIPAC_colors_themes.R")
+source("/home/hnatri/PIPAC_spatial/code/plot_functions.R")
+
+recluster_seurat <- function(seurat_subset, umap_pcs = 10){
+    seurat_subset <- SCTransform(seurat_subset,
+                                 vars.to.regress = c("nCount_RNA", "nFeature_RNA"),
+                                 #variable.features.n = 500,
+                                 verbose = F)
+      
+    seurat_subset <- RunPCA(seurat_subset,
+                            npcs = 50,
+                            assay = "SCT",
+                            #features = features,
+                            approx = F,
+                            verbose = F)
+    
+    integrated_data <- RunUMAP(seurat_subset,
+                               reduction = "pca",
+                               reduction.name = "umap",
+                               dims = 1:umap_pcs,
+                               return.model = TRUE,
+                               verbose = F)
+
+    integrated_data <- FindNeighbors(integrated_data,
+                                     reduction = "pca",
+                                     dims = 1:umap_pcs,
+                                     graph.name = c("SCTnn",
+                                                    "SCTsnn"),
+                                     verbose = F)
+
+    integrated_data <- FindClusters(integrated_data,
+                                    resolution = c(0.1,0.2,0.3,0.5,0.8,1),
+                                    graph.name = "SCTsnn",
+                                    verbose = F)
+    
+    return(integrated_data)
+}
+
+```
+
+### Marker information and metadata
+
+```{r, message = F, warning = F, fig.width = 6, fig.height = 4}
+
+# Cell type markers by group
+gs4_deauth()
+markers_by_group  <- gs4_get("https://docs.google.com/spreadsheets/d/1w0wrL-5KwNEWi_VpmriN7YmfwpBPlEYX0MKlwI2ZQu8/edit?usp=sharing")
+markers_by_group <- read_sheet(markers_by_group, sheet = "Markers by group")
+
+metadata  <- gs4_get("https://docs.google.com/spreadsheets/d/1sXXwOreLxjMSUoPt79c6jmaQpluWkaxA5P5HfDsed3I/edit?usp=sharing")
+markers <- read_sheet(metadata, sheet = "Markers")
+immune_annot <- read_sheet(metadata, sheet = "Cell based annotation, immune")
+lymph_annot <- read_sheet(metadata, sheet = "Lymphoid annotation")
+myel_annot <- read_sheet(metadata, sheet = "Myeloid annotation")
+
+```
+
+### Import data
+
+```{r, message = F, warning = F, fig.width = 5, fig.height = 6}
+
+seurat_data <- readRDS("/tgen_labs/banovich/PIPAC/Seurat/cell_immune_clustered_NN30_PC20_Seurat.rds")
+
+DefaultAssay(seurat_data) <- "denoist_RNA"
+seurat_data <- NormalizeData(seurat_data)
+
+DimPlot(seurat_data,
+        group.by = "leiden_1.5",
+        cols = pipac_cell_immune_cluster_col,
+        reduction = "umap",
+        raster = T,
+        label = T) +
+  coord_fixed(ratio = 1) +
+  theme_bw() +
+  NoLegend()
+
+```
+
+### Top cluster markers
+
+```{r, message = F, warning = F, fig.width = 5, fig.height = 4}
+
+Idents(seurat_data) <- seurat_data$leiden_1.5
+cluster_markers <- FindAllMarkers(seurat_data,
+                                  return.thresh = 0.01,
+                                  logfc.threshold = 0.5,
+                                  min.pct = 0.20,
+                                  verbose = F)
+
+table(cluster_markers$cluster)
+
+top_cluster_markers <- cluster_markers %>%
+  arrange(dplyr::desc(avg_log2FC)) %>%
+  group_by(cluster) %>%
+  dplyr::slice(1:10)
+
+```
+
+```{r, message = F, warning = F, fig.width = 14, fig.height = 8}
+
+plot_features <- c("PTPRC",
+                   "CD3D", "CD3E", "CD4", "CD8A", # T cells
+                   "STAT4", "STAT3", "TIGIT", "GZMB",
+                   "SELL", "CD19", # B cells
+                   "CD68", "CD44", "MARCO", "APOE", # Macrophages
+                   "C1QB", "C1QBP", "CD163",
+                   "SPP1", "VCAN",
+                   "MUC5AC", "NOTCH3", "RGS5", "MS4A1", # Lineage markers
+                   "PGA5", "PLVAP", "CCL21", "LYVE",
+                   "SPARCL1", # Endo/peri
+                   "FN1", "DCN", "LUM", # Fibroblasts
+                   "COL1A2", "PDPN", "ACTA2", "LMNA",
+                   "EGR3", "TP53", "JUN", "KIT", # Tumor
+                   "SOX9", "RNF43", "EPCAM", "PECAM", "CEACAM")
+
+seurat_data$leiden_1.5 <- factor(seurat_data$leiden_1.5,
+                                 levels = sort(unique(seurat_data$leiden_1.5)))
+#Idents(seurat_data) <- seurat_data$leiden_1.5
+
+DotPlot(seurat_data,
+        group.by = "leiden_1.5",
+        features = plot_features,
+        cols = c("gray98", "tomato3")) +
+  RotatedAxis()
+
+```
+
+```{r, message = F, warning = F, fig.width = 22, fig.height = 36}
+
+FeaturePlot(seurat_data,
+            features = plot_features,
+            cols = c("gray98", "tomato3"),
+            reduction = "umap",
+            raster = T,
+            ncol = 5) &
+  coord_fixed(ratio = 1) &
+  theme_bw() &
+  NoLegend()
+
+```
+
+```{r, message = F, warning = F, fig.width = 8, fig.height = 16}
+
+create_dotplot_heatmap(seurat_object = seurat_data,
+                       plot_features = unique(top_cluster_markers$gene),
+                       group_var = "leiden_1.5",
+                       group_colors = pipac_cell_immune_cluster_col,
+                       column_title = "",
+                       row_km = 5,
+                       col_km = 5,
+                       row.order = NULL,
+                       col.order = NULL)
+
+```
+
+### Saving top markers and annotations
+
+```{r, message = F, warning = F, fig.width = 6, fig.height = 6, eval = F}
+
+output_cluster_markers <- cluster_markers %>%
+  arrange(dplyr::desc(avg_log2FC)) %>%
+  group_by(cluster) %>%
+  dplyr::slice(1:30)
+
+output_cluster_markers <- merge(output_cluster_markers, markers, by.x = "gene", by.y = "Gene")
+
+write.table(output_cluster_markers, "/home/hnatri/PIPAC_spatial/cell_immune_cluster_marker_annotations.tsv",
+            quote = F, row.names = F, sep = "\t")
+
+```
+
+### Plotting cell type markers by group
+
+```{r, message = F, warning = F, fig.width = 16, fig.height = 6, eval = T}
+
+DotPlot(seurat_data,
+        group.by = "leiden_1.5",
+        features = unique(markers_by_group[which(markers_by_group$annotation1 == "Cell-cell crosstalk"),]$feature),
+        cols = c("gray89", "tomato3")) +
+  RotatedAxis() +
+  ggtitle("Cell-cell crosstalk")
+
+```
+
+```{r, message = F, warning = F, fig.width = 6, fig.height = 6, eval = T}
+
+DotPlot(seurat_data,
+        group.by = "leiden_1.5",
+        features = unique(markers_by_group[which(markers_by_group$annotation1 == "Macrophage signaling"),]$feature),
+        cols = c("gray89", "tomato3")) +
+  RotatedAxis() +
+  ggtitle("Macrophage signaling")
+
+```
+
+```{r, message = F, warning = F, fig.width = 6, fig.height = 6, eval = T}
+
+DotPlot(seurat_data,
+        group.by = "leiden_1.5",
+        features = unique(markers_by_group[which(markers_by_group$annotation1 == "DNA damage and cell faith"),]$feature),
+        cols = c("gray89", "tomato3")) +
+  RotatedAxis() +
+  ggtitle("DNA damage and cell faith")
+
+```
+
+```{r, message = F, warning = F, fig.width = 10, fig.height = 6, eval = T}
+
+DotPlot(seurat_data,
+        group.by = "leiden_1.5",
+        features = unique(markers_by_group[which(markers_by_group$annotation1 == "Functional markers"),]$feature),
+        cols = c("gray89", "tomato3")) +
+  RotatedAxis() +
+  ggtitle("Functional markers")
+
+```
+
+```{r, message = F, warning = F, fig.width = 6, fig.height = 6, eval = T}
+
+DotPlot(seurat_data,
+        group.by = "leiden_1.5",
+        features = unique(markers_by_group[which(markers_by_group$annotation1 == "Mesothelial"),]$feature),
+        cols = c("gray89", "tomato3")) +
+  RotatedAxis() +
+  ggtitle("Mesothelial")
+
+```
+
+```{r, message = F, warning = F, fig.width = 10, fig.height = 6, eval = T}
+
+DotPlot(seurat_data,
+        group.by = "leiden_1.5",
+        features = unique(markers_by_group[which(markers_by_group$annotation1 == "Macrophages"),]$feature),
+        cols = c("gray89", "tomato3")) +
+  RotatedAxis() +
+  ggtitle("Macrophages")
+
+```
+
+```{r, message = F, warning = F, fig.width = 10, fig.height = 6, eval = T}
+
+DotPlot(seurat_data,
+        group.by = "leiden_1.5",
+        features = unique(markers_by_group[which(markers_by_group$annotation1 == "CAFs"),]$feature),
+        cols = c("gray89", "tomato3")) +
+  RotatedAxis() +
+  ggtitle("CAFs")
+
+```
+
+```{r, message = F, warning = F, fig.width = 6, fig.height = 6, eval = T}
+
+DotPlot(seurat_data,
+        group.by = "leiden_1.5",
+        features = grep("COL", rownames(seurat_data), value = T),
+        cols = c("gray89", "tomato3")) +
+  RotatedAxis() +
+  ggtitle("Collagen")
+
+```
+
+### Cell cycle markers
+
+```{r, message = F, warning = F, fig.width = 6, fig.height = 6, eval = T}
+
+s.genes <- cc.genes.updated.2019$s.genes
+g2m.genes <- cc.genes.updated.2019$g2m.genes
+
+DotPlot(seurat_data,
+        group.by = "leiden_1.5",
+        features = c(s.genes, g2m.genes),
+        cols = c("gray89", "tomato3")) +
+  RotatedAxis() +
+  ggtitle("S/G2M genes")
+
+```
+
+### Reclustering myeloid and lymphoid subsets, reclustering with rapids
+
+```{r, message = F, warning = F, fig.width = 4, fig.height = 4, eval = F}
+
+lymphoid_seurat <- subset(seurat_data, subset = leiden_1.5 %in% c(1, 8, 10, 12, 14, 19, 21, 25))
+myeloid_seurat <- subset(seurat_data, subset = leiden_1.5 %in% c(0, 2, 3, 4, 6, 7, 9, 15, 16, 18, 20, 22, 23, 24))
+
+#lymphoid_seurat <- recluster_seurat(lymphoid_seurat, umap_pcs = 10)
+#myeloid_seurat <- recluster_seurat(myeloid_seurat, umap_pcs = 10)
+#
+#saveRDS(lymphoid_seurat, "/scratch/hnatri/PIPAC/lymphoid_seurat_data.rds")
+#saveRDS(myeloid_seurat, "/scratch/hnatri/PIPAC/myeloid_seurat_data.rds")
+#
+```
+
+```{r, message = F, warning = F, fig.width = 4, fig.height = 4, eval = T}
+
+lymphoid_seurat <- readRDS("/tgen_labs/banovich/PIPAC/Seurat/lymphoid_clustered_NN20_PC20_Seurat.rds")
+myeloid_seurat <- readRDS("/tgen_labs/banovich/PIPAC/Seurat/myeloid_clustered_NN20_PC20_Seurat.rds")
+
+DefaultAssay(lymphoid_seurat) <- "denoist_RNA"
+lymphoid_seurat <- NormalizeData(lymphoid_seurat)
+DefaultAssay(myeloid_seurat) <- "denoist_RNA"
+myeloid_seurat <- NormalizeData(myeloid_seurat)
+
+DimPlot(lymphoid_seurat,
+        group.by = "leiden_1.0",
+        cols = pipac_cell_immune_cluster_col,
+        reduction = "umap",
+        raster = T,
+        label = T) +
+  coord_fixed(ratio = 1) +
+  theme_bw() +
+  NoLegend()
+
+DimPlot(myeloid_seurat,
+        group.by = "leiden_1.0",
+        cols = pipac_cell_immune_cluster_col,
+        reduction = "umap",
+        raster = T,
+        label = T) +
+  coord_fixed(ratio = 1) +
+  theme_bw() +
+  NoLegend()
+
+```
+
+```{r, message = F, warning = F, fig.width = 14, fig.height = 8, eval = T}
+
+lymphoid_seurat$leiden_1.0 <- factor(lymphoid_seurat$leiden_1.0,
+                                 levels = sort(unique(lymphoid_seurat$leiden_1.0)))
+Idents(lymphoid_seurat) <- lymphoid_seurat$leiden_1.0
+
+DotPlot(lymphoid_seurat,
+        #group.by = "leiden_1.0",
+        features = plot_features,
+        cols = c("gray89", "tomato3")) +
+  RotatedAxis()
+
+myeloid_seurat$leiden_1.0 <- factor(myeloid_seurat$leiden_1.0,
+                                 levels = sort(unique(myeloid_seurat$leiden_1.0)))
+Idents(myeloid_seurat) <- myeloid_seurat$leiden_1.0
+
+DotPlot(myeloid_seurat,
+        group.by = "leiden_1.0",
+        features = plot_features,
+        cols = c("gray89", "tomato3")) +
+  RotatedAxis()
+
+```
+
+```{r, message = F, warning = F, fig.width = 22, fig.height = 32, eval = T}
+
+FeaturePlot(lymphoid_seurat,
+            features = plot_features,
+            cols = c("gray98", "tomato3"),
+            reduction = "umap",
+            raster = T,
+            ncol = 5) &
+  coord_fixed(ratio = 1) &
+  theme_bw() &
+  NoLegend()
+
+FeaturePlot(myeloid_seurat,
+            features = plot_features,
+            cols = c("gray98", "tomato3"),
+            reduction = "umap",
+            raster = T,
+            ncol = 5) &
+  coord_fixed(ratio = 1) &
+  theme_bw() &
+  NoLegend()
+
+```
+
+```{r, message = F, warning = F, fig.width = 10, fig.height = 18}
+
+Idents(lymphoid_seurat) <- lymphoid_seurat$leiden_1.0
+lymph_cluster_markers <- FindAllMarkers(lymphoid_seurat,
+                                        return.thresh = 0.01,
+                                        logfc.threshold = 0.5,
+                                        min.pct = 0.20,
+                                        verbose = T)
+
+table(lymph_cluster_markers$cluster)
+
+lymph_top_cluster_markers <- lymph_cluster_markers %>%
+  arrange(dplyr::desc(avg_log2FC)) %>%
+  group_by(cluster) %>%
+  dplyr::slice(1:5)
+
+create_dotplot_heatmap(seurat_object = lymphoid_seurat,
+                       plot_features = unique(lymph_top_cluster_markers$gene),
+                       group_var = "leiden_1.0",
+                       group_colors = pipac_cell_immune_cluster_col,
+                       column_title = "",
+                       row_km = 5,
+                       col_km = 5,
+                       row.order = NULL,
+                       col.order = NULL)
+
+Idents(myeloid_seurat) <- myeloid_seurat$leiden_1.0
+myel_cluster_markers <- FindAllMarkers(myeloid_seurat,
+                                       return.thresh = 0.01,
+                                       logfc.threshold = 0.5,
+                                       min.pct = 0.20,
+                                       verbose = T)
+
+table(myel_cluster_markers$cluster)
+
+myel_top_cluster_markers <- myel_cluster_markers %>%
+  arrange(dplyr::desc(avg_log2FC)) %>%
+  group_by(cluster) %>%
+  dplyr::slice(1:5)
+
+create_dotplot_heatmap(seurat_object = myeloid_seurat,
+                       plot_features = unique(myel_top_cluster_markers$gene),
+                       group_var = "leiden_1.0",
+                       group_colors = pipac_cell_immune_cluster_col,
+                       column_title = "",
+                       row_km = 5,
+                       col_km = 5,
+                       row.order = NULL,
+                       col.order = NULL)
+
+```
+
+```{r, message = F, warning = F, fig.width = 10, fig.height = 6, eval = T}
+
+DotPlot(lymphoid_seurat,
+        group.by = "leiden_1.0",
+        features = unique(markers_by_group[which(markers_by_group$annotation1 == "Macrophages"),]$feature),
+        cols = c("gray89", "tomato3")) +
+  RotatedAxis() +
+  ggtitle("Macrophages")
+
+DotPlot(myeloid_seurat,
+        group.by = "leiden_1.0",
+        features = unique(markers_by_group[which(markers_by_group$annotation1 == "Macrophages"),]$feature),
+        cols = c("gray89", "tomato3")) +
+  RotatedAxis() +
+  ggtitle("Macrophages")
+
+```
+
+```{r, message = F, warning = F, fig.width = 16, fig.height = 6, eval = T}
+
+DotPlot(lymphoid_seurat,
+        group.by = "leiden_1.0",
+        features = unique(markers_by_group[which(markers_by_group$annotation1 == "Cell-cell crosstalk"),]$feature),
+        cols = c("gray89", "tomato3")) +
+  RotatedAxis() +
+  ggtitle("Cell-cell crosstalk")
+
+DotPlot(lymphoid_seurat,
+        group.by = "leiden_1.0",
+        features = unique(markers_by_group[which(markers_by_group$annotation1 == "Cell-cell crosstalk"),]$feature),
+        cols = c("gray89", "tomato3")) +
+  RotatedAxis() +
+  ggtitle("Cell-cell crosstalk")
+
+```
+
+```{r, message = F, warning = F, fig.width = 6, fig.height = 6, eval = T}
+
+DotPlot(lymphoid_seurat,
+        group.by = "leiden_1.0",
+        features = unique(markers_by_group[which(markers_by_group$annotation1 == "Macrophage signaling"),]$feature),
+        cols = c("gray89", "tomato3")) +
+  RotatedAxis() +
+  ggtitle("Macrophage signaling")
+
+DotPlot(myeloid_seurat,
+        group.by = "leiden_1.0",
+        features = unique(markers_by_group[which(markers_by_group$annotation1 == "Macrophage signaling"),]$feature),
+        cols = c("gray89", "tomato3")) +
+  RotatedAxis() +
+  ggtitle("Macrophage signaling")
+
+```
+
+```{r, message = F, warning = F, fig.width = 6, fig.height = 6, eval = T}
+
+DotPlot(lymphoid_seurat,
+        group.by = "leiden_1.0",
+        features = unique(markers_by_group[which(markers_by_group$annotation1 == "DNA damage and cell faith"),]$feature),
+        cols = c("gray89", "tomato3")) +
+  RotatedAxis() +
+  ggtitle("DNA damage and cell faith")
+
+DotPlot(myeloid_seurat,
+        group.by = "leiden_1.0",
+        features = unique(markers_by_group[which(markers_by_group$annotation1 == "DNA damage and cell faith"),]$feature),
+        cols = c("gray89", "tomato3")) +
+  RotatedAxis() +
+  ggtitle("DNA damage and cell faith")
+
+```
+
+```{r, message = F, warning = F, fig.width = 10, fig.height = 6, eval = T}
+
+DotPlot(lymphoid_seurat,
+        group.by = "leiden_1.0",
+        features = unique(markers_by_group[which(markers_by_group$annotation1 == "Functional markers"),]$feature),
+        cols = c("gray89", "tomato3")) +
+  RotatedAxis() +
+  ggtitle("Functional markers")
+
+DotPlot(myeloid_seurat,
+        group.by = "leiden_1.0",
+        features = unique(markers_by_group[which(markers_by_group$annotation1 == "Functional markers"),]$feature),
+        cols = c("gray89", "tomato3")) +
+  RotatedAxis() +
+  ggtitle("Functional markers")
+
+```
+
+### Cluster overlap with previous annotations
+
+```{r, message = F, warning = F, fig.width = 8, fig.height = 4, eval = T}
+
+pipac_celltype_col <- c(pipac_celltype_col, c("NA" = "lightgray"))
+myeloid_seurat$Annotation <- ifelse(is.na(myeloid_seurat$Annotation), "NA", myeloid_seurat$Annotation)
+lymphoid_seurat$Annotation <- ifelse(is.na(lymphoid_seurat$Annotation), "NA", lymphoid_seurat$Annotation)
+
+create_barplot(seurat_data,
+               group_var = "Annotation",
+               plot_var = "leiden_0.5",
+               group_levels = sort(unique(seurat_data$Annotation)),
+               plot_levels = sort(unique(seurat_data$leiden_1.0)),
+               plot_colors = pipac_cluster_20_col,
+               var_names = c("leiden_0.5", "Annotation"),
+               legend_title = "")
+
+create_barplot(seurat_data,
+               plot_var = "Annotation",
+               group_var = "leiden_1.0",
+               plot_levels = sort(unique(seurat_data$Annotation)),
+               group_levels = sort(unique(seurat_data$leiden_1.0)),
+               plot_colors = pipac_celltype_col,
+               var_names = c("Annotation", "leiden_0.5"),
+               legend_title = "")
+
+create_barplot(lymphoid_seurat,
+               group_var = "Annotation",
+               plot_var = "leiden_0.5",
+               group_levels = sort(unique(lymphoid_seurat$Annotation)),
+               plot_levels = sort(unique(lymphoid_seurat$leiden_1.0)),
+               plot_colors = pipac_cluster_20_col,
+               var_names = c("leiden_0.5", "Annotation"),
+               legend_title = "")
+
+create_barplot(myeloid_seurat,
+               plot_var = "Annotation",
+               group_var = "leiden_1.0",
+               plot_levels = sort(unique(myeloid_seurat$Annotation)),
+               group_levels = sort(unique(myeloid_seurat$leiden_1.0)),
+               plot_colors = pipac_celltype_col,
+               var_names = c("Annotation", "leiden_0.5"),
+               legend_title = "")
+
+create_barplot(lymphoid_seurat,
+               group_var = "Annotation",
+               plot_var = "leiden_1.0",
+               group_levels = sort(unique(lymphoid_seurat$Annotation)),
+               plot_levels = sort(unique(lymphoid_seurat$leiden_1.0)),
+               plot_colors = pipac_cluster_20_col,
+               var_names = c("leiden_0.5", "Annotation"),
+               legend_title = "")
+
+create_barplot(lymphoid_seurat,
+               plot_var = "Annotation",
+               group_var = "leiden_1.0",
+               plot_levels = sort(unique(lymphoid_seurat$Annotation)),
+               group_levels = sort(unique(lymphoid_seurat$leiden_1.0)),
+               plot_colors = pipac_celltype_col,
+               var_names = c("Annotation", "leiden_1.0"),
+               legend_title = "")
+
+```
+
+### Reclustering difficult clusters from lymphoid and myeloid subsets
+
+```{r, message = F, warning = F, fig.width = 4, fig.height = 4, eval = T}
+
+lymph_recluster_subset <- subset(lymphoid_seurat, subset = leiden_1.0 %in% c(0, 1, 2, 9, 10, 11, 13))
+lymph_recluster_subset <- recluster_seurat(lymph_recluster_subset, umap_pcs = 10)
+DefaultAssay(lymph_recluster_subset) <- "denoist_RNA"
+
+myel_recluster_subset <- subset(myeloid_seurat, subset = leiden_1.0 %in% c(1, 4, 9, 15, 18, 21))
+myel_recluster_subset <- recluster_seurat(myel_recluster_subset, umap_pcs = 10)
+DefaultAssay(myel_recluster_subset) <- "denoist_RNA"
+
+DimPlot(lymph_recluster_subset,
+        group.by = "SCTsnn_res.0.8",
+        label = T) +
+  NoLegend()
+
+DimPlot(myel_recluster_subset,
+        group.by = "SCTsnn_res.0.8",
+        label = T) +
+  NoLegend()
+
+```
+
+```{r, message = F, warning = F, fig.width = 14, fig.height = 8, eval = T}
+
+lymph_recluster_subset$SCTsnn_res.0.8 <- factor(lymph_recluster_subset$SCTsnn_res.0.8,
+                                 levels = sort(unique(lymph_recluster_subset$SCTsnn_res.0.8)))
+Idents(lymph_recluster_subset) <- lymph_recluster_subset$SCTsnn_res.0.8
+
+DotPlot(lymph_recluster_subset,
+        group.by = "SCTsnn_res.0.8",
+        features = plot_features,
+        cols = c("gray89", "tomato3")) +
+  RotatedAxis()
+
+myel_recluster_subset$SCTsnn_res.0.8 <- factor(myel_recluster_subset$SCTsnn_res.0.8,
+                                 levels = sort(unique(myel_recluster_subset$SCTsnn_res.0.8)))
+Idents(myel_recluster_subset) <- myel_recluster_subset$SCTsnn_res.0.8
+
+DotPlot(myel_recluster_subset,
+        group.by = "SCTsnn_res.0.8",
+        features = plot_features,
+        cols = c("gray89", "tomato3")) +
+  RotatedAxis()
+
+```
+
+```{r, message = F, warning = F, fig.width = 10, fig.height = 18, eval = T}
+
+Idents(lymph_recluster_subset) <- lymph_recluster_subset$SCTsnn_res.0.8
+lymph_cluster_markers <- FindAllMarkers(lymph_recluster_subset,
+                                        return.thresh = 0.01,
+                                        logfc.threshold = 0.5,
+                                        min.pct = 0.20,
+                                        verbose = F)
+
+table(lymph_cluster_markers$cluster)
+
+lymph_top_cluster_markers <- lymph_cluster_markers %>%
+  arrange(dplyr::desc(avg_log2FC)) %>%
+  group_by(cluster) %>%
+  dplyr::slice(1:5)
+
+create_dotplot_heatmap(seurat_object = lymph_recluster_subset,
+                       plot_features = unique(lymph_top_cluster_markers$gene),
+                       group_var = "SCTsnn_res.0.8",
+                       group_colors = pipac_cell_immune_cluster_col,
+                       column_title = "",
+                       row_km = 5,
+                       col_km = 5,
+                       row.order = NULL,
+                       col.order = NULL)
+
+Idents(myel_recluster_subset) <- myel_recluster_subset$SCTsnn_res.0.8
+myel_cluster_markers <- FindAllMarkers(myel_recluster_subset,
+                                       return.thresh = 0.01,
+                                       logfc.threshold = 0.5,
+                                       min.pct = 0.20,
+                                       verbose = F)
+
+table(myel_cluster_markers$cluster)
+
+myel_top_cluster_markers <- myel_cluster_markers %>%
+  arrange(dplyr::desc(avg_log2FC)) %>%
+  group_by(cluster) %>%
+  dplyr::slice(1:5)
+
+create_dotplot_heatmap(seurat_object = myel_recluster_subset,
+                       plot_features = unique(myel_top_cluster_markers$gene),
+                       group_var = "SCTsnn_res.0.8",
+                       group_colors = pipac_cell_immune_cluster_col,
+                       column_title = "",
+                       row_km = 5,
+                       col_km = 5,
+                       row.order = NULL,
+                       col.order = NULL)
+
+```
+
+### Different or same cells expressing multiple lineage markers; lymphoid
+
+Cluster 0
+
+```{r, message = F, warning = F, fig.width = 14, fig.height = 4, eval = T}
+
+FeaturePlot(subset(lymph_recluster_subset, subset = SCTsnn_res.0.8 == 0),
+            features = c("CD3E", "COL5A1"),
+            blend = T) &
+  theme_bw()
+
+reccl0 <- subset(lymph_recluster_subset, subset = SCTsnn_res.0.8 == 0)
+reccl0 <- recluster_seurat(reccl0, umap_pcs = 10)
+DefaultAssay(reccl0) <- "denoist_RNA"
+
+FeaturePlot(reccl0,
+            features = c("CD3E", "COL5A1"),
+            blend = T) &
+  theme_bw()
+
+FeaturePlot(reccl0,
+            features = c("CD3E", "COL5A1")) &
+  theme_bw()
+
+ncol(reccl0)
+table(reccl0$SCTsnn_res.0.8)
+
+```
+
+```{r, message = F, warning = F, fig.width = 4, fig.height = 4, eval = T}
+
+DimPlot(reccl0,
+        group.by = "SCTsnn_res.0.8",
+        reduction = "umap",
+        label = T) +
+  coord_fixed(ratio = 1) +
+  theme_bw() +
+  NoLegend() +
+  ggtitle("Cluster 0")
+
+```
+
+```{r, message = F, warning = F, fig.width = 14, fig.height = 4}
+
+reccl0$SCTsnn_res.0.8 <- factor(reccl0$SCTsnn_res.0.8,
+                              levels = sort(unique(reccl0$SCTsnn_res.0.8)))
+Idents(reccl0) <- reccl0$SCTsnn_res.0.8
+
+DotPlot(reccl0,
+        group.by = "SCTsnn_res.0.8",
+        features = plot_features,
+        cols = c("gray98", "tomato3")) +
+  RotatedAxis()
+
+myel <- c()
+lymph <- c()
+cd8 <- c(3)
+cd4 <- c(1, 2, 4, 5, 6, 7, 8)
+nos <- c(0, 9)
+fibro1 <- c() # FN1 high
+fibro2 <- c() # Low % myel exp
+peri <- c() # NOTCH3 STAT3
+
+reccl0$annotation <- ifelse(reccl0$SCTsnn_res.0.8 %in% cd4, "L_CD4_from_lymphoid",
+                  ifelse(reccl0$SCTsnn_res.0.8 %in% cd8, "L_CD8_from_lymphoid",
+                  ifelse(reccl0$SCTsnn_res.0.8 %in% nos, "NOS_from_lymphoid",
+                  ifelse(reccl0$SCTsnn_res.0.8 %in% myel, "Myel_from_lymphoid", NA))))
+
+```
+
+Cluster 1
+
+```{r, message = F, warning = F, fig.width = 14, fig.height = 4, eval = T}
+
+FeaturePlot(subset(lymph_recluster_subset, subset = SCTsnn_res.0.8 == 1),
+            features = c("CD3E", "COL5A1"),
+            blend = T) &
+  theme_bw()
+
+reccl1 <- subset(lymph_recluster_subset, subset = SCTsnn_res.0.8 == 1)
+reccl1 <- recluster_seurat(reccl1, umap_pcs = 10)
+DefaultAssay(reccl1) <- "denoist_RNA"
+
+FeaturePlot(reccl1,
+            features = c("CD3E", "COL5A1"),
+            blend = T) &
+  theme_bw()
+
+FeaturePlot(reccl1,
+            features = c("CD3E", "COL5A1")) &
+  theme_bw()
+
+ncol(reccl1)
+table(reccl1$SCTsnn_res.0.8)
+
+```
+
+```{r, message = F, warning = F, fig.width = 4, fig.height = 4, eval = T}
+
+DimPlot(reccl1,
+        group.by = "SCTsnn_res.0.8",
+        reduction = "umap",
+        label = T) +
+  coord_fixed(ratio = 1) +
+  theme_bw() +
+  NoLegend() +
+  ggtitle("Cluster 1")
+
+```
+
+```{r, message = F, warning = F, fig.width = 14, fig.height = 4}
+
+reccl1$SCTsnn_res.0.8 <- factor(reccl1$SCTsnn_res.0.8,
+                              levels = sort(unique(reccl1$SCTsnn_res.0.8)))
+Idents(reccl1) <- reccl1$SCTsnn_res.0.8
+
+DotPlot(reccl1,
+        group.by = "SCTsnn_res.0.8",
+        features = plot_features,
+        cols = c("gray98", "tomato3")) +
+  RotatedAxis()
+
+myel <- c(7)
+lymph <- c()
+cd8 <- c(8)
+cd4 <- c()
+nos <- c(0, 1, 2, 3, 4, 5, 6)
+fibro1 <- c() # FN1 high
+fibro2 <- c() # Low % myel exp
+peri <- c() # NOTCH3 STAT3
+
+reccl1$annotation <- ifelse(reccl1$SCTsnn_res.0.8 %in% cd4, "L_CD4_from_lymphoid",
+                  ifelse(reccl1$SCTsnn_res.0.8 %in% cd8, "L_CD8_from_lymphoid",
+                  ifelse(reccl1$SCTsnn_res.0.8 %in% nos, "NOS_from_lymphoid",
+                  ifelse(reccl1$SCTsnn_res.0.8 %in% myel, "Myel_from_lymphoid", NA))))
+
+```
+
+Cluster 4
+
+TIGIT high
+
+```{r, message = F, warning = F, fig.width = 14, fig.height = 4, eval = T}
+
+FeaturePlot(subset(lymph_recluster_subset, subset = SCTsnn_res.0.8 == 4),
+            features = c("CD3E", "COL5A1"),
+            blend = T) &
+  theme_bw()
+
+reccl4 <- subset(lymph_recluster_subset, subset = SCTsnn_res.0.8 == 4)
+reccl4 <- recluster_seurat(reccl4, umap_pcs = 10)
+DefaultAssay(reccl4) <- "denoist_RNA"
+
+FeaturePlot(reccl4,
+            features = c("CD3E", "COL5A1"),
+            blend = T) &
+  theme_bw()
+
+FeaturePlot(reccl4,
+            features = c("CD3E", "COL5A1")) &
+  theme_bw()
+
+ncol(reccl4)
+table(reccl4$SCTsnn_res.0.8)
+
+```
+
+```{r, message = F, warning = F, fig.width = 4, fig.height = 4, eval = T}
+
+DimPlot(reccl4,
+        group.by = "SCTsnn_res.0.8",
+        reduction = "umap",
+        label = T) +
+  coord_fixed(ratio = 1) +
+  theme_bw() +
+  NoLegend() +
+  ggtitle("Cluster 4")
+
+```
+
+```{r, message = F, warning = F, fig.width = 14, fig.height = 4}
+
+reccl4$SCTsnn_res.0.8 <- factor(reccl4$SCTsnn_res.0.8,
+                              levels = sort(unique(reccl4$SCTsnn_res.0.8)))
+Idents(reccl4) <- reccl4$SCTsnn_res.0.8
+
+DotPlot(reccl4,
+        group.by = "SCTsnn_res.0.8",
+        features = plot_features,
+        cols = c("gray98", "tomato3")) +
+  RotatedAxis()
+
+myel <- c(1)
+lymph <- c()
+cd8 <- c()
+cd4 <- c(0, 2, 3, 4, 5, 6, 7, 8) # High TIGIT!
+nos <- c(9)
+fibro1 <- c() # FN1 high
+fibro2 <- c() # Low % myel exp
+peri <- c() # NOTCH3 STAT3
+
+reccl4$annotation <- ifelse(reccl4$SCTsnn_res.0.8 %in% cd4, "L_CD4_from_lymphoid",
+                  ifelse(reccl4$SCTsnn_res.0.8 %in% cd8, "L_CD8_from_lymphoid",
+                  ifelse(reccl4$SCTsnn_res.0.8 %in% nos, "NOS_from_lymphoid",
+                  ifelse(reccl4$SCTsnn_res.0.8 %in% myel, "Myel_from_lymphoid", NA))))
+
+```
+
+Cluster 9
+
+```{r, message = F, warning = F, fig.width = 14, fig.height = 4, eval = T}
+
+FeaturePlot(subset(lymph_recluster_subset, subset = SCTsnn_res.0.8 == 9),
+            features = c("CD3E", "COL5A1"),
+            blend = T) &
+  theme_bw()
+
+reccl9 <- subset(lymph_recluster_subset, subset = SCTsnn_res.0.8 == 9)
+reccl9 <- recluster_seurat(reccl9, umap_pcs = 10)
+DefaultAssay(reccl9) <- "denoist_RNA"
+
+FeaturePlot(reccl9,
+            features = c("CD3E", "COL5A1"),
+            blend = T) &
+  theme_bw()
+
+FeaturePlot(reccl9,
+            features = c("CD3E", "COL5A1")) &
+  theme_bw()
+
+ncol(reccl9)
+table(reccl9$SCTsnn_res.0.8)
+
+```
+
+```{r, message = F, warning = F, fig.width = 4, fig.height = 4, eval = T}
+
+DimPlot(reccl9,
+        group.by = "SCTsnn_res.0.8",
+        reduction = "umap",
+        label = T) +
+  coord_fixed(ratio = 1) +
+  theme_bw() +
+  NoLegend() +
+  ggtitle("Cluster 9")
+
+```
+
+```{r, message = F, warning = F, fig.width = 14, fig.height = 4}
+
+reccl9$SCTsnn_res.0.8 <- factor(reccl9$SCTsnn_res.0.8,
+                              levels = sort(unique(reccl9$SCTsnn_res.0.8)))
+Idents(reccl9) <- reccl9$SCTsnn_res.0.8
+
+DotPlot(reccl9,
+        group.by = "SCTsnn_res.0.8",
+        features = plot_features,
+        cols = c("gray98", "tomato3")) +
+  RotatedAxis()
+
+myel <- c()
+lymph <- c()
+cd8 <- c()
+cd4 <- c()
+nos <- c(2, 3, 4, 5, 8)
+fibro1 <- c(0, 7) # FN1 high
+fibro2 <- c(1, 6) # Low % myel exp
+peri <- c() # NOTCH3 STAT3
+
+reccl9$annotation <- ifelse(reccl9$SCTsnn_res.0.8 %in% cd4, "L_CD4_from_lymphoid",
+                  ifelse(reccl9$SCTsnn_res.0.8 %in% cd8, "L_CD8_from_lymphoid",
+                  ifelse(reccl9$SCTsnn_res.0.8 %in% nos, "NOS_from_lymphoid",
+                  ifelse(reccl9$SCTsnn_res.0.8 %in% myel, "Myel_from_lymphoid", NA))))
+
+```
+
+Cluster 10
+
+```{r, message = F, warning = F, fig.width = 14, fig.height = 4, eval = T}
+
+FeaturePlot(subset(lymph_recluster_subset, subset = SCTsnn_res.0.8 == 10),
+            features = c("CD3E", "COL5A1"),
+            blend = T) &
+  theme_bw()
+
+reccl10 <- subset(lymph_recluster_subset, subset = SCTsnn_res.0.8 == 10)
+reccl10 <- recluster_seurat(reccl10, umap_pcs = 10)
+DefaultAssay(reccl10) <- "denoist_RNA"
+
+FeaturePlot(reccl10,
+            features = c("CD3E", "COL5A1"),
+            blend = T) &
+  theme_bw()
+
+FeaturePlot(reccl10,
+            features = c("CD3E", "COL5A1")) &
+  theme_bw()
+
+ncol(reccl10)
+table(reccl10$SCTsnn_res.0.8)
+
+```
+
+```{r, message = F, warning = F, fig.width = 4, fig.height = 4, eval = T}
+
+DimPlot(reccl10,
+        group.by = "SCTsnn_res.0.8",
+        reduction = "umap",
+        label = T) +
+  coord_fixed(ratio = 1) +
+  theme_bw() +
+  NoLegend() +
+  ggtitle("Cluster 10")
+
+```
+
+```{r, message = F, warning = F, fig.width = 14, fig.height = 4}
+
+reccl10$SCTsnn_res.0.8 <- factor(reccl10$SCTsnn_res.0.8,
+                              levels = sort(unique(reccl10$SCTsnn_res.0.8)))
+Idents(reccl10) <- reccl10$SCTsnn_res.0.8
+
+DotPlot(reccl10,
+        group.by = "SCTsnn_res.0.8",
+        features = plot_features,
+        cols = c("gray98", "tomato3")) +
+  RotatedAxis()
+
+myel <- c(6)
+lymph <- c()
+cd8 <- c(0, 5)
+cd4 <- c(3, 4, 7)
+nos <- c()
+fibro1 <- c(1, 8) # FN1 high
+fibro2 <- c() # Low % myel exp
+periendo <- c(2) # NOTCH3 STAT3
+
+reccl10$annotation <- ifelse(reccl10$SCTsnn_res.0.8 %in% cd4, "L_CD4_from_lymphoid",
+                  ifelse(reccl10$SCTsnn_res.0.8 %in% cd8, "L_CD8_from_lymphoid",
+                  ifelse(reccl10$SCTsnn_res.0.8 %in% nos, "NOS_from_lymphoid",
+                  ifelse(reccl10$SCTsnn_res.0.8 %in% myel, "Myel_from_lymphoid",
+                  ifelse(reccl10$SCTsnn_res.0.8 %in% periendo, "PeriEndo_from_lymphoid", NA)))))
+
+```
+
+Cluster 11
+
+```{r, message = F, warning = F, fig.width = 14, fig.height = 4, eval = T}
+
+FeaturePlot(subset(lymph_recluster_subset, subset = SCTsnn_res.0.8 == 11),
+            features = c("CD3E", "COL5A1"),
+            blend = T) &
+  theme_bw()
+
+reccl11 <- subset(lymph_recluster_subset, subset = SCTsnn_res.0.8 == 11)
+reccl11 <- recluster_seurat(reccl11, umap_pcs = 10)
+DefaultAssay(reccl11) <- "denoist_RNA"
+
+FeaturePlot(reccl11,
+            features = c("CD3E", "COL5A1"),
+            blend = T) &
+  theme_bw()
+
+FeaturePlot(reccl11,
+            features = c("CD3E", "COL5A1")) &
+  theme_bw()
+
+ncol(reccl11)
+table(reccl11$SCTsnn_res.0.8)
+
+```
+
+```{r, message = F, warning = F, fig.width = 4, fig.height = 4, eval = T}
+
+DimPlot(reccl11,
+        group.by = "SCTsnn_res.0.8",
+        reduction = "umap",
+        label = T) +
+  coord_fixed(ratio = 1) +
+  theme_bw() +
+  NoLegend() +
+  ggtitle("Cluster 11")
+
+```
+
+```{r, message = F, warning = F, fig.width = 14, fig.height = 4}
+
+reccl11$SCTsnn_res.0.8 <- factor(reccl11$SCTsnn_res.0.8,
+                              levels = sort(unique(reccl11$SCTsnn_res.0.8)))
+Idents(reccl11) <- reccl11$SCTsnn_res.0.8
+
+DotPlot(reccl11,
+        group.by = "SCTsnn_res.0.8",
+        features = plot_features,
+        cols = c("gray98", "tomato3")) +
+  RotatedAxis()
+
+myel <- c()
+lymph <- c()
+cd8 <- c(5)
+cd4 <- c()
+nos <- c(0, 1, 2, 3, 4, 6, 7)
+fibro1 <- c() # FN1 high
+fibro2 <- c() # Low % myel exp
+periendo <- c() # NOTCH3 STAT3
+
+reccl11$annotation <- ifelse(reccl11$SCTsnn_res.0.8 %in% cd4, "L_CD4_from_lymphoid",
+                  ifelse(reccl11$SCTsnn_res.0.8 %in% cd8, "L_CD8_from_lymphoid",
+                  ifelse(reccl11$SCTsnn_res.0.8 %in% nos, "NOS_from_lymphoid",
+                  ifelse(reccl11$SCTsnn_res.0.8 %in% myel, "Myel_from_lymphoid",
+                  ifelse(reccl11$SCTsnn_res.0.8 %in% periendo, "PeriEndo_from_lymphoid", NA)))))
+
+```
+
+Cluster 14
+
+```{r, message = F, warning = F, fig.width = 14, fig.height = 4, eval = T}
+
+FeaturePlot(subset(lymph_recluster_subset, subset = SCTsnn_res.0.8 == 14),
+            features = c("CD3E", "COL5A1"),
+            blend = T) &
+  theme_bw()
+
+reccl14 <- subset(lymph_recluster_subset, subset = SCTsnn_res.0.8 == 14)
+reccl14 <- recluster_seurat(reccl14, umap_pcs = 10)
+DefaultAssay(reccl14) <- "denoist_RNA"
+
+FeaturePlot(reccl14,
+            features = c("CD3E", "COL5A1"),
+            blend = T) &
+  theme_bw()
+
+FeaturePlot(reccl14,
+            features = c("CD3E", "COL5A1")) &
+  theme_bw()
+
+ncol(reccl14)
+table(reccl14$SCTsnn_res.0.8)
+
+```
+
+```{r, message = F, warning = F, fig.width = 4, fig.height = 4, eval = T}
+
+DimPlot(reccl14,
+        group.by = "SCTsnn_res.0.8",
+        reduction = "umap",
+        label = T) +
+  coord_fixed(ratio = 1) +
+  theme_bw() +
+  NoLegend() +
+  ggtitle("Cluster 14")
+
+```
+
+```{r, message = F, warning = F, fig.width = 14, fig.height = 4}
+
+reccl14$SCTsnn_res.0.8 <- factor(reccl14$SCTsnn_res.0.8,
+                              levels = sort(unique(reccl14$SCTsnn_res.0.8)))
+Idents(reccl14) <- reccl14$SCTsnn_res.0.8
+
+DotPlot(reccl14,
+        group.by = "SCTsnn_res.0.8",
+        features = plot_features,
+        cols = c("gray98", "tomato3")) +
+  RotatedAxis()
+
+myel <- c()
+lymph <- c()
+cd8 <- c(5)
+cd4 <- c()
+nos <- c(0, 1, 2, 3, 4, 6, 7)
+fibro1 <- c() # FN1 high
+fibro2 <- c() # Low % myel exp
+periendo <- c() # NOTCH3 STAT3
+
+reccl14$annotation <- ifelse(reccl14$SCTsnn_res.0.8 %in% cd4, "L_CD4_from_lymphoid",
+                  ifelse(reccl14$SCTsnn_res.0.8 %in% cd8, "L_CD8_from_lymphoid",
+                  ifelse(reccl14$SCTsnn_res.0.8 %in% nos, "NOS_from_lymphoid",
+                  ifelse(reccl14$SCTsnn_res.0.8 %in% myel, "Myel_from_lymphoid",
+                  ifelse(reccl14$SCTsnn_res.0.8 %in% periendo, "PeriEndo_from_lymphoid", NA)))))
+
+```
+
+Cluster 15
+
+```{r, message = F, warning = F, fig.width = 14, fig.height = 4, eval = T}
+
+FeaturePlot(subset(lymph_recluster_subset, subset = SCTsnn_res.0.8 == 15),
+            features = c("CD3E", "COL5A1"),
+            blend = T) &
+  theme_bw()
+
+reccl15 <- subset(lymph_recluster_subset, subset = SCTsnn_res.0.8 == 15)
+reccl15 <- recluster_seurat(reccl15, umap_pcs = 10)
+DefaultAssay(reccl15) <- "denoist_RNA"
+
+FeaturePlot(reccl15,
+            features = c("CD3E", "COL5A1"),
+            blend = T) &
+  theme_bw()
+
+FeaturePlot(reccl15,
+            features = c("CD3E", "COL5A1")) &
+  theme_bw()
+
+ncol(reccl15)
+table(reccl15$SCTsnn_res.0.8)
+
+```
+
+```{r, message = F, warning = F, fig.width = 4, fig.height = 4, eval = T}
+
+DimPlot(reccl15,
+        group.by = "SCTsnn_res.0.8",
+        reduction = "umap",
+        label = T) +
+  coord_fixed(ratio = 1) +
+  theme_bw() +
+  NoLegend() +
+  ggtitle("Cluster 15")
+
+```
+
+```{r, message = F, warning = F, fig.width = 14, fig.height = 4}
+
+reccl15$SCTsnn_res.0.8 <- factor(reccl15$SCTsnn_res.0.8,
+                              levels = sort(unique(reccl15$SCTsnn_res.0.8)))
+Idents(reccl15) <- reccl15$SCTsnn_res.0.8
+
+DotPlot(reccl15,
+        group.by = "SCTsnn_res.0.8",
+        features = plot_features,
+        cols = c("gray98", "tomato3")) +
+  RotatedAxis()
+
+myel <- c(1)
+lymph <- c()
+cd8 <- c(0)
+cd4 <- c(2)
+nos <- c(3, 4)
+fibro1 <- c() # FN1 high
+fibro2 <- c() # Low % myel exp
+periendo <- c() # NOTCH3 STAT3
+
+reccl15$annotation <- ifelse(reccl15$SCTsnn_res.0.8 %in% cd4, "L_TIGIT_from_lymphoid",
+                  ifelse(reccl15$SCTsnn_res.0.8 %in% cd8, "L_CD8_from_lymphoid",
+                  ifelse(reccl15$SCTsnn_res.0.8 %in% nos, "NOS_from_lymphoid",
+                  ifelse(reccl15$SCTsnn_res.0.8 %in% myel, "Myel_from_lymphoid",
+                  ifelse(reccl15$SCTsnn_res.0.8 %in% periendo, "PeriEndo_from_lymphoid", NA)))))
+
+```
+
+### Consolidating preliminary annotations, lymphoid
+
+```{r, message = F, warning = F, fig.width = 6, fig.height = 6, eval = T}
+
+# Merging
+seurat_list <- ls(pattern="reccl")
+seurat_list <- str_sort(seurat_list, numeric = TRUE)
+seurat_list <- do.call("list", mget(seurat_list))
+
+#saveRDS(seurat_list, "/scratch/hnatri/PIPAC/seurat_list_lymphoid.Rds")
+#seurat_list <- readRDS("/scratch/hnatri/PIPAC/seurat_list_lymphoid.Rds")
+
+seurat_list <- lapply(names(seurat_list), function(xx){
+  #message(xx)
+  cll <- xx
+  xx <- seurat_list[[xx]]
+  xx[["denoist_RNA"]] <- as(object = xx[["denoist_RNA"]], Class = "Assay5")
+  DefaultAssay(xx) <- "denoist_RNA"
+  xx[["RNA"]] <- NULL
+  xx[["nucleus_RNA"]] <- NULL
+  xx[["SCT"]] <- NULL
+  xx$annotation <- paste0(cll, "_", xx$SCTsnn_res.0.8, "_", xx$annotation)
+  xx@meta.data <- xx@meta.data[,c("cell_id", "annotation")]
+  
+  xx
+})
+
+seurat_merged <- merge(x = seurat_list[[1]], y = seurat_list[2:length(seurat_list)])
+
+#saveRDS(seurat_merged, "/scratch/hnatri/PIPAC/seurat_merged_lymphoid.rds")
+#seurat_merged <- readRDS("/scratch/hnatri/PIPAC/seurat_merged_lymphoid.rds")
+
+# Adding most granular annotations to the lymphoid reclustered subset object
+lymph_recluster_subset$lymphoid_subcluster_annot <- mapvalues(x = colnames(lymph_recluster_subset),
+                                                              from = colnames(seurat_merged),
+                                                              to = seurat_merged$annotation)
+lymph_recluster_subset@meta.data[-which(colnames(lymph_recluster_subset) %in% colnames(seurat_merged)),]$lymphoid_subcluster_annot <- NA
+
+# Adding annotations to the reclustered lymphoid subset
+lymphoid_ambig_annot <- read_sheet(metadata, sheet = "Lymphoid ambiguous recluster")
+lymphoid_ambig_annot <- lymphoid_ambig_annot[-which(is.na(lymphoid_ambig_annot$annotation)),]
+lymphoid_ambig_annot$annotation <- paste0(lymphoid_ambig_annot$SCTsnn_res.0.8, "_", lymphoid_ambig_annot$annotation)
+
+lymph_recluster_subset$lymphoid_ambig_annot <- mapvalues(x = lymph_recluster_subset$SCTsnn_res.0.8,
+                                                         from = lymphoid_ambig_annot$SCTsnn_res.0.8,
+                                                         to = as.character(lymphoid_ambig_annot$annotation))
+lymph_recluster_subset@meta.data[-which(lymph_recluster_subset$SCTsnn_res.0.8 %in% lymphoid_ambig_annot$SCTsnn_res.0.8),]$lymphoid_ambig_annot <- NA
+lymph_recluster_subset$lymphoid_ambig_annot <- as.character(lymph_recluster_subset$lymphoid_ambig_annot)
+
+# lymphoid_seurat = all lymphoid cells
+lymphoid_seurat$lymphoid_subcluster_annot <- mapvalues(x = colnames(lymphoid_seurat),
+                                                  from = colnames(lymph_recluster_subset),
+                                                  to = lymph_recluster_subset$lymphoid_subcluster_annot)
+lymphoid_seurat@meta.data[-which(colnames(lymphoid_seurat) %in% colnames(lymph_recluster_subset)),]$lymphoid_subcluster_annot <- NA
+
+lymphoid_seurat$lymphoid_ambig_annot <- mapvalues(x = colnames(lymphoid_seurat),
+                                                  from = colnames(lymph_recluster_subset),
+                                                  to = as.character(lymph_recluster_subset$lymphoid_ambig_annot))
+lymphoid_seurat@meta.data[-which(colnames(lymphoid_seurat) %in% colnames(lymph_recluster_subset)),]$lymphoid_ambig_annot <- NA
+
+lymphoid_seurat$combined_annotation <- ifelse(is.na(lymphoid_seurat$lymphoid_subcluster_annot), lymphoid_seurat$lymphoid_ambig_annot, lymphoid_seurat$lymphoid_subcluster_annot)
+
+lymphoid_seurat$immune_annotation <- mapvalues(x = lymphoid_seurat$leiden_1.5,
+                                               from = immune_annot$leiden_1.5,
+                                               to = as.character(immune_annot$annotation))
+lymphoid_seurat$immune_annotation <- as.character(lymphoid_seurat$immune_annotation)
+
+lymphoid_seurat$combined_annotation <- ifelse(is.na(lymphoid_seurat$combined_annotation), lymphoid_seurat$immune_annotation, lymphoid_seurat$combined_annotation)
+
+#saveRDS(lymphoid_seurat, "/scratch/hnatri/PIPAC/lymphoid_annotated.rds")
+#lymphoid_seurat <- readRDS("/scratch/hnatri/PIPAC/lymphoid_annotated.rds")
+
+# Adding lymphoid annotations to the full immune object
+# seurat_data = all immune cells
+seurat_data$lymphoid_ambig_annot <- mapvalues(x = colnames(seurat_data),
+                                             from = colnames(lymphoid_seurat),
+                                             to = as.character(lymphoid_seurat$lymphoid_ambig_annot))
+seurat_data@meta.data[-which(colnames(seurat_data) %in% colnames(lymphoid_seurat)),]$lymphoid_ambig_annot <- NA
+seurat_data$lymphoid_ambig_annot <- as.character(seurat_data$lymphoid_ambig_annot)
+
+seurat_data$lymphoid_subcluster_annot <- mapvalues(x = colnames(seurat_data),
+                                                  from = colnames(seurat_merged),
+                                                  to = seurat_merged$annotation)
+seurat_data@meta.data[-which(colnames(seurat_data) %in% colnames(seurat_merged)),]$lymphoid_subcluster_annot <- NA
+
+# Adding annotation for the whole immuneimmune subset
+# first_pass_annot
+seurat_data$immune_annotation <- mapvalues(x = seurat_data$leiden_1.5,
+                                           from = immune_annot$leiden_1.5,
+                                           to = as.character(immune_annot$annotation))
+seurat_data$immune_annotation <- as.character(seurat_data$immune_annotation)
+
+seurat_data$combined_annotation <- ifelse(is.na(seurat_data$lymphoid_subcluster_annot), seurat_data$lymphoid_ambig_annot, seurat_data$lymphoid_subcluster_annot)
+
+seurat_data$combined_annotation <- ifelse(is.na(seurat_data$combined_annotation), seurat_data$immune_annotation, seurat_data$combined_annotation)
+
+#seurat_data$combined_annotation <- ifelse(is.na(seurat_data$combined_annotation), seurat_data$annotation, NA)
+
+# Combining
+saveRDS(seurat_data, "/scratch/hnatri/PIPAC/immune_annotated.rds")
+#seurat_data <- readRDS("/scratch/hnatri/PIPAC/immune_annotated.rds")
+
+```
+
+### Different or same cells expressing multiple lineage markers; myeloid
+
+Cluster 0
+
+```{r, message = F, warning = F, fig.width = 14, fig.height = 4, eval = T}
+
+FeaturePlot(subset(myel_recluster_subset, subset = SCTsnn_res.0.8 == 0),
+            features = c("CD163", "COL5A1"),
+            blend = T) &
+  theme_bw()
+
+mreccl0 <- subset(myel_recluster_subset, subset = SCTsnn_res.0.8 == 0)
+mreccl0 <- recluster_seurat(mreccl0, umap_pcs = 10)
+DefaultAssay(mreccl0) <- "denoist_RNA"
+
+FeaturePlot(mreccl0,
+            features = c("CD163", "COL5A1"),
+            blend = T) &
+  theme_bw()
+
+FeaturePlot(mreccl0,
+            features = c("CD163", "COL5A1")) &
+  theme_bw()
+
+ncol(mreccl0)
+table(mreccl0$SCTsnn_res.0.8)
+
+```
+
+```{r, message = F, warning = F, fig.width = 4, fig.height = 4, eval = T}
+
+DimPlot(mreccl0,
+        group.by = "SCTsnn_res.0.8",
+        reduction = "umap",
+        label = T) +
+  coord_fixed(ratio = 1) +
+  theme_bw() +
+  NoLegend() +
+  ggtitle("Cluster 0")
+
+```
+
+```{r, message = F, warning = F, fig.width = 14, fig.height = 4}
+
+mreccl0$SCTsnn_res.0.8 <- factor(mreccl0$SCTsnn_res.0.8,
+                              levels = sort(unique(mreccl0$SCTsnn_res.0.8)))
+Idents(mreccl0) <- mreccl0$SCTsnn_res.0.8
+
+DotPlot(mreccl0,
+        group.by = "SCTsnn_res.0.8",
+        features = plot_features,
+        cols = c("gray98", "tomato3")) +
+  RotatedAxis()
+
+myel <- c(1, 8)
+lymph <- c()
+cd8 <- c()
+cd4 <- c()
+nos <- c(0, 2, 3, 4, 5, 6, 7)
+fibro1 <- c() # FN1 high
+fibro2 <- c() # Low % myel exp
+peri <- c()
+
+mreccl0$annotation <- ifelse(mreccl0$SCTsnn_res.0.8 %in% nos, "NOS_from_myeloid",
+                             ifelse(mreccl0$SCTsnn_res.0.8 %in% myel, "Myel_from_myeloid", NA))
+
+unique(mreccl0$annotation)
+table(mreccl0$annotation)
+
+```
+
+Cluster 1
+
+```{r, message = F, warning = F, fig.width = 14, fig.height = 4, eval = T}
+
+FeaturePlot(subset(myel_recluster_subset, subset = SCTsnn_res.0.8 == 1),
+            features = c("CD163", "COL5A1"),
+            blend = T) &
+  theme_bw()
+
+mreccl1 <- subset(myel_recluster_subset, subset = SCTsnn_res.0.8 == 1)
+mreccl1 <- recluster_seurat(mreccl1, umap_pcs = 10)
+DefaultAssay(mreccl1) <- "denoist_RNA"
+
+FeaturePlot(mreccl1,
+            features = c("CD163", "COL5A1"),
+            blend = T) &
+  theme_bw()
+
+FeaturePlot(mreccl1,
+            features = c("CD163", "COL5A1")) &
+  theme_bw()
+
+ncol(mreccl1)
+table(mreccl1$SCTsnn_res.0.8)
+
+```
+
+```{r, message = F, warning = F, fig.width = 4, fig.height = 4, eval = T}
+
+DimPlot(mreccl1,
+        group.by = "SCTsnn_res.0.8",
+        reduction = "umap",
+        label = T) +
+  coord_fixed(ratio = 1) +
+  theme_bw() +
+  NoLegend() +
+  ggtitle("Cluster 1")
+
+```
+
+```{r, message = F, warning = F, fig.width = 14, fig.height = 4}
+
+mreccl1$SCTsnn_res.0.8 <- factor(mreccl1$SCTsnn_res.0.8,
+                              levels = sort(unique(mreccl1$SCTsnn_res.0.8)))
+Idents(mreccl1) <- mreccl1$SCTsnn_res.0.8
+
+DotPlot(mreccl1,
+        group.by = "SCTsnn_res.0.8",
+        features = plot_features,
+        cols = c("gray98", "tomato3")) +
+  RotatedAxis()
+
+myel <- c(2)
+lymph <- c()
+cd8 <- c()
+cd4 <- c()
+nos <- c(0, 1, 3, 4, 5, 6, 7, 8)
+fibro1 <- c() # FN1 high
+fibro2 <- c() # Low % myel exp
+peri <- c() # NOTCH3 STAT3
+
+mreccl1$annotation <- ifelse(mreccl1$SCTsnn_res.0.8 %in% nos, "NOS_from_myeloid",
+                             ifelse(mreccl1$SCTsnn_res.0.8 %in% myel, "Myel_from_myeloid", NA))
+
+unique(mreccl1$annotation)
+table(mreccl1$annotation)
+
+```
+
+Cluster 2
+
+```{r, message = F, warning = F, fig.width = 14, fig.height = 4, eval = T}
+
+FeaturePlot(subset(myel_recluster_subset, subset = SCTsnn_res.0.8 == 2),
+            features = c("CD163", "COL5A1"),
+            blend = T) &
+  theme_bw()
+
+mreccl2 <- subset(myel_recluster_subset, subset = SCTsnn_res.0.8 == 2)
+mreccl2 <- recluster_seurat(mreccl2, umap_pcs = 10)
+DefaultAssay(mreccl2) <- "denoist_RNA"
+
+FeaturePlot(mreccl2,
+            features = c("CD163", "COL5A1"),
+            blend = T) &
+  theme_bw()
+
+FeaturePlot(mreccl2,
+            features = c("CD163", "COL5A1")) &
+  theme_bw()
+
+ncol(mreccl2)
+table(mreccl2$SCTsnn_res.0.8)
+
+```
+
+```{r, message = F, warning = F, fig.width = 4, fig.height = 4, eval = T}
+
+DimPlot(mreccl2,
+        group.by = "SCTsnn_res.0.8",
+        reduction = "umap",
+        label = T) +
+  coord_fixed(ratio = 1) +
+  theme_bw() +
+  NoLegend() +
+  ggtitle("Cluster 2")
+
+```
+
+```{r, message = F, warning = F, fig.width = 14, fig.height = 4}
+
+mreccl2$SCTsnn_res.0.8 <- factor(mreccl2$SCTsnn_res.0.8,
+                              levels = sort(unique(mreccl2$SCTsnn_res.0.8)))
+Idents(mreccl2) <- mreccl2$SCTsnn_res.0.8
+
+DotPlot(mreccl2,
+        group.by = "SCTsnn_res.0.8",
+        features = plot_features,
+        cols = c("gray98", "tomato3")) +
+  RotatedAxis()
+
+myel <- c(0, 1, 2, 4, 5, 8)
+lymph <- c()
+cd8 <- c()
+cd4 <- c()
+nos <- c(3, 6, 7)
+fibro1 <- c() # FN1 high
+fibro2 <- c() # Low % myel exp
+peri <- c() # NOTCH3 STAT3
+
+mreccl2$annotation <- ifelse(mreccl2$SCTsnn_res.0.8 %in% nos, "NOS_from_myeloid",
+                             ifelse(mreccl2$SCTsnn_res.0.8 %in% myel, "Myel_from_myeloid", NA))
+
+unique(mreccl2$annotation)
+table(mreccl2$annotation)
+
+```
+
+Cluster 3
+
+```{r, message = F, warning = F, fig.width = 14, fig.height = 4, eval = T}
+
+FeaturePlot(subset(myel_recluster_subset, subset = SCTsnn_res.0.8 == 3),
+            features = c("CD163", "COL5A1"),
+            blend = T) &
+  theme_bw()
+
+mreccl3 <- subset(myel_recluster_subset, subset = SCTsnn_res.0.8 == 3)
+mreccl3 <- recluster_seurat(mreccl3, umap_pcs = 10)
+DefaultAssay(mreccl3) <- "denoist_RNA"
+
+FeaturePlot(mreccl3,
+            features = c("CD163", "COL5A1"),
+            blend = T) &
+  theme_bw()
+
+FeaturePlot(mreccl3,
+            features = c("CD163", "COL5A1")) &
+  theme_bw()
+
+ncol(mreccl3)
+table(mreccl3$SCTsnn_res.0.8)
+
+```
+
+```{r, message = F, warning = F, fig.width = 4, fig.height = 4, eval = T}
+
+DimPlot(mreccl3,
+        group.by = "SCTsnn_res.0.8",
+        reduction = "umap",
+        label = T) +
+  coord_fixed(ratio = 1) +
+  theme_bw() +
+  NoLegend() +
+  ggtitle("Cluster 3")
+
+```
+
+```{r, message = F, warning = F, fig.width = 14, fig.height = 4}
+
+mreccl3$SCTsnn_res.0.8 <- factor(mreccl3$SCTsnn_res.0.8,
+                              levels = sort(unique(mreccl3$SCTsnn_res.0.8)))
+Idents(mreccl3) <- mreccl3$SCTsnn_res.0.8
+
+DotPlot(mreccl3,
+        group.by = "SCTsnn_res.0.8",
+        features = plot_features,
+        cols = c("gray98", "tomato3")) +
+  RotatedAxis()
+
+myel <- c(2, 5)
+lymph <- c()
+cd8 <- c()
+cd4 <- c()
+nos <- c(0, 1, 3, 4, 6, 7, 8)
+fibro1 <- c()
+fibro2 <- c()
+peri <- c()
+
+mreccl3$annotation <- ifelse(mreccl3$SCTsnn_res.0.8 %in% nos, "NOS_from_myeloid",
+                             ifelse(mreccl3$SCTsnn_res.0.8 %in% myel, "Myel_from_myeloid", NA))
+
+unique(mreccl3$annotation)
+table(mreccl3$annotation)
+
+```
+
+Cluster 4
+
+```{r, message = F, warning = F, fig.width = 14, fig.height = 4, eval = T}
+
+FeaturePlot(subset(myel_recluster_subset, subset = SCTsnn_res.0.8 == 4),
+            features = c("CD163", "COL5A1"),
+            blend = T) &
+  theme_bw()
+
+mreccl4 <- subset(myel_recluster_subset, subset = SCTsnn_res.0.8 == 4)
+mreccl4 <- recluster_seurat(mreccl4, umap_pcs = 10)
+DefaultAssay(mreccl4) <- "denoist_RNA"
+
+FeaturePlot(mreccl4,
+            features = c("CD163", "COL5A1"),
+            blend = T) &
+  theme_bw()
+
+FeaturePlot(mreccl4,
+            features = c("CD163", "COL5A1")) &
+  theme_bw()
+
+ncol(mreccl4)
+table(mreccl4$SCTsnn_res.0.8)
+
+```
+
+```{r, message = F, warning = F, fig.width = 4, fig.height = 4, eval = T}
+
+DimPlot(mreccl4,
+        group.by = "SCTsnn_res.0.8",
+        reduction = "umap",
+        label = T) +
+  coord_fixed(ratio = 1) +
+  theme_bw() +
+  NoLegend() +
+  ggtitle("Cluster 4")
+
+```
+
+```{r, message = F, warning = F, fig.width = 14, fig.height = 4}
+
+mreccl4$SCTsnn_res.0.8 <- factor(mreccl4$SCTsnn_res.0.8,
+                              levels = sort(unique(mreccl4$SCTsnn_res.0.8)))
+Idents(mreccl4) <- mreccl4$SCTsnn_res.0.8
+
+DotPlot(mreccl4,
+        group.by = "SCTsnn_res.0.8",
+        features = plot_features,
+        cols = c("gray98", "tomato3")) +
+  RotatedAxis()
+
+myel <- c(0, 1, 2, 4, 6, 7)
+lymph <- c()
+cd8 <- c()
+cd4 <- c()
+nos <- c(3, 5)
+fibro1 <- c()
+fibro2 <- c()
+peri <- c()
+
+mreccl4$annotation <- ifelse(mreccl4$SCTsnn_res.0.8 %in% nos, "NOS_from_myeloid",
+                             ifelse(mreccl4$SCTsnn_res.0.8 %in% myel, "Myel_from_myeloid", NA))
+
+unique(mreccl4$annotation)
+table(mreccl4$annotation)
+
+```
+
+Cluster  6
+
+```{r, message = F, warning = F, fig.width = 14, fig.height = 4, eval = T}
+
+FeaturePlot(subset(myel_recluster_subset, subset = SCTsnn_res.0.8 == 6),
+            features = c("CD163", "COL5A1"),
+            blend = T) &
+  theme_bw()
+
+mreccl6 <- subset(myel_recluster_subset, subset = SCTsnn_res.0.8 == 6)
+mreccl6 <- recluster_seurat(mreccl6, umap_pcs = 10)
+DefaultAssay(mreccl6) <- "denoist_RNA"
+
+FeaturePlot(mreccl6,
+            features = c("CD163", "COL5A1"),
+            blend = T) &
+  theme_bw()
+
+FeaturePlot(mreccl6,
+            features = c("CD163", "COL5A1")) &
+  theme_bw()
+
+ncol(mreccl6)
+table(mreccl6$SCTsnn_res.0.8)
+
+```
+
+```{r, message = F, warning = F, fig.width = 4, fig.height = 4, eval = T}
+
+DimPlot(mreccl6,
+        group.by = "SCTsnn_res.0.8",
+        reduction = "umap",
+        label = T) +
+  coord_fixed(ratio = 1) +
+  theme_bw() +
+  NoLegend() +
+  ggtitle("Cluster 6")
+
+```
+
+```{r, message = F, warning = F, fig.width = 14, fig.height = 4}
+
+mreccl6$SCTsnn_res.0.8 <- factor(mreccl6$SCTsnn_res.0.8,
+                              levels = sort(unique(mreccl6$SCTsnn_res.0.8)))
+Idents(mreccl6) <- mreccl6$SCTsnn_res.0.8
+
+DotPlot(mreccl6,
+        group.by = "SCTsnn_res.0.8",
+        features = plot_features,
+        cols = c("gray98", "tomato3")) +
+  RotatedAxis()
+
+myel <- c(7)
+lymph <- c()
+cd8 <- c()
+cd4 <- c()
+nos <- c(0, 1, 2, 3, 4, 5, 6, 8)
+fibro1 <- c()
+fibro2 <- c()
+peri <- c()
+
+mreccl6$annotation <- ifelse(mreccl6$SCTsnn_res.0.8 %in% nos, "NOS_from_myeloid",
+                             ifelse(mreccl6$SCTsnn_res.0.8 %in% myel, "Myel_from_myeloid", NA))
+
+unique(mreccl6$annotation)
+table(mreccl6$annotation)
+
+```
+
+Cluster 9
+
+```{r, message = F, warning = F, fig.width = 14, fig.height = 4, eval = T}
+
+FeaturePlot(subset(myel_recluster_subset, subset = SCTsnn_res.0.8 == 9),
+            features = c("CD163", "COL5A1"),
+            blend = T) &
+  theme_bw()
+
+mreccl9 <- subset(myel_recluster_subset, subset = SCTsnn_res.0.8 == 9)
+mreccl9 <- recluster_seurat(mreccl9, umap_pcs = 10)
+DefaultAssay(mreccl9) <- "denoist_RNA"
+
+FeaturePlot(mreccl9,
+            features = c("CD163", "COL5A1"),
+            blend = T) &
+  theme_bw()
+
+FeaturePlot(mreccl9,
+            features = c("CD163", "COL5A1")) &
+  theme_bw()
+
+ncol(mreccl9)
+table(mreccl9$SCTsnn_res.0.8)
+
+```
+
+```{r, message = F, warning = F, fig.width = 4, fig.height = 4, eval = T}
+
+DimPlot(mreccl9,
+        group.by = "SCTsnn_res.0.8",
+        reduction = "umap",
+        label = T) +
+  coord_fixed(ratio = 1) +
+  theme_bw() +
+  NoLegend() +
+  ggtitle("Cluster 9")
+
+```
+
+```{r, message = F, warning = F, fig.width = 14, fig.height = 4}
+
+mreccl9$SCTsnn_res.0.8 <- factor(mreccl9$SCTsnn_res.0.8,
+                              levels = sort(unique(mreccl9$SCTsnn_res.0.8)))
+Idents(mreccl9) <- mreccl9$SCTsnn_res.0.8
+
+DotPlot(mreccl9,
+        group.by = "SCTsnn_res.0.8",
+        features = plot_features,
+        cols = c("gray98", "tomato3")) +
+  RotatedAxis()
+
+myel <- c(1, 2)
+lymph <- c()
+cd8 <- c()
+cd4 <- c()
+nos <- c(0, 3, 4, 5, 6)
+fibro1 <- c()
+fibro2 <- c()
+peri <- c()
+
+mreccl9$annotation <- ifelse(mreccl9$SCTsnn_res.0.8 %in% nos, "NOS_from_myeloid",
+                             ifelse(mreccl9$SCTsnn_res.0.8 %in% myel, "Myel_from_myeloid", NA))
+
+unique(mreccl9$annotation)
+table(mreccl9$annotation)
+
+```
+
+Cluster 10
+
+```{r, message = F, warning = F, fig.width = 14, fig.height = 4, eval = T}
+
+FeaturePlot(subset(myel_recluster_subset, subset = SCTsnn_res.0.8 == 10),
+            features = c("CD163", "COL5A1"),
+            blend = T) &
+  theme_bw()
+
+mreccl10 <- subset(myel_recluster_subset, subset = SCTsnn_res.0.8 == 10)
+mreccl10 <- recluster_seurat(mreccl10, umap_pcs = 10)
+DefaultAssay(mreccl10) <- "denoist_RNA"
+
+FeaturePlot(mreccl10,
+            features = c("CD163", "COL5A1"),
+            blend = T) &
+  theme_bw()
+
+FeaturePlot(mreccl10,
+            features = c("CD163", "COL5A1")) &
+  theme_bw()
+
+ncol(mreccl10)
+table(mreccl10$SCTsnn_res.0.8)
+
+```
+
+```{r, message = F, warning = F, fig.width = 4, fig.height = 4, eval = T}
+
+DimPlot(mreccl10,
+        group.by = "SCTsnn_res.0.8",
+        reduction = "umap",
+        label = T) +
+  coord_fixed(ratio = 1) +
+  theme_bw() +
+  NoLegend() +
+  ggtitle("Cluster 10")
+
+```
+
+```{r, message = F, warning = F, fig.width = 14, fig.height = 4}
+
+mreccl10$SCTsnn_res.0.8 <- factor(mreccl10$SCTsnn_res.0.8,
+                              levels = sort(unique(mreccl10$SCTsnn_res.0.8)))
+Idents(mreccl10) <- mreccl10$SCTsnn_res.0.8
+
+DotPlot(mreccl10,
+        group.by = "SCTsnn_res.0.8",
+        features = plot_features,
+        cols = c("gray98", "tomato3")) +
+  RotatedAxis()
+
+myel <- c(1, 2, 3, 5, 6)
+lymph <- c()
+cd8 <- c()
+cd4 <- c()
+nos <- c(0, 4, 7, 8)
+fibro1 <- c()
+fibro2 <- c()
+peri <- c()
+
+mreccl10$annotation <- ifelse(mreccl10$SCTsnn_res.0.8 %in% nos, "NOS_from_myeloid",
+                             ifelse(mreccl10$SCTsnn_res.0.8 %in% myel, "Myel_from_myeloid", NA))
+
+unique(mreccl10$annotation)
+table(mreccl10$annotation)
+
+
+```
+
+Cluster 12
+
+```{r, message = F, warning = F, fig.width = 14, fig.height = 4, eval = T}
+
+FeaturePlot(subset(myel_recluster_subset, subset = SCTsnn_res.0.8 == 12),
+            features = c("CD163", "COL5A1"),
+            blend = T) &
+  theme_bw()
+
+mreccl12 <- subset(myel_recluster_subset, subset = SCTsnn_res.0.8 == 12)
+mreccl12 <- recluster_seurat(mreccl12, umap_pcs = 10)
+DefaultAssay(mreccl12) <- "denoist_RNA"
+
+FeaturePlot(mreccl12,
+            features = c("CD163", "COL5A1"),
+            blend = T) &
+  theme_bw()
+
+FeaturePlot(mreccl12,
+            features = c("CD163", "COL5A1")) &
+  theme_bw()
+
+ncol(mreccl12)
+table(mreccl12$SCTsnn_res.0.8)
+
+```
+
+```{r, message = F, warning = F, fig.width = 4, fig.height = 4, eval = T}
+
+DimPlot(mreccl12,
+        group.by = "SCTsnn_res.0.8",
+        reduction = "umap",
+        label = T) +
+  coord_fixed(ratio = 1) +
+  theme_bw() +
+  NoLegend() +
+  ggtitle("Cluster 12")
+
+```
+
+```{r, message = F, warning = F, fig.width = 14, fig.height = 4}
+
+mreccl12$SCTsnn_res.0.8 <- factor(mreccl12$SCTsnn_res.0.8,
+                              levels = sort(unique(mreccl12$SCTsnn_res.0.8)))
+Idents(mreccl12) <- mreccl12$SCTsnn_res.0.8
+
+DotPlot(mreccl12,
+        group.by = "SCTsnn_res.0.8",
+        features = plot_features,
+        cols = c("gray98", "tomato3")) +
+  RotatedAxis()
+
+myel <- c(0, 10)
+lymph <- c()
+cd8 <- c()
+cd4 <- c()
+nos <- c()
+fibro1 <- c()
+fibro2 <- c()
+peri <- c()
+
+mreccl12$annotation <- ifelse(mreccl12$SCTsnn_res.0.8 %in% nos, "NOS_from_myeloid",
+                             ifelse(mreccl12$SCTsnn_res.0.8 %in% myel, "Myel_from_myeloid", NA))
+
+unique(mreccl12$annotation)
+table(mreccl12$annotation)
+
+```
+
+Cluster 13
+
+```{r, message = F, warning = F, fig.width = 14, fig.height = 4, eval = T}
+
+FeaturePlot(subset(myel_recluster_subset, subset = SCTsnn_res.0.8 == 13),
+            features = c("CD163", "COL5A1"),
+            blend = T) &
+  theme_bw()
+
+mreccl13 <- subset(myel_recluster_subset, subset = SCTsnn_res.0.8 == 13)
+mreccl13 <- recluster_seurat(mreccl13, umap_pcs = 10)
+DefaultAssay(mreccl13) <- "denoist_RNA"
+
+FeaturePlot(mreccl13,
+            features = c("CD163", "COL5A1"),
+            blend = T) &
+  theme_bw()
+
+FeaturePlot(mreccl13,
+            features = c("CD163 ", "COL5A1")) &
+  theme_bw()
+
+ncol(mreccl13)
+table(mreccl13$SCTsnn_res.0.8)
+
+```
+
+```{r, message = F, warning = F, fig.width = 4, fig.height = 4, eval = T}
+
+DimPlot(mreccl13,
+        group.by = "SCTsnn_res.0.8",
+        reduction = "umap",
+        label = T) +
+  coord_fixed(ratio = 1) +
+  theme_bw() +
+  NoLegend() +
+  ggtitle("Cluster 13")
+
+```
+
+```{r, message = F, warning = F, fig.width = 14, fig.height = 4}
+
+mreccl13$SCTsnn_res.0.8 <- factor(mreccl13$SCTsnn_res.0.8,
+                              levels = sort(unique(mreccl13$SCTsnn_res.0.8)))
+Idents(mreccl13) <- mreccl13$SCTsnn_res.0.8
+
+DotPlot(mreccl13,
+        group.by = "SCTsnn_res.0.8",
+        features = plot_features,
+        cols = c("gray98", "tomato3")) +
+  RotatedAxis()
+
+myel <- c(0, 2, 3, 4, 5)
+lymph <- c()
+cd8 <- c()
+cd4 <- c()
+nos <- c(1, 6, 7, 8)
+fibro1 <- c()
+fibro2 <- c()
+peri <- c()
+
+mreccl13$annotation <- ifelse(mreccl13$SCTsnn_res.0.8 %in% nos, "NOS_from_myeloid",
+                             ifelse(mreccl13$SCTsnn_res.0.8 %in% myel, "Myel_from_myeloid", NA))
+
+unique(mreccl13$annotation)
+table(mreccl13$annotation)
+
+```
+
+### Consolidating preliminary annotations, myeloid
+
+```{r, message = F, warning = F, fig.width = 6, fig.height = 6, eval = T}
+
+# Merging
+seurat_list <- ls(pattern="mreccl")
+seurat_list <- str_sort(seurat_list, numeric = TRUE)
+seurat_list <- do.call("list", mget(seurat_list))
+
+#saveRDS(seurat_list, "/scratch/hnatri/PIPAC/seurat_list_myeloid.Rds")
+#seurat_list <- readRDS("/scratch/hnatri/PIPAC/seurat_list_myeloid.Rds")
+
+seurat_list <- lapply(names(seurat_list), function(xx){
+  #message(xx)
+  cll <- xx
+  xx <- seurat_list[[xx]]
+  xx[["denoist_RNA"]] <- as(object = xx[["denoist_RNA"]], Class = "Assay5")
+  DefaultAssay(xx) <- "denoist_RNA"
+  xx[["RNA"]] <- NULL
+  xx[["nucleus_RNA"]] <- NULL
+  xx[["SCT"]] <- NULL
+  xx$annotation <- paste0(cll, "_", xx$SCTsnn_res.0.8, "_", xx$annotation)
+  xx@meta.data <- xx@meta.data[,c("cell_id", "annotation")]
+  
+  xx
+})
+
+seurat_merged <- merge(x = seurat_list[[1]], y = seurat_list[2:length(seurat_list)])
+
+saveRDS(seurat_merged, "/scratch/hnatri/PIPAC/seurat_merged_myeloid.rds")
+#seurat_merged <- readRDS("/scratch/hnatri/PIPAC/seurat_merged_myeloid.rds")
+
+# Complete immune subset
+#seurat_data <- readRDS("/scratch/hnatri/PIPAC/immune_annotated.rds")
+
+# Adding most granular annotations to the lymphoid reclustered subset object
+myel_recluster_subset$myeloid_subcluster_annot <- mapvalues(x = colnames(myel_recluster_subset),
+                                                              from = colnames(seurat_merged),
+                                                              to = seurat_merged$annotation)
+
+#myel_recluster_subset@meta.data[-which(colnames(myel_recluster_subset) %in% colnames(seurat_merged)),]$myeloid_subcluster_annot <- NA
+
+# Adding annotations to the reclustered lymphoid subset
+myeloid_ambig_annot <- read_sheet(metadata, sheet = "Myeloid ambiguous recluster")
+myeloid_ambig_annot <- myeloid_ambig_annot[-which(is.na(myeloid_ambig_annot$annotation)),]
+myeloid_ambig_annot$annotation <- paste0(myeloid_ambig_annot$SCTsnn_res.0.8, "_", myeloid_ambig_annot$annotation)
+
+myel_recluster_subset$myeloid_ambig_annot <- mapvalues(x = myel_recluster_subset$SCTsnn_res.0.8,
+                                                         from = myeloid_ambig_annot$SCTsnn_res.0.8,
+                                                         to = as.character(myeloid_ambig_annot$annotation))
+myel_recluster_subset@meta.data[-which(myel_recluster_subset$SCTsnn_res.0.8 %in% myeloid_ambig_annot$SCTsnn_res.0.8),]$myeloid_ambig_annot <- NA
+myel_recluster_subset$myeloid_ambig_annot <- as.character(myel_recluster_subset$myeloid_ambig_annot)
+
+# lymphoid_seurat = all lymphoid cells
+myeloid_seurat$myeloid_subcluster_annot <- mapvalues(x = colnames(myeloid_seurat),
+                                                  from = colnames(myel_recluster_subset),
+                                                  to = myel_recluster_subset$myeloid_subcluster_annot)
+myeloid_seurat@meta.data[-which(colnames(myeloid_seurat) %in% colnames(myel_recluster_subset)),]$myeloid_subcluster_annot <- NA
+
+myeloid_seurat$myeloid_ambig_annot <- mapvalues(x = colnames(myeloid_seurat),
+                                                  from = colnames(myel_recluster_subset),
+                                                  to = as.character(myel_recluster_subset$myeloid_ambig_annot))
+myeloid_seurat@meta.data[-which(colnames(myeloid_seurat) %in% colnames(myel_recluster_subset)),]$myeloid_ambig_annot <- NA
+myeloid_seurat$myeloid_ambig_annot <- as.character(myeloid_seurat$myeloid_ambig_annot)
+
+myeloid_seurat$immune_annotation <- mapvalues(x = myeloid_seurat$leiden_1.5,
+                                           from = immune_annot$leiden_1.5,
+                                           to = as.character(immune_annot$annotation))
+
+myeloid_seurat$immune_annotation <- as.character(myeloid_seurat$immune_annotation)
+
+myeloid_seurat$myeloid_combined_annotation <- ifelse(is.na(myeloid_seurat$myeloid_subcluster_annot), myeloid_seurat$myeloid_ambig_annot, myeloid_seurat$myeloid_subcluster_annot)
+
+myeloid_seurat$myeloid_combined_annotation <- ifelse(is.na(myeloid_seurat$myeloid_combined_annotation), myeloid_seurat$immune_annotation, myeloid_seurat$myeloid_combined_annotation)
+
+# Adding myeloid annotations to the full immune object
+# seurat_data = all immune cells
+seurat_data$myeloid_ambig_annot <- mapvalues(x = colnames(seurat_data),
+                                             from = colnames(myeloid_seurat),
+                                             to = as.character(myeloid_seurat$myeloid_ambig_annot))
+seurat_data@meta.data[-which(colnames(seurat_data) %in% colnames(myeloid_seurat)),]$myeloid_ambig_annot <- NA
+
+seurat_data$myeloid_subcluster_annot <- mapvalues(x = colnames(seurat_data),
+                                                  from = colnames(seurat_merged),
+                                                  to = seurat_merged$annotation)
+seurat_data@meta.data[-which(colnames(seurat_data) %in% colnames(seurat_merged)),]$myeloid_subcluster_annot <- NA
+
+# Adding annotation to the whole immune subset
+# first_pass_annot
+seurat_data$immune_annotation <- mapvalues(x = seurat_data$leiden_1.5,
+                                           from = immune_annot$leiden_1.5,
+                                           to = as.character(immune_annot$annotation))
+
+seurat_data$myeloid_combined_annotation <- ifelse(is.na(seurat_data$myeloid_subcluster_annot), seurat_data$myeloid_ambig_annot, seurat_data$myeloid_subcluster_annot)
+
+seurat_data$combined_annotation <- ifelse(is.na(seurat_data$myeloid_combined_annotation),
+                                          seurat_data$combined_annotation,
+                                          seurat_data$myeloid_combined_annotation)
+
+unique(seurat_data$combined_annotation)
+
+# Saving
+saveRDS(myeloid_seurat, "/scratch/hnatri/PIPAC/myeloid_annotated.rds")
+#seurat_data <- readRDS("/scratch/hnatri/PIPAC/myeloid_annotated.rds")
+
+saveRDS(seurat_data, "/scratch/hnatri/PIPAC/immune_annotated_complete.rds")
+#seurat_data <- readRDS("/scratch/hnatri/PIPAC/immune_annotated.rds")
+
+```
+
+```{r, message = F, warning = F, fig.width = 6, fig.height = 6, eval = F}
+
+# Rscript -e "rmarkdown::render('immune_annotation_cell.Rmd')"
+# mv *html /home/hnatri/PIPAC_spatial/docs/
+
+```
+

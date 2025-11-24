@@ -18,3 +18,6 @@ code/Proximity_analysis/data/*
 code/Proximity_analysis/data/*_input.csv
 code/pairwise_proximity.Rout
 *PIPAC_proximity_input.csv
+output/proximity_compiled.tsv
+tumor_proximity_compiled.tsv
+*proximity_compiled.tsv

@@ -1,0 +1,1534 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+
+<meta name="author" content="heinin" />
+
+<meta name="date" content="2025-09-19" />
+
+<title>Plotting the results of the proximity analysis on PIPAC Xenium data</title>
+
+<script src="site_libs/header-attrs-2.22/header-attrs.js"></script>
+<script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="site_libs/bootstrap-3.3.5/css/cosmo.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<style>h1 {font-size: 34px;}
+       h1.title {font-size: 38px;}
+       h2 {font-size: 30px;}
+       h3 {font-size: 24px;}
+       h4 {font-size: 18px;}
+       h5 {font-size: 16px;}
+       h6 {font-size: 12px;}
+       code {color: inherit; background-color: rgba(0, 0, 0, 0.04);}
+       pre:not([class]) { background-color: white }</style>
+<script src="site_libs/jqueryui-1.13.2/jquery-ui.min.js"></script>
+<link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
+<script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
+<script src="site_libs/navigation-1.1/tabsets.js"></script>
+<script src="site_libs/navigation-1.1/codefolding.js"></script>
+<link href="site_libs/highlightjs-9.12.0/textmate.css" rel="stylesheet" />
+<script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
+
+<link rel="icon" href="https://github.com/workflowr/workflowr-assets/raw/main/img/reproducible.png">
+<!-- Add a small amount of space between sections. -->
+<style type="text/css">
+div.section {
+  padding-top: 12px;
+}
+</style>
+
+
+
+<style type="text/css">
+  code{white-space: pre-wrap;}
+  span.smallcaps{font-variant: small-caps;}
+  span.underline{text-decoration: underline;}
+  div.column{display: inline-block; vertical-align: top; width: 50%;}
+  div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+  ul.task-list{list-style: none;}
+    </style>
+
+<style type="text/css">code{white-space: pre;}</style>
+<script type="text/javascript">
+if (window.hljs) {
+  hljs.configure({languages: []});
+  hljs.initHighlightingOnLoad();
+  if (document.readyState && document.readyState === "complete") {
+    window.setTimeout(function() { hljs.initHighlighting(); }, 0);
+  }
+}
+</script>
+
+
+
+
+
+
+
+
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+img {
+  max-width:100%;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+.html-widget {
+  margin-bottom: 20px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+summary {
+  display: list-item;
+}
+details > summary > p:only-child {
+  display: inline;
+}
+pre code {
+  padding: 0;
+}
+</style>
+
+
+<style type="text/css">
+.dropdown-submenu {
+  position: relative;
+}
+.dropdown-submenu>.dropdown-menu {
+  top: 0;
+  left: 100%;
+  margin-top: -6px;
+  margin-left: -1px;
+  border-radius: 0 6px 6px 6px;
+}
+.dropdown-submenu:hover>.dropdown-menu {
+  display: block;
+}
+.dropdown-submenu>a:after {
+  display: block;
+  content: " ";
+  float: right;
+  width: 0;
+  height: 0;
+  border-color: transparent;
+  border-style: solid;
+  border-width: 5px 0 5px 5px;
+  border-left-color: #cccccc;
+  margin-top: 5px;
+  margin-right: -10px;
+}
+.dropdown-submenu:hover>a:after {
+  border-left-color: #adb5bd;
+}
+.dropdown-submenu.pull-left {
+  float: none;
+}
+.dropdown-submenu.pull-left>.dropdown-menu {
+  left: -100%;
+  margin-left: 10px;
+  border-radius: 6px 0 6px 6px;
+}
+</style>
+
+<script type="text/javascript">
+// manage active state of menu based on current page
+$(document).ready(function () {
+  // active menu anchor
+  href = window.location.pathname
+  href = href.substr(href.lastIndexOf('/') + 1)
+  if (href === "")
+    href = "index.html";
+  var menuAnchor = $('a[href="' + href + '"]');
+
+  // mark the anchor link active (and if it's in a dropdown, also mark that active)
+  var dropdown = menuAnchor.closest('li.dropdown');
+  if (window.bootstrap) { // Bootstrap 4+
+    menuAnchor.addClass('active');
+    dropdown.find('> .dropdown-toggle').addClass('active');
+  } else { // Bootstrap 3
+    menuAnchor.parent().addClass('active');
+    dropdown.addClass('active');
+  }
+
+  // Navbar adjustments
+  var navHeight = $(".navbar").first().height() + 15;
+  var style = document.createElement('style');
+  var pt = "padding-top: " + navHeight + "px; ";
+  var mt = "margin-top: -" + navHeight + "px; ";
+  var css = "";
+  // offset scroll position for anchor links (for fixed navbar)
+  for (var i = 1; i <= 6; i++) {
+    css += ".section h" + i + "{ " + pt + mt + "}\n";
+  }
+  style.innerHTML = "body {" + pt + "padding-bottom: 40px; }\n" + css;
+  document.head.appendChild(style);
+});
+</script>
+
+<!-- tabsets -->
+
+<style type="text/css">
+.tabset-dropdown > .nav-tabs {
+  display: inline-table;
+  max-height: 500px;
+  min-height: 44px;
+  overflow-y: auto;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs > li.active:before, .tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "\e259";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
+  content: "\e258";
+  font-family: 'Glyphicons Halflings';
+  border: none;
+}
+
+.tabset-dropdown > .nav-tabs > li.active {
+  display: block;
+}
+
+.tabset-dropdown > .nav-tabs > li > a,
+.tabset-dropdown > .nav-tabs > li > a:focus,
+.tabset-dropdown > .nav-tabs > li > a:hover {
+  border: none;
+  display: inline-block;
+  border-radius: 4px;
+  background-color: transparent;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li {
+  display: block;
+  float: none;
+}
+
+.tabset-dropdown > .nav-tabs > li {
+  display: none;
+}
+</style>
+
+<!-- code folding -->
+<style type="text/css">
+.code-folding-btn { margin-bottom: 4px; }
+</style>
+
+
+
+<style type="text/css">
+
+#TOC {
+  margin: 25px 0px 20px 0px;
+}
+@media (max-width: 768px) {
+#TOC {
+  position: relative;
+  width: 100%;
+}
+}
+
+@media print {
+.toc-content {
+  /* see https://github.com/w3c/csswg-drafts/issues/4434 */
+  float: right;
+}
+}
+
+.toc-content {
+  padding-left: 30px;
+  padding-right: 40px;
+}
+
+div.main-container {
+  max-width: 1200px;
+}
+
+div.tocify {
+  width: 20%;
+  max-width: 260px;
+  max-height: 85%;
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+  div.tocify {
+    width: 25%;
+  }
+}
+
+@media (max-width: 767px) {
+  div.tocify {
+    width: 100%;
+    max-width: none;
+  }
+}
+
+.tocify ul, .tocify li {
+  line-height: 20px;
+}
+
+.tocify-subheader .tocify-item {
+  font-size: 0.90em;
+}
+
+.tocify .list-group-item {
+  border-radius: 0px;
+}
+
+
+</style>
+
+
+
+</head>
+
+<body>
+
+
+<div class="container-fluid main-container">
+
+
+<!-- setup 3col/9col grid for toc_float and main content  -->
+<div class="row">
+<div class="col-xs-12 col-sm-4 col-md-3">
+<div id="TOC" class="tocify">
+</div>
+</div>
+
+<div class="toc-content col-xs-12 col-sm-8 col-md-9">
+
+
+
+
+<div class="navbar navbar-default  navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-bs-toggle="collapse" data-target="#navbar" data-bs-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="index.html">PIPAC_spatial</a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        <li>
+  <a href="index.html">Home</a>
+</li>
+<li>
+  <a href="about.html">About</a>
+</li>
+<li>
+  <a href="license.html">License</a>
+</li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div><!--/.container -->
+</div><!--/.navbar -->
+
+<div id="header">
+
+<div class="btn-group pull-right float-right">
+<button type="button" class="btn btn-default btn-xs btn-secondary btn-sm dropdown-toggle" data-toggle="dropdown" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><span>Code</span> <span class="caret"></span></button>
+<ul class="dropdown-menu dropdown-menu-right" style="min-width: 50px;">
+<li><a id="rmd-show-all-code" href="#">Show All Code</a></li>
+<li><a id="rmd-hide-all-code" href="#">Hide All Code</a></li>
+</ul>
+</div>
+
+
+
+<h1 class="title toc-ignore">Plotting the results of the proximity
+analysis on PIPAC Xenium data</h1>
+<h4 class="author">heinin</h4>
+<h4 class="date">2025-09-19</h4>
+
+</div>
+
+
+<p>
+<button type="button" class="btn btn-default btn-workflowr btn-workflowr-report" data-toggle="collapse" data-target="#workflowr-report">
+<span class="glyphicon glyphicon-list" aria-hidden="true"></span>
+workflowr <span class="glyphicon glyphicon-exclamation-sign text-danger"
+aria-hidden="true"></span>
+</button>
+</p>
+<div id="workflowr-report" class="collapse">
+<ul class="nav nav-tabs">
+<li class="active">
+<a data-toggle="tab" href="#summary">Summary</a>
+</li>
+<li>
+<a data-toggle="tab" href="#checks"> Checks <span
+class="glyphicon glyphicon-exclamation-sign text-danger"
+aria-hidden="true"></span> </a>
+</li>
+<li>
+<a data-toggle="tab" href="#versions">Past versions</a>
+</li>
+</ul>
+<div class="tab-content">
+<div id="summary" class="tab-pane fade in active">
+<p>
+<strong>Last updated:</strong> 2025-11-20
+</p>
+<p>
+<strong>Checks:</strong> <span
+class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> 5
+<span class="glyphicon glyphicon-exclamation-sign text-danger"
+aria-hidden="true"></span> 2
+</p>
+<p>
+<strong>Knit directory:</strong> <code>PIPAC_spatial/</code> <span
+class="glyphicon glyphicon-question-sign" aria-hidden="true"
+title="This is the local directory in which the code in this file was executed.">
+</span>
+</p>
+<p>
+This reproducible <a href="https://rmarkdown.rstudio.com">R Markdown</a>
+analysis was created with <a
+  href="https://github.com/workflowr/workflowr">workflowr</a> (version
+1.7.1). The <em>Checks</em> tab describes the reproducibility checks
+that were applied when the results were created. The <em>Past
+versions</em> tab lists the development history.
+</p>
+<hr>
+</div>
+<div id="checks" class="tab-pane fade">
+<div id="workflowr-checks" class="panel-group">
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRMarkdownfilestronguncommittedchanges">
+<span class="glyphicon glyphicon-exclamation-sign text-danger"
+aria-hidden="true"></span> <strong>R Markdown file:</strong> uncommitted
+changes </a>
+</p>
+</div>
+<div id="strongRMarkdownfilestronguncommittedchanges"
+class="panel-collapse collapse">
+<div class="panel-body">
+<p>The R Markdown file has unstaged changes. To know which version of
+the R Markdown file created these results, you’ll want to first commit
+it to the Git repo. If you’re still working on the analysis, you can
+ignore this warning. When you’re finished, you can run
+<code>wflow_publish</code> to commit the R Markdown file and build the
+HTML.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongEnvironmentstrongempty">
+<span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span> <strong>Environment:</strong> empty </a>
+</p>
+</div>
+<div id="strongEnvironmentstrongempty" class="panel-collapse collapse">
+<div class="panel-body">
+<p>Great job! The global environment was empty. Objects defined in the
+global environment can affect the analysis in your R Markdown file in
+unknown ways. For reproduciblity it’s best to always run the code in an
+empty environment.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongSeedstrongcodesetseed20240917code">
+<span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span> <strong>Seed:</strong>
+<code>set.seed(20240917)</code> </a>
+</p>
+</div>
+<div id="strongSeedstrongcodesetseed20240917code"
+class="panel-collapse collapse">
+<div class="panel-body">
+<p>The command <code>set.seed(20240917)</code> was run prior to running
+the code in the R Markdown file. Setting a seed ensures that any results
+that rely on randomness, e.g. subsampling or permutations, are
+reproducible.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongSessioninformationstrongrecorded">
+<span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span> <strong>Session information:</strong>
+recorded </a>
+</p>
+</div>
+<div id="strongSessioninformationstrongrecorded"
+class="panel-collapse collapse">
+<div class="panel-body">
+<p>Great job! Recording the operating system, R version, and package
+versions is critical for reproducibility.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongCachestrongnone">
+<span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span> <strong>Cache:</strong> none </a>
+</p>
+</div>
+<div id="strongCachestrongnone" class="panel-collapse collapse">
+<div class="panel-body">
+<p>Nice! There were no cached chunks for this analysis, so you can be
+confident that you successfully produced the results during this
+run.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongFilepathsstrongabsolute">
+<span class="glyphicon glyphicon-exclamation-sign text-danger"
+aria-hidden="true"></span> <strong>File paths:</strong> absolute </a>
+</p>
+</div>
+<div id="strongFilepathsstrongabsolute" class="panel-collapse collapse">
+<div class="panel-body">
+<p>
+Using absolute paths to the files within your workflowr project makes it
+difficult for you and others to run your code on a different machine.
+Change the absolute path(s) below to the suggested relative path(s) to
+make your code more reproducible.
+</p>
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th style="text-align:left;">
+absolute
+</th>
+<th style="text-align:left;">
+relative
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+/home/hnatri/PIPAC_spatial/
+</td>
+<td style="text-align:left;">
+.
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+/home/hnatri/PIPAC_spatial/code/PIPAC_colors_themes.R
+</td>
+<td style="text-align:left;">
+code/PIPAC_colors_themes.R
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+/home/hnatri/PIPAC_spatial/code/plot_functions.R
+</td>
+<td style="text-align:left;">
+code/plot_functions.R
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+/home/hnatri/PIPAC_spatial/enrichment_tumor_scores_compiled.tsv
+</td>
+<td style="text-align:left;">
+enrichment_tumor_scores_compiled.tsv
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+/home/hnatri/PIPAC_spatial/tumor_proximity_compiled.tsv
+</td>
+<td style="text-align:left;">
+tumor_proximity_compiled.tsv
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+/home/hnatri/PIPAC_spatial/enrichment_pretreatment_scores_compiled.tsv
+</td>
+<td style="text-align:left;">
+enrichment_pretreatment_scores_compiled.tsv
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+/home/hnatri/PIPAC_spatial/tumor_pretreatment_proximity_compiled.tsv
+</td>
+<td style="text-align:left;">
+tumor_pretreatment_proximity_compiled.tsv
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+/home/hnatri/PIPAC_spatial/enrichment_posttreatment_scores_compiled.tsv
+</td>
+<td style="text-align:left;">
+enrichment_posttreatment_scores_compiled.tsv
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+/home/hnatri/PIPAC_spatial/tumor_posttreatment_proximity_compiled.tsv
+</td>
+<td style="text-align:left;">
+tumor_posttreatment_proximity_compiled.tsv
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomheininPIPACspatialtree2221fdb25852e44537732db34a0abd5f08c4c9b0targetblank2221fdba">
+<span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span> <strong>Repository version:</strong>
+<a href="https://github.com/heinin/PIPAC_spatial/tree/2221fdb25852e44537732db34a0abd5f08c4c9b0" target="_blank">2221fdb</a>
+</a>
+</p>
+</div>
+<div
+id="strongRepositoryversionstrongahrefhttpsgithubcomheininPIPACspatialtree2221fdb25852e44537732db34a0abd5f08c4c9b0targetblank2221fdba"
+class="panel-collapse collapse">
+<div class="panel-body">
+<p>
+Great! You are using Git for version control. Tracking code development
+and connecting the code version to the results is critical for
+reproducibility.
+</p>
+<p>
+The results in this page were generated with repository version
+<a href="https://github.com/heinin/PIPAC_spatial/tree/2221fdb25852e44537732db34a0abd5f08c4c9b0" target="_blank">2221fdb</a>.
+See the <em>Past versions</em> tab to see a history of the changes made
+to the R Markdown and HTML files.
+</p>
+<p>
+Note that you need to be careful to ensure that all relevant files for
+the analysis have been committed to Git prior to generating the results
+(you can use <code>wflow_publish</code> or
+<code>wflow_git_commit</code>). workflowr only checks the R Markdown
+file, but you know if there are other scripts or data files that it
+depends on. Below is the status of the Git repository when the results
+were generated:
+</p>
+<pre><code>
+Ignored files:
+    Ignored:    .RData
+    Ignored:    analysis/figure/
+    Ignored:    analysis/finalize_annotations.html
+    Ignored:    cell_immune_cluster_marker_annotations.tsv
+    Ignored:    cell_nonimmune_cluster_marker_annotations.tsv
+    Ignored:    celltype_markers.tsv
+    Ignored:    code/.Rhistory
+    Ignored:    code/Proximity_analysis/.DS_Store
+    Ignored:    code/Proximity_analysis/data/
+    Ignored:    code/Proximity_analysis/output/
+    Ignored:    code/RSC_latest_EDM_2025-08-06/
+    Ignored:    code/celltype_proximity_tumor.Rout
+    Ignored:    immune_cluster_marker_annotations_2ndpass.tsv
+    Ignored:    immune_prelim_annot_topmarkers.tsv
+    Ignored:    nonimmune_cluster_marker_annotations_2ndpass.tsv
+    Ignored:    nonimmune_prelim_annot_topmarkers.tsv
+
+Untracked files:
+    Untracked:  analysis/finalize_annotations.Rmd
+    Untracked:  analysis/immune_annotation_cell.Rmd
+    Untracked:  analysis/nonimmune_annotation_cell.Rmd
+    Untracked:  code/.RDataTmp
+    Untracked:  code/.RDataTmp1
+    Untracked:  code/celltype_proximity_09232025.R
+    Untracked:  code/celltype_proximity_tumor.R
+    Untracked:  code/denoist_chunk.R
+    Untracked:  code/plot_informative_cluster_markers.R
+    Untracked:  code/slurm.26717417.err
+    Untracked:  code/slurm.26717417.out
+    Untracked:  enrichment_posttreatment_scores_compiled.tsv
+    Untracked:  enrichment_pretreatment_scores_compiled.tsv
+    Untracked:  enrichment_tumor_scores_compiled.tsv
+    Untracked:  output/enrichment_scores_compiled.tsv
+    Untracked:  output/proximity_compiled.tsv
+    Untracked:  tumor_posttreatment_proximity_compiled.tsv
+    Untracked:  tumor_pretreatment_proximity_compiled.tsv
+    Untracked:  tumor_proximity_compiled.tsv
+
+Unstaged changes:
+    Deleted:    Rplots.pdf
+    Modified:   analysis/Xenium_preprocess_wholecell.Rmd
+    Modified:   analysis/add_metadata.Rmd
+    Modified:   analysis/annotation_cell.Rmd
+    Modified:   analysis/arm3_comparative_analysis.Rmd
+    Modified:   analysis/arm3_prepost_plots_DEGs.Rmd
+    Modified:   analysis/compare_cellular_nuclear.Rmd
+    Modified:   analysis/compare_cellular_nuclear_denoist_annot.Rmd
+    Modified:   analysis/index.Rmd
+    Modified:   analysis/niche_construction_ncells3k_nneighbors20.Rmd
+    Modified:   analysis/pca_variance_decomp.Rmd
+    Modified:   analysis/proximity.Rmd
+    Modified:   analysis/splitting_samples.Rmd
+    Modified:   code/PIPAC_colors_themes.R
+    Modified:   code/anndata_to_seurat.R
+    Modified:   code/denoist.R
+    Modified:   code/pairwise_proximity.R
+    Modified:   code/pairwise_proximity_chunk.R
+    Modified:   code/parse_denoist_res.R
+    Modified:   code/plot_functions.R
+    Modified:   code/run_rscript.sh
+    Modified:   code/seurat_to_anndata.R
+    Modified:   code/update_metadata.R
+
+</code></pre>
+<p>
+Note that any generated files, e.g. HTML, png, CSS, etc., are not
+included in this status report because it is ok for generated content to
+have uncommitted changes.
+</p>
+</div>
+</div>
+</div>
+</div>
+<hr>
+</div>
+<div id="versions" class="tab-pane fade">
+
+<p>
+These are the previous versions of the repository in which changes were
+made to the R Markdown (<code>analysis/proximity.Rmd</code>) and HTML
+(<code>docs/proximity.html</code>) files. If you’ve configured a remote
+Git repository (see <code>?wflow_git_remote</code>), click on the
+hyperlinks in the table below to view the files as they were in that
+past version.
+</p>
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+File
+</th>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+<th>
+Message
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+Rmd
+</td>
+<td>
+<a href="https://github.com/heinin/PIPAC_spatial/blob/7c46eb323bdb008ec08e843dda368c437753b4c7/analysis/proximity.Rmd" target="_blank">7c46eb3</a>
+</td>
+<td>
+heinin
+</td>
+<td>
+2025-09-29
+</td>
+<td>
+Updated to denoised transcript data
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<hr>
+</div>
+</div>
+</div>
+<div id="load-packages" class="section level3">
+<h3>Load packages</h3>
+<pre class="r"><code>suppressPackageStartupMessages({
+  library(workflowr)
+  library(dplyr)
+  library(Seurat)
+  library(SeuratObject)
+  library(SeuratDisk)
+  library(tidyverse)
+  library(tibble)
+  library(ggplot2)
+  library(ggpubr)
+  library(ggrepel)
+  library(googlesheets4)
+  library(workflowr)
+  library(patchwork)
+  library(spatstat)
+  library(missMDA)
+  library(FactoMineR)})</code></pre>
+</div>
+<div id="environment-variables-and-helper-functions"
+class="section level3">
+<h3>Environment variables and helper functions</h3>
+<pre class="r"><code>setwd(&quot;/home/hnatri/PIPAC_spatial/&quot;)
+set.seed(9999)
+options(future.globals.maxSize = 30000 * 1024^2)
+options(scipen = 99999)
+options(ggrepel.max.overlaps = Inf)
+
+source(&quot;/home/hnatri/PIPAC_spatial/code/PIPAC_colors_themes.R&quot;)
+source(&quot;/home/hnatri/PIPAC_spatial/code/plot_functions.R&quot;)</code></pre>
+</div>
+<div id="import-data" class="section level3">
+<h3>Import data</h3>
+<pre class="r"><code>seurat_data &lt;- readRDS(&quot;/tgen_labs/banovich/PIPAC/Seurat/cell_merged_spatial_filtered_splitsamples_clustered_NN30_PC50_Seurat_denoIST.rds&quot;)
+
+enrichment_scores_compiled_tumor &lt;- read.table(&quot;/home/hnatri/PIPAC_spatial/enrichment_tumor_scores_compiled.tsv&quot;,
+                                               header = T)
+proximity_compiled_tumor &lt;- read.table(&quot;/home/hnatri/PIPAC_spatial/tumor_proximity_compiled.tsv&quot;,
+                                       header = T)</code></pre>
+</div>
+<div id="which-celltypes-are-proximal-to-each-other"
+class="section level3">
+<h3>Which celltypes are proximal to each other</h3>
+<p><strong>Myeloid cluster associated with infiltrating
+lymphocytes:</strong><br />
+M1 (L2-L4) - SPP1 intermediate<br />
+M2 (L5) - suppressive, SPP1 high<br />
+M6 (L1-L5) - Suppressive, SPP1 intermediate<br />
+M7 (L3, also F3) - Suppressive, SPP1 intermediate<br />
+M8 (L5, also Mast, Endo) - Suppressive, cell cycle markers, SPP1
+high<br />
+</p>
+<p><strong>Myeloid cluster associated with CAFs:</strong><br />
+M5 (F2-F3, also L2-L3) - Suppressive, SPP1 intermediate<br />
+</p>
+<p><strong>Myeloid cluster associated with tumor cells:</strong><br />
+M4 (EpiTumor2 (and less so 1), also L, Plasma, F2-F3) - Possibly not
+myeloid?<br />
+</p>
+<p>M3, no significant enrichment.<br />
+M9, no significant enrichment.<br />
+</p>
+<p><strong>CAFs not enriched near tumor cells, but specific myeloid
+clusters:</strong><br />
+F1 (COL1A2): M1<br />
+F2 (COL1A2, higher FN1): M4-M5<br />
+F3 (no COL1A2) = M4,5,7,8 and Mast, Endo2, L2-3)<br />
+F4 (COL1A2): Plasma 1-3, fever F4 near other F clusters.<br />
+</p>
+<pre class="r"><code>enrichment_scores_compiled_tumor %&gt;%
+  mutate(pair = paste0(prox_ct, &quot;_&quot;, prox_to),
+         sig = ifelse(pvale_adjust &lt; 0.01, &quot;sig&quot;, &quot;nonsig&quot;)) %&gt;%
+  filter(sig == &quot;sig&quot;) %&gt;%
+  drop_na() %&gt;%
+  arrange(pair) %&gt;%
+  ggplot(aes(x = reorder(pair, log_or), y = log_or)) +
+    geom_pointrange(aes(ymin = log_or05, ymax = log_or95)) +
+    labs(y = &quot;OR with 95% Confidence Interval&quot;,
+         x = &quot;Celltype pair&quot;) +
+  geom_hline(yintercept = 0) +
+  coord_flip() +
+  theme_bw() +
+  facet_wrap(~prox_ct, scales = &quot;free&quot;, ncol = 4)</code></pre>
+<p><img src="figure/proximity.Rmd/unnamed-chunk-4-1.png" width="1152" style="display: block; margin: auto;" /></p>
+</div>
+<div id="plot-differences-between-timepoints-and-tissues"
+class="section level3">
+<h3>Plot differences between timepoints and tissues</h3>
+<pre class="r"><code>proximity_compiled_tumor$Tissue &lt;- mapvalues(proximity_compiled_tumor$sample,
+                                       from = seurat_data$Sample,
+                                       to = seurat_data$Tissue)
+proximity_compiled_tumor$Timepoint &lt;- mapvalues(proximity_compiled_tumor$sample,
+                                          from = seurat_data$Sample,
+                                          to = seurat_data$Timepoint)
+
+proximity_compiled_tumor$Timepoint &lt;- factor(proximity_compiled_tumor$Timepoint,
+                                       levels = c(0, 6))
+
+#unique(paste0(proximity_compiled$anchor_cell_ct, &quot;_&quot;, proximity_compiled$prox_cell_ct))
+
+#testtt &lt;- proximity_compiled %&gt;%
+#  mutate(pair = paste0(anchor_cell_ct, &quot;_&quot;, prox_cell_ct)) %&gt;%
+#  arrange(anchor_cell_ct) %&gt;%
+#  filter(Tissue == &quot;Tumor&quot;,
+#         anchor_cell_ct == &quot;M2&quot;,
+#         prox_cell_ct != &quot;M2&quot;)
+summaries &lt;- proximity_compiled_tumor %&gt;%
+  arrange(anchor_cell_ct) %&gt;%
+  mutate(pair = paste0(anchor_cell_ct, &quot;_&quot;, prox_cell_ct)) %&gt;%
+  arrange(anchor_cell_ct) %&gt;%
+  filter(Tissue == &quot;Tumor&quot;,
+         anchor_cell_ct %in% c(&quot;F1&quot;, &quot;F2&quot;, &quot;F3&quot;, &quot;F4&quot;, &quot;F5&quot;),
+         prox_cell_ct %in% setdiff(unique(seurat_data$Annotation), c(&quot;F1&quot;, &quot;F2&quot;, &quot;F3&quot;, &quot;F4&quot;, &quot;F5&quot;))) %&gt;%
+  group_by(Timepoint, pair) %&gt;%
+  dplyr::summarise(nn = n()) %&gt;%
+  mutate(timepoint_pair = paste0(Timepoint, &quot;_&quot;, pair)) %&gt;%
+  filter(nn &gt; 10) %&gt;%
+  group_by(pair) %&gt;%
+  filter(n() &gt; 1)
+
+p1 &lt;- proximity_compiled_tumor %&gt;%
+  mutate(pair = paste0(anchor_cell_ct, &quot;_&quot;, prox_cell_ct)) %&gt;%
+  mutate(timepoint_pair = paste0(Timepoint, &quot;_&quot;, pair)) %&gt;%
+  arrange(anchor_cell_ct) %&gt;%
+  filter(timepoint_pair %in% summaries$timepoint_pair,
+         Tissue == &quot;Tumor&quot;,
+         anchor_cell_ct == &quot;F1&quot;,
+         prox_cell_ct != &quot;F1&quot;) %&gt;%
+  ggboxplot(x = &quot;Timepoint&quot;, y = &quot;distance&quot;, fill = &quot;Timepoint&quot;,
+           add = &quot;jitter&quot;, facet.by = &quot;pair&quot;,
+           ylim = c(0, 150), short.panel.labs = T) +
+  NoLegend()
+
+p1 + stat_compare_means(label = &quot;p.format&quot;, label.y = 130)
+
+p2 &lt;- proximity_compiled_tumor %&gt;%
+  mutate(pair = paste0(anchor_cell_ct, &quot;_&quot;, prox_cell_ct)) %&gt;%
+  mutate(timepoint_pair = paste0(Timepoint, &quot;_&quot;, pair)) %&gt;%
+  arrange(anchor_cell_ct) %&gt;%
+  filter(timepoint_pair %in% summaries$timepoint_pair,
+         Tissue == &quot;Tumor&quot;,
+         anchor_cell_ct == &quot;F2&quot;,
+         prox_cell_ct != &quot;F2&quot;) %&gt;%
+  ggboxplot(x = &quot;Timepoint&quot;, y = &quot;distance&quot;, fill = &quot;Timepoint&quot;,
+           add = &quot;jitter&quot;, facet.by = &quot;pair&quot;,
+           ylim = c(0, 150), short.panel.labs = T) +
+  NoLegend()
+
+p2 + stat_compare_means(label = &quot;p.format&quot;, label.y = 130)
+
+p3 &lt;- proximity_compiled_tumor %&gt;%
+  mutate(pair = paste0(anchor_cell_ct, &quot;_&quot;, prox_cell_ct)) %&gt;%
+  mutate(timepoint_pair = paste0(Timepoint, &quot;_&quot;, pair)) %&gt;%
+  arrange(anchor_cell_ct) %&gt;%
+  filter(timepoint_pair %in% summaries$timepoint_pair,
+         Tissue == &quot;Tumor&quot;,
+         anchor_cell_ct == &quot;F3&quot;,
+         prox_cell_ct != &quot;F3&quot;) %&gt;%
+  ggboxplot(x = &quot;Timepoint&quot;, y = &quot;distance&quot;, fill = &quot;Timepoint&quot;,
+           add = &quot;jitter&quot;, facet.by = &quot;pair&quot;,
+           ylim = c(0, 150), short.panel.labs = T) +
+  NoLegend()
+
+p3 + stat_compare_means(label = &quot;p.format&quot;, label.y = 130)
+
+p4 &lt;- proximity_compiled_tumor %&gt;%
+  mutate(pair = paste0(anchor_cell_ct, &quot;_&quot;, prox_cell_ct)) %&gt;%
+  mutate(timepoint_pair = paste0(Timepoint, &quot;_&quot;, pair)) %&gt;%
+  arrange(anchor_cell_ct) %&gt;%
+  filter(timepoint_pair %in% summaries$timepoint_pair,
+         Tissue == &quot;Tumor&quot;,
+         anchor_cell_ct == &quot;F4&quot;,
+         prox_cell_ct != &quot;F4&quot;) %&gt;%
+  ggboxplot(x = &quot;Timepoint&quot;, y = &quot;distance&quot;, fill = &quot;Timepoint&quot;,
+           add = &quot;jitter&quot;, facet.by = &quot;pair&quot;,
+           ylim = c(0, 150), short.panel.labs = T) +
+  NoLegend()
+
+p4 + stat_compare_means(label = &quot;p.format&quot;, label.y = 130)
+
+#p5 &lt;- proximity_compiled %&gt;%
+#  mutate(pair = paste0(anchor_cell_ct, &quot;_&quot;, prox_cell_ct)) %&gt;%
+#  mutate(timepoint_pair = paste0(Timepoint, &quot;_&quot;, pair)) %&gt;%
+#  arrange(anchor_cell_ct) %&gt;%
+#  filter(timepoint_pair %in% summaries$timepoint_pair,
+#         Tissue == &quot;Tumor&quot;,
+#         anchor_cell_ct == &quot;F5&quot;,
+#         prox_cell_ct != &quot;F5&quot;) %&gt;%
+#  ggboxplot(x = &quot;Timepoint&quot;, y = &quot;distance&quot;, fill = &quot;Timepoint&quot;,
+#           add = &quot;jitter&quot;, facet.by = &quot;pair&quot;,
+#           ylim = c(0, 150), short.panel.labs = T) +
+#  NoLegend()
+#
+#p5 + stat_compare_means(label = &quot;p.format&quot;, label.y = 130)
+
+#proximity_compiled %&gt;%
+#  mutate(pair = paste0(anchor_cell_ct, &quot;_&quot;, prox_cell_ct)) %&gt;%
+#  arrange(anchor_cell_ct) %&gt;%
+#  filter(Tissue == &quot;Tumor&quot;,
+#         anchor_cell_ct == &quot;M2&quot;,
+#         prox_cell_ct != &quot;M2&quot;) %&gt;%
+#  ggplot(aes(x = Timepoint, y = distance, fill = Timepoint)) +
+#    geom_violin(alpha = 0.5) +
+#    geom_point(position = position_jitter(seed = 1, width = 0.2)) +
+#    facet_wrap(~pair) +
+#    theme(legend.position = &quot;none&quot;) +
+#    theme_classic()</code></pre>
+</div>
+<div id="heatmaps-of-celltype-proximity-before-and-after-pipac"
+class="section level3">
+<h3>Heatmaps of celltype proximity before and after PIPAC</h3>
+<div id="all-tumors" class="section level4">
+<h4>All tumors</h4>
+<pre class="r"><code>enrichment_scores_compiled_tumor &lt;- enrichment_scores_compiled[complete.cases(enrichment_scores_compiled_tumor),]
+
+pval &lt;- reshape2::dcast(prox_to ~ prox_ct, value.var = &#39;pvale_adjust&#39;, data = enrichment_scores_compiled_tumor) 
+or &lt;- reshape2::dcast(prox_to ~ prox_ct, value.var = &#39;log_or&#39;, data = enrichment_scores_compiled_tumor)
+
+rownames(pval) &lt;- pval$prox_to
+pval$prox_to &lt;- NULL
+
+rownames(or) &lt;- or$prox_to
+or$prox_to &lt;- NULL
+
+ct_pval&lt;- pval
+ct_pval[is.na(ct_pval)] = 1
+
+ct_or&lt;- or
+ct_or[is.na(ct_or)] = 0
+ct_or[is.infinite(as.matrix(ct_or))] &lt;- 0
+
+ct_or[ct_pval &gt; 0.05] = 0 # replace non-sig results with 0
+
+calc_heatmap_w &lt;- function(df){width &lt;- ncol(df) * 0.24; return(width)}
+calc_heatmap_h &lt;- function(df){height &lt;- nrow(df) * 0.18; return(height)}
+
+# plot odds ratio
+min01 &lt;- quantile(as.matrix(ct_or), 0.01)
+max99 &lt;- quantile(as.matrix(ct_or), 0.99)
+col_fun = colorRamp2(c(min01, 0, max99), c(&quot;#377EB8&quot;, &quot;white&quot;, &quot;#E41A1C&quot;))
+
+hp &lt;- Heatmap(t(ct_or), name = &#39;log(OR)&#39;,
+              row_title = &#39;Anchor&#39;,
+              row_title_side = &#39;right&#39;,
+              row_names_side = &#39;left&#39;,
+              row_dend_side = &#39;right&#39;,
+              row_title_gp = gpar(fontsize = 15),
+              column_title = &#39;Nearest Neighbor&#39;,
+              column_title_side = &quot;bottom&quot;,
+              column_names_side = &#39;top&#39;,
+              column_names_rot = 45,
+              column_dend_side = &#39;bottom&#39;,
+              column_title_gp = gpar(fontsize = 15),
+              rect_gp = gpar(col = &quot;#b8b7b6&quot;, lwd = 0.5),
+              width = unit(calc_heatmap_w(ct_or), &quot;in&quot;),
+              height = unit(calc_heatmap_h(ct_or), &quot;in&quot;),
+              na_col = &#39;white&#39;,
+              col = col_fun,
+              row_dend_width = unit(0.5, &#39;cm&#39;),
+              column_dend_height = unit(0.5, &#39;cm&#39;))
+
+draw(hp)
+
+#pdf(&quot;.pdf&quot;,
+#    width = 12,
+#    height = 10)
+
+#draw(hp)
+
+#dev.off()</code></pre>
+</div>
+<div id="pre-treatment-tumors" class="section level4">
+<h4>Pre-treatment tumors</h4>
+<pre class="r"><code>enrichment_scores_compiled &lt;- read.table(&quot;/home/hnatri/PIPAC_spatial/enrichment_pretreatment_scores_compiled.tsv&quot;,
+                                         header = T)
+proximity_compiled &lt;- read.table(&quot;/home/hnatri/PIPAC_spatial/tumor_pretreatment_proximity_compiled.tsv&quot;,
+                                 header = T)
+
+enrichment_scores_compiled &lt;- enrichment_scores_compiled[complete.cases(enrichment_scores_compiled),]
+
+pval &lt;- reshape2::dcast(prox_to ~ prox_ct, value.var = &#39;pvale_adjust&#39;, data = enrichment_scores_compiled) 
+or &lt;- reshape2::dcast(prox_to ~ prox_ct, value.var = &#39;log_or&#39;, data = enrichment_scores_compiled)
+
+rownames(pval) &lt;- pval$prox_to
+pval$prox_to &lt;- NULL
+
+rownames(or) &lt;- or$prox_to
+or$prox_to &lt;- NULL
+
+ct_pval&lt;- pval
+ct_pval[is.na(ct_pval)] = 1
+
+ct_or&lt;- or
+ct_or[is.na(ct_or)] = 0
+ct_or[is.infinite(as.matrix(ct_or))] &lt;- 0
+
+ct_or[ct_pval &gt; 0.05] = 0 # replace non-sig results with 0
+
+calc_heatmap_w &lt;- function(df){width &lt;- ncol(df) * 0.24; return(width)}
+calc_heatmap_h &lt;- function(df){height &lt;- nrow(df) * 0.18; return(height)}
+
+# plot odds ratio
+min01 &lt;- quantile(as.matrix(ct_or), 0.01)
+max99 &lt;- quantile(as.matrix(ct_or), 0.99)
+col_fun = colorRamp2(c(min01, 0, max99), c(&quot;#377EB8&quot;, &quot;white&quot;, &quot;#E41A1C&quot;))
+
+ct_or &lt;- t(ct_or)
+
+hp &lt;- Heatmap(ct_or, name = &#39;log(OR)&#39;,
+              row_title = &#39;Anchor&#39;,
+              row_title_side = &#39;right&#39;,
+              row_names_side = &#39;left&#39;,
+              row_dend_side = &#39;right&#39;,
+              row_title_gp = gpar(fontsize = 15),
+              column_title = &#39;Nearest Neighbor&#39;,
+              column_title_side = &quot;bottom&quot;,
+              column_names_side = &#39;top&#39;,
+              column_names_rot = 45,
+              column_dend_side = &#39;bottom&#39;,
+              na_col = &#39;white&#39;, 
+              col = col_fun, 
+              row_dend_width = unit(0.5, &#39;cm&#39;),
+              column_dend_height = unit(0.5, &#39;cm&#39;),
+              width = ncol(ct_or)*unit(5, &quot;mm&quot;),
+              height = nrow(ct_or)*unit(5, &quot;mm&quot;))
+
+draw(hp)</code></pre>
+<p><img src="figure/proximity.Rmd/unnamed-chunk-7-1.png" width="960" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>#pdf(&quot;.pdf&quot;,
+#    width = 12,
+#    height = 10)
+
+#draw(hp)
+
+#dev.off()</code></pre>
+</div>
+<div id="post-treatment-tumors" class="section level4">
+<h4>Post-treatment tumors</h4>
+<pre class="r"><code>post_enrichment_scores_compiled &lt;- read.table(&quot;/home/hnatri/PIPAC_spatial/enrichment_posttreatment_scores_compiled.tsv&quot;,
+                                         header = T)
+post_proximity_compiled &lt;- read.table(&quot;/home/hnatri/PIPAC_spatial/tumor_posttreatment_proximity_compiled.tsv&quot;,
+                                 header = T)
+
+post_enrichment_scores_compiled &lt;- post_enrichment_scores_compiled[complete.cases(post_enrichment_scores_compiled),]
+
+post_pval &lt;- reshape2::dcast(prox_to ~ prox_ct, value.var = &#39;pvale_adjust&#39;, data = post_enrichment_scores_compiled) 
+post_or &lt;- reshape2::dcast(prox_to ~ prox_ct, value.var = &#39;log_or&#39;, data = post_enrichment_scores_compiled)
+
+rownames(post_pval) &lt;- post_pval$prox_to
+post_pval$prox_to &lt;- NULL
+
+rownames(post_or) &lt;- post_or$prox_to
+post_or$prox_to &lt;- NULL
+
+post_ct_pval&lt;- post_pval
+post_ct_pval[is.na(post_ct_pval)] = 1
+
+post_ct_or&lt;- post_or
+post_ct_or[is.na(post_ct_or)] = 0
+post_ct_or[is.infinite(as.matrix(post_ct_or))] &lt;- 0
+
+post_ct_or[post_ct_pval &gt; 0.05] = 0 # replace non-sig results with 0
+
+post_calc_heatmap_w &lt;- function(df){width &lt;- ncol(df) * 0.24; return(width)}
+post_calc_heatmap_h &lt;- function(df){height &lt;- nrow(df) * 0.18; return(height)}
+
+# plot odds ratio
+post_min01 &lt;- quantile(as.matrix(ct_or), 0.01)
+post_max99 &lt;- quantile(as.matrix(ct_or), 0.99)
+post_col_fun = colorRamp2(c(min01, 0, max99), c(&quot;#377EB8&quot;, &quot;white&quot;, &quot;#E41A1C&quot;))
+
+post_ct_or &lt;- t(post_ct_or)
+
+hp &lt;- Heatmap(post_ct_or, name = &#39;log(OR)&#39;, 
+              row_title = &#39;Anchor&#39;, 
+              row_title_side = &#39;right&#39;, 
+              row_names_side = &#39;left&#39;, 
+              row_dend_side = &#39;right&#39;,  
+              row_title_gp = gpar(fontsize = 15), 
+              column_title = &#39;Nearest Neighbor&#39;, 
+              column_title_side = &quot;bottom&quot;,
+              column_names_side = &#39;top&#39;, 
+              column_names_rot = 45,
+              column_dend_side = &#39;bottom&#39;,  
+              column_title_gp = gpar(fontsize = 15),
+              rect_gp = gpar(col = &quot;#b8b7b6&quot;, lwd = 0.5),
+              na_col = &#39;white&#39;, 
+              col = col_fun, 
+              row_dend_width = unit(2, &#39;cm&#39;), 
+              column_dend_height = unit(2, &#39;cm&#39;),
+              width = ncol(ct_or)*unit(5, &quot;mm&quot;), 
+              height = nrow(ct_or)*unit(5, &quot;mm&quot;)) 
+
+draw(hp)</code></pre>
+<p><img src="figure/proximity.Rmd/unnamed-chunk-8-1.png" width="960" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>#pdf(&quot;.pdf&quot;,
+#    width = 12,
+#    height = 10)
+
+#draw(hp)
+
+#dev.off()</code></pre>
+</div>
+<div id="pre-post-delta" class="section level4">
+<h4>Pre-post-delta</h4>
+<pre class="r"><code>ct_or &lt;- ct_or[rownames(post_ct_or), colnames(post_ct_or)]
+
+identical(rownames(ct_or), rownames(post_ct_or))</code></pre>
+<pre><code>[1] TRUE</code></pre>
+<pre class="r"><code>identical(colnames(ct_or), colnames(post_ct_or))</code></pre>
+<pre><code>[1] TRUE</code></pre>
+<pre class="r"><code>delta_or &lt;- ct_or-post_ct_or
+
+hp &lt;- Heatmap(delta_or, name = &#39;Delta of log(OR)&#39;,
+              row_title = &#39;Anchor&#39;,
+              row_title_side = &#39;right&#39;,
+              row_names_side = &#39;left&#39;,
+              row_dend_side = &#39;right&#39;,
+              row_title_gp = gpar(fontsize = 15),
+              column_title = &#39;Nearest Neighbor&#39;,
+              column_title_side = &quot;bottom&quot;,
+              column_names_side = &#39;top&#39;,
+              column_names_rot = 45,
+              column_dend_side = &#39;bottom&#39;,
+              na_col = &#39;white&#39;, 
+              col = col_fun, 
+              row_dend_width = unit(0.5, &#39;cm&#39;),
+              column_dend_height = unit(0.5, &#39;cm&#39;),
+              width = ncol(ct_or)*unit(5, &quot;mm&quot;),
+              height = nrow(ct_or)*unit(5, &quot;mm&quot;))
+
+draw(hp)</code></pre>
+<p><img src="figure/proximity.Rmd/unnamed-chunk-9-1.png" width="960" style="display: block; margin: auto;" /></p>
+</div>
+</div>
+<div id="pca-on-proximity" class="section level3">
+<h3>PCA on proximity</h3>
+<pre class="r"><code># A matrix of mean celltype-celltype distances in each sample
+proximity_compiled_tumor$pair &lt;- paste0(proximity_compiled_tumor$anchor_cell_ct, &quot;_&quot;, proximity_compiled_tumor$prox_cell_ct)
+
+proximity_matrix &lt;- proximity_compiled_tumor %&gt;%
+  group_by(sample, pair) %&gt;%
+  dplyr::summarise(mean_distance = mean(distance)) %&gt;%
+  ungroup() %&gt;%
+  pivot_wider(names_from = sample, values_from = mean_distance) %&gt;%
+  column_to_rownames(var = &quot;pair&quot;) %&gt;%
+  as.matrix()
+
+#library(naniar)
+#library(missForest)
+#
+#gg_miss_var(as.data.frame(proximity_matrix))</code></pre>
+<pre class="r"><code># Estimate the number of components from incomplete data
+nb &lt;- estim_ncpPCA(proximity_matrix,
+                   method.cv = &quot;Kfold&quot;,
+                   verbose = F)
+
+plot(0:5, nb$criterion, xlab = &quot;nb dim&quot;, ylab = &quot;MSEP&quot;)</code></pre>
+<p><img src="figure/proximity.Rmd/unnamed-chunk-11-1.png" width="576" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>res.comp &lt;- imputePCA(proximity_matrix, ncp = 5) # iterativePCA algorithm
+res.comp$completeObs[1:3,] # the imputed data set</code></pre>
+<pre><code>         20-010121T_(2_5_24) 20-010121T_(3_26_24) 20-010121T_(5_7_24)
+B1_B1               11.98845             27.81441            24.66759
+B1_DC               22.53503             25.22894            22.46041
+B1_Endo1            23.21335             20.57846            32.34658
+         20-010121T_(6_19_24) BSJ-38-1  BSJ-38-3   JM-45-1  JM-45-3
+B1_B1                10.52710 16.81228 15.000269  9.046612 25.76966
+B1_DC                24.36328 18.77784  8.299403 14.356003 39.02638
+B1_Endo1             28.21909 18.72778 20.128392 17.164768 36.55322
+         SF230726-002257 SF230912-002063 SF230915-002249 SF231027-005404
+B1_B1           12.15591        9.603317        8.221449        19.56984
+B1_DC           23.52740       28.579921       21.686956        22.22787
+B1_Endo1        23.81207       34.315085       16.236748        39.88652
+           SS-22-1  SS-22-3
+B1_B1     5.955864 23.03500
+B1_DC    30.793000 33.35659
+B1_Endo1 32.333422 33.36800</code></pre>
+<pre class="r"><code>#imp &lt;- cbind.data.frame(res.comp$completeObs, WindDirection)
+
+res.pca &lt;- PCA(res.comp$completeObs,
+               #quanti.sup = 1,
+               #quali.sup = 12,
+               ncp = 5,
+               graph = FALSE)
+
+pcs &lt;- as.data.frame(res.pca$var$coord)
+
+pcs$Tissue &lt;- mapvalues(rownames(pcs),
+                        from = seurat_data$Sample,
+                        to = seurat_data$Tissue) %&gt;% as.character()
+pcs$Arm &lt;- mapvalues(rownames(pcs),
+                        from = seurat_data$Sample,
+                        to = seurat_data$Arm) %&gt;% as.character()
+pcs$DISEASESITE &lt;- mapvalues(rownames(pcs),
+                        from = seurat_data$Sample,
+                        to = seurat_data$DISEASESITE) %&gt;% as.character()
+pcs$GENDER &lt;- mapvalues(rownames(pcs),
+                        from = seurat_data$Sample,
+                        to = seurat_data$GENDER) %&gt;% as.character()
+pcs$Tissue &lt;- mapvalues(rownames(pcs),
+                        from = seurat_data$Sample,
+                        to = seurat_data$Tissue) %&gt;% as.character()
+pcs$Patient_ID &lt;- mapvalues(rownames(pcs),
+                            from = seurat_data$Sample,
+                           to = seurat_data$Patient_ID) %&gt;% as.character()
+pcs$DXSITE &lt;- mapvalues(rownames(pcs),
+                        from = seurat_data$Sample,
+                        to = seurat_data$DXSITE) %&gt;% as.character()
+pcs$Timepoint &lt;- mapvalues(rownames(pcs),
+                           from = seurat_data$Sample,
+                           to = seurat_data$Timepoint) %&gt;% as.numeric()
+
+pcs$Timepoint &lt;- mapvalues(rownames(pcs),
+                           from = seurat_data$Sample,
+                           to = seurat_data$Timepoint) %&gt;% as.numeric()
+pcs$Timepoint &lt;- factor(pcs$Timepoint,
+                        levels = c(0, 6))
+
+
+pcs %&gt;%
+  ggplot(aes(x = Dim.1, y = Dim.2, shape = Timepoint, color = Patient_ID)) +
+  geom_point() +
+  theme_bw()</code></pre>
+<p><img src="figure/proximity.Rmd/unnamed-chunk-11-2.png" width="576" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>pcs %&gt;%
+  ggplot(aes(x = Dim.1, y = Dim.3, shape = Timepoint, color = Patient_ID)) +
+  geom_point() +
+  theme_bw()</code></pre>
+<p><img src="figure/proximity.Rmd/unnamed-chunk-11-3.png" width="576" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>pcs %&gt;%
+  ggplot(aes(x = Dim.2, y = Dim.3, shape = Timepoint, color = Patient_ID)) +
+  geom_point() +
+  theme_bw()</code></pre>
+<p><img src="figure/proximity.Rmd/unnamed-chunk-11-4.png" width="576" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>pcs %&gt;%
+  ggplot(aes(x = Dim.1, y = Dim.2, shape = Timepoint, color = DXSITE)) +
+  geom_point() +
+  theme_bw()</code></pre>
+<p><img src="figure/proximity.Rmd/unnamed-chunk-11-5.png" width="576" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>pcs %&gt;%
+  ggplot(aes(x = Dim.1, y = Dim.3, shape = Timepoint, color = DXSITE)) +
+  geom_point() +
+  theme_bw()</code></pre>
+<p><img src="figure/proximity.Rmd/unnamed-chunk-11-6.png" width="576" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>pcs %&gt;%
+  ggplot(aes(x = Dim.2, y = Dim.3, shape = Timepoint, color = DXSITE)) +
+  geom_point() +
+  theme_bw()</code></pre>
+<p><img src="figure/proximity.Rmd/unnamed-chunk-11-7.png" width="576" style="display: block; margin: auto;" /></p>
+<br>
+<p>
+<button type="button" class="btn btn-default btn-workflowr btn-workflowr-sessioninfo" data-toggle="collapse" data-target="#workflowr-sessioninfo" style="display: block;">
+<span class="glyphicon glyphicon-wrench" aria-hidden="true"></span>
+Session information
+</button>
+</p>
+<div id="workflowr-sessioninfo" class="collapse">
+<pre class="r"><code>sessionInfo()</code></pre>
+<pre><code>R version 4.3.0 (2023-04-21)
+Platform: x86_64-pc-linux-gnu (64-bit)
+Running under: Ubuntu 22.04.3 LTS
+
+Matrix products: default
+BLAS:   /usr/lib/x86_64-linux-gnu/openblas-pthread/libblas.so.3 
+LAPACK: /usr/lib/x86_64-linux-gnu/openblas-pthread/libopenblasp-r0.3.20.so;  LAPACK version 3.10.0
+
+locale:
+ [1] LC_CTYPE=en_US.UTF-8       LC_NUMERIC=C              
+ [3] LC_TIME=en_US.UTF-8        LC_COLLATE=en_US.UTF-8    
+ [5] LC_MONETARY=en_US.UTF-8    LC_MESSAGES=en_US.UTF-8   
+ [7] LC_PAPER=en_US.UTF-8       LC_NAME=C                 
+ [9] LC_ADDRESS=C               LC_TELEPHONE=C            
+[11] LC_MEASUREMENT=en_US.UTF-8 LC_IDENTIFICATION=C       
+
+time zone: Etc/UTC
+tzcode source: system (glibc)
+
+attached base packages:
+[1] grid      stats     graphics  grDevices utils     datasets  methods  
+[8] base     
+
+other attached packages:
+ [1] ComplexHeatmap_2.18.0  viridis_0.6.3          viridisLite_0.4.2     
+ [4] circlize_0.4.15        plyr_1.8.8             RColorBrewer_1.1-3    
+ [7] FactoMineR_2.8         missMDA_1.18           spatstat_3.0-6        
+[10] spatstat.linnet_3.1-1  spatstat.model_3.2-4   rpart_4.1.19          
+[13] spatstat.explore_3.2-1 nlme_3.1-162           spatstat.random_3.1-5 
+[16] spatstat.geom_3.2-1    spatstat.data_3.0-1    patchwork_1.1.2       
+[19] googlesheets4_1.1.1    ggrepel_0.9.3          ggpubr_0.6.0          
+[22] lubridate_1.9.2        forcats_1.0.0          stringr_1.5.0         
+[25] purrr_1.0.1            readr_2.1.4            tidyr_1.3.0           
+[28] tibble_3.2.1           ggplot2_3.4.2          tidyverse_2.0.0       
+[31] SeuratDisk_0.0.0.9021  Seurat_5.0.1           SeuratObject_5.0.1    
+[34] sp_1.6-1               dplyr_1.1.2            workflowr_1.7.1       
+
+loaded via a namespace (and not attached):
+  [1] RcppAnnoy_0.0.20      splines_4.3.0         later_1.3.1          
+  [4] cellranger_1.1.0      polyclip_1.10-4       fastDummies_1.7.3    
+  [7] lifecycle_1.0.3       rstatix_0.7.2         doParallel_1.0.17    
+ [10] rprojroot_2.0.3       globals_0.16.2        processx_3.8.1       
+ [13] lattice_0.21-8        hdf5r_1.3.8           MASS_7.3-60          
+ [16] flashClust_1.01-2     backports_1.4.1       magrittr_2.0.3       
+ [19] plotly_4.10.2         sass_0.4.6            rmarkdown_2.22       
+ [22] jquerylib_0.1.4       yaml_2.3.7            httpuv_1.6.11        
+ [25] sctransform_0.4.1     spam_2.9-1            spatstat.sparse_3.0-1
+ [28] reticulate_1.30       cowplot_1.1.1         pbapply_1.7-0        
+ [31] multcomp_1.4-23       abind_1.4-5           Rtsne_0.16           
+ [34] BiocGenerics_0.48.1   TH.data_1.1-2         sandwich_3.0-2       
+ [37] git2r_0.32.0          S4Vectors_0.40.2      IRanges_2.36.0       
+ [40] irlba_2.3.5.1         listenv_0.9.0         spatstat.utils_3.0-3 
+ [43] goftest_1.2-3         RSpectra_0.16-1       fitdistrplus_1.1-11  
+ [46] parallelly_1.36.0     leiden_0.4.3          codetools_0.2-19     
+ [49] DT_0.28               shape_1.4.6           tidyselect_1.2.0     
+ [52] farver_2.1.1          stats4_4.3.0          matrixStats_1.0.0    
+ [55] googledrive_2.1.1     jsonlite_1.8.5        GetoptLong_1.0.5     
+ [58] ellipsis_0.3.2        progressr_0.13.0      emmeans_1.8.6        
+ [61] iterators_1.0.14      ggridges_0.5.4        survival_3.5-5       
+ [64] foreach_1.5.2         tools_4.3.0           ica_1.0-3            
+ [67] Rcpp_1.0.10           glue_1.6.2            gridExtra_2.3        
+ [70] xfun_0.39             mgcv_1.8-42           withr_2.5.0          
+ [73] fastmap_1.1.1         fansi_1.0.4           callr_3.7.3          
+ [76] digest_0.6.31         estimability_1.4.1    timechange_0.2.0     
+ [79] R6_2.5.1              mime_0.12             mice_3.15.0          
+ [82] colorspace_2.1-0      Cairo_1.6-0           scattermore_1.2      
+ [85] tensor_1.5            utf8_1.2.3            generics_0.1.3       
+ [88] data.table_1.14.8     httr_1.4.6            htmlwidgets_1.6.2    
+ [91] scatterplot3d_0.3-44  whisker_0.4.1         uwot_0.1.14          
+ [94] pkgconfig_2.0.3       gtable_0.3.3          lmtest_0.9-40        
+ [97] htmltools_0.5.5       carData_3.0-5         dotCall64_1.0-2      
+[100] clue_0.3-64           multcompView_0.1-9    scales_1.2.1         
+[103] leaps_3.1             png_0.1-8             knitr_1.43           
+[106] rstudioapi_0.14       rjson_0.2.21          tzdb_0.4.0           
+[109] reshape2_1.4.4        curl_5.0.1            coda_0.19-4          
+[112] GlobalOptions_0.1.2   cachem_1.0.8          zoo_1.8-12           
+[115] KernSmooth_2.23-21    parallel_4.3.0        miniUI_0.1.1.1       
+[118] pillar_1.9.0          vctrs_0.6.2           RANN_2.6.1           
+[121] promises_1.2.0.1      car_3.1-2             xtable_1.8-4         
+[124] cluster_2.1.4         evaluate_0.21         magick_2.7.4         
+[127] mvtnorm_1.2-2         cli_3.6.1             compiler_4.3.0       
+[130] rlang_1.1.1           crayon_1.5.2          future.apply_1.11.0  
+[133] ggsignif_0.6.4        labeling_0.4.2        ps_1.7.5             
+[136] getPass_0.2-4         fs_1.6.2              stringi_1.7.12       
+[139] deldir_1.0-9          munsell_0.5.0         lazyeval_0.2.2       
+[142] Matrix_1.6-5          RcppHNSW_0.5.0        hms_1.1.3            
+[145] bit64_4.0.5           future_1.32.0         shiny_1.7.4          
+[148] highr_0.10            ROCR_1.0-11           gargle_1.5.0         
+[151] igraph_1.4.3          broom_1.0.5           bslib_0.5.0          
+[154] bit_4.0.5            </code></pre>
+</div>
+</div>
+
+
+<!-- Adjust MathJax settings so that all math formulae are shown using
+TeX fonts only; see
+https://docs.mathjax.org/en/latest/web/configuration.html. This will make
+the presentation more consistent at the cost of the webpage sometimes
+taking slightly longer to load. Note that this only works because the
+footer is added to webpages before the MathJax javascript. -->
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    "HTML-CSS": { availableFonts: ["TeX"] }
+  });
+</script>
+
+
+
+
+</div>
+</div>
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.odd').parent('tbody').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- tabsets -->
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open');
+  });
+});
+</script>
+
+<!-- code folding -->
+<script>
+$(document).ready(function () {
+  window.initializeCodeFolding("hide" === "show");
+});
+</script>
+
+<script>
+$(document).ready(function ()  {
+
+    // temporarily add toc-ignore selector to headers for the consistency with Pandoc
+    $('.unlisted.unnumbered').addClass('toc-ignore')
+
+    // move toc-ignore selectors from section div to header
+    $('div.section.toc-ignore')
+        .removeClass('toc-ignore')
+        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
+
+    // establish options
+    var options = {
+      selectors: "h1,h2,h3",
+      theme: "bootstrap3",
+      context: '.toc-content',
+      hashGenerator: function (text) {
+        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_');
+      },
+      ignoreSelector: ".toc-ignore",
+      scrollTo: 0
+    };
+    options.showAndHide = true;
+    options.smoothScroll = true;
+
+    // tocify
+    var toc = $("#TOC").tocify(options).data("toc-tocify");
+});
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

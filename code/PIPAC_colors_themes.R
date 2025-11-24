@@ -39,7 +39,6 @@ manuscript_theme <- theme(text = element_text(size = 6),
 
 # Cluster colors
 data_clusters <- as.factor(c(0, seq(1:14)))
-
 pipac_cluster_col <- colorRampPalette(brewer.pal(10, "Paired"))(nb.cols <- length(data_clusters))
 names(pipac_cluster_col) <- levels(data_clusters)
 
@@ -49,14 +48,16 @@ pipac_cluster_20_col <- colorRampPalette(brewer.pal(10, "Paired"))(nb.cols <- le
 names(pipac_cluster_20_col) <- levels(cell_data_clusters)
 
 immune_clusters <- as.factor(c(0, seq(1:21)))
-
 pipac_immune_cluster_col <- colorRampPalette(brewer.pal(10, "Paired"))(nb.cols <- length(immune_clusters))
 names(pipac_immune_cluster_col) <- levels(immune_clusters)
 
-nonimmune_clusters <- as.factor(c(0, seq(1:11)))
+cell_immune_clusters <- as.factor(c(0, seq(1:27)))
+pipac_cell_immune_cluster_col <- colorRampPalette(brewer.pal(10, "Paired"))(nb.cols <- length(cell_immune_clusters))
+names(pipac_cell_immune_cluster_col) <- levels(cell_immune_clusters)
 
-pipac_nonimmune_cluster_col <- colorRampPalette(brewer.pal(10, "Paired"))(nb.cols <- length(nonimmune_clusters))
-names(pipac_nonimmune_cluster_col) <- levels(nonimmune_clusters)
+cell_nonimmune_clusters <- as.factor(c(0, seq(1:36)))
+pipac_cell_nonimmune_cluster_col <- colorRampPalette(brewer.pal(10, "Paired"))(nb.cols <- length(cell_nonimmune_clusters))
+names(pipac_cell_nonimmune_cluster_col) <- levels(cell_nonimmune_clusters)
 
 # Cell type colors
 gs4_deauth()

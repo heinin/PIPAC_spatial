@@ -25,6 +25,7 @@ suppressPackageStartupMessages({
   library(ggplot2)
   library(ggpubr)
   library(ggrepel)
+  library(ggrastr)
   library(googlesheets4)
   library(workflowr)})
 
@@ -51,19 +52,118 @@ source("/home/hnatri/PIPAC_spatial/code/plot_functions.R")
 #nucl_data <- readRDS("/tgen_labs/banovich/PIPAC/Seurat/PIPAC_NC50_NN20_PC20_Seurat_annotated_metadata.rds")
 
 # Before splitting immune and nonimmune and reclustering
-cell_data <- readRDS("/tgen_labs/banovich/PIPAC/Seurat/cell_merged_spatial_filtered_splitsamples_clustered_NC50_NN20_PC20_Seurat_denoIST.rds")
+cell_data <- readRDS("/tgen_labs/banovich/PIPAC/Seurat/cell_merged_spatial_filtered_splitsamples_clustered_NN30_PC50_Seurat_denoIST.rds")
 
-#denoist_data <- readRDS("/tgen_labs/banovich/PIPAC/Seurat/cell_merged_spatial_filtered_splitsamples_clustered_NC50_NN20_PC20_Seurat_denoIST.rds")
-
-#cell_data[["denoist_RNA"]] <- CreateAssayObject(counts = denoist_data@assays$denoist_RNA$counts)
-#cell_data <- NormalizeData(cell_data,
-#                           assay = "denoist_RNA")
-
+# Normalizing and scaling all assays
 DefaultAssay(cell_data) <- "RNA"
+cell_data <- cell_data %>%
+  JoinLayers() %>%
+  NormalizeData() %>%
+  ScaleData()
 
-#cell_data@assays$denoist_RNA$data
+DefaultAssay(cell_data) <- "nucleus_RNA"
+cell_data <- cell_data %>%
+  JoinLayers() %>%
+  NormalizeData() %>%
+  ScaleData()
 
-#saveRDS(cell_data, "/tgen_labs/banovich/PIPAC/Seurat/cell_merged_spatial_filtered_splitsamples_clustered_NC50_NN20_PC20_Seurat_denoIST.rds")
+DefaultAssay(cell_data) <- "denoist_RNA"
+cell_data <- cell_data %>%
+  JoinLayers() %>%
+  NormalizeData() %>%
+  ScaleData()
+
+```
+
+### Plotting expression of all genes
+
+```{r, message = F, warning = F, fig.width = 12, fig.height = 4}
+
+# Only looking at one sample
+seurat_data_subset <- subset(cell_data,
+                             subset = Sample == "S21-24369_2A")
+
+# Cellular
+cell_exp <- LayerData(seurat_data_subset,
+                      assay = "RNA",
+                      layer = "data")
+
+cell_exp <- as.data.frame(cell_exp) %>%
+  rownames_to_column(var = "gene") %>%
+  #t() %>%
+  as_tibble() %>%
+  pivot_longer(cols = colnames(cell_exp), names_to = "cell", values_to = "exp")
+
+# Nuclear
+nucl_exp <- LayerData(seurat_data_subset,
+                      assay = "nucleus_RNA",
+                      layer = "data")
+
+nucl_exp <- as.data.frame(nucl_exp) %>%
+  rownames_to_column(var = "gene") %>%
+  #t() %>%
+  as_tibble() %>%
+  pivot_longer(cols = colnames(nucl_exp), names_to = "cell", values_to = "exp")
+
+# DenoIST
+denoist_exp <- LayerData(seurat_data_subset,
+                         assay = "denoist_RNA",
+                         layer = "data")
+
+denoist_exp <- as.data.frame(denoist_exp) %>%
+  rownames_to_column(var = "gene") %>%
+  #t() %>%
+  as_tibble() %>%
+  pivot_longer(cols = colnames(denoist_exp), names_to = "cell", values_to = "exp")
+
+#identical(rownames(cell_exp), rownames(nucl_exp))
+
+# Merging
+merged_exp <- cbind(cell_exp, nucl_exp, denoist_exp)
+colnames(merged_exp) <- c("gene1", "cell1", "cell_exp", "gene2", "cell2", "nucl_exp", "gene3", "cell3", "denoist_exp")
+
+#identical(merged_exp$cell1, merged_exp$cell2)
+#identical(merged_exp$gene1, merged_exp$gene2)
+
+merged_exp <- merged_exp[,c(1, 2, 3, 6, 9)]
+
+p1 <- merged_exp %>%
+  ggplot(aes(x = cell_exp, y = nucl_exp)) +
+  #geom_pointdensity() +
+  geom_point(alpha = 0.2) +
+  #stat_summary(fun.data = mean_cl_normal) + 
+  geom_smooth(method='lm', formula= y~x) +
+  theme_classic() +
+  ylab("Nuclear transcripts") +
+  xlab("All transcripts")
+
+p1 <- rasterize(p1, layers='Point', dpi = 300)
+
+p2 <- merged_exp %>%
+  ggplot(aes(x = cell_exp, y = denoist_exp)) +
+  #geom_pointdensity() +
+  geom_point(alpha = 0.2) +
+  #stat_summary(fun.data = mean_cl_normal) + 
+  geom_smooth(method='lm', formula= y~x) +
+  theme_classic() +
+  ylab("DenoIST transcripts") +
+  xlab("All transcripts")
+
+p2 <- rasterize(p2, layers='Point', dpi = 300)
+
+p3 <- merged_exp %>%
+  ggplot(aes(x = denoist_exp, y = nucl_exp)) +
+  #geom_pointdensity() +
+  geom_point(alpha = 0.2) +
+  #stat_summary(fun.data = mean_cl_normal) + 
+  geom_smooth(method='lm', formula= y~x) +
+  theme_classic() +
+  ylab("Nuclear transcripts") +
+  xlab("DenoIST transcripts")
+
+p3 <- rasterize(p3, layers='Point', dpi = 300)
+
+patchwork::wrap_plots(p1, p2, p3, ncol = 3)
 
 ```
 
@@ -83,10 +183,10 @@ first_pass_annot <- read_sheet(metadata, sheet = "Main cluster annotations")
 ```{r, message = F, warning = F, fig.width = 10, fig.height = 6}
 
 create_barplot(cell_data,
-               group_var = "leiden_res0.5",
+               group_var = "leiden_0.5",
                plot_var = "Annotation",
-               plot_levels = levels(cell_data$Annotation),
-               group_levels = sort(unique(cell_data$leiden_res0.5)),
+               plot_levels = sort(unique(cell_data$Annotation)),
+               group_levels = sort(unique(cell_data$leiden_0.5)),
                plot_colors = pipac_celltype_col,
                var_names =  c("Frequency", ""),
                legend_title = "")
@@ -97,10 +197,10 @@ plot_clusters_col <- colorRampPalette(brewer.pal(10, "Paired"))(nb.cols <- lengt
 names(plot_clusters_col) <- levels(plot_clusters)
 
 create_barplot(cell_data,
-               plot_var = "leiden_res0.5",
+               plot_var = "leiden_0.5",
                group_var = "Annotation",
                group_levels = sort(unique((cell_data$Annotation))),
-               plot_levels = sort(unique(cell_data$leiden_res0.5)),
+               plot_levels = sort(unique(cell_data$leiden_0.5)),
                plot_colors = plot_clusters_col,
                var_names =  c("Frequency", ""),
                legend_title = "")
@@ -109,7 +209,7 @@ create_barplot(cell_data,
 
 ### Feature expression
 
-```{r, message = F, warning = F, fig.width = 10, fig.height = 6}
+```{r, message = F, warning = F, fig.width = 10, fig.height = 6, eval = F}
 
 plot_features <- c("PTPRC",
                    "CD3D", "CD3E", "CD4", "CD8A", # T cells
@@ -125,42 +225,54 @@ plot_features <- c("PTPRC",
 DotPlot(cell_data,
         group.by = "Annotation",
         features = plot_features,
-        cols = c("azure", "tomato3"),
+        cols = c("gray89", "tomato3"),
         assay = "nucleus_RNA") +
   RotatedAxis() +
   ggtitle("Nuclear transcripts, by original annotation")
 
 DotPlot(cell_data,
-        group.by = "leiden_res0.5",
+        group.by = "Annotation",
         features = plot_features,
-        cols = c("azure", "tomato3"),
+        cols = c("gray89", "tomato3"),
         assay = "RNA") +
   RotatedAxis() +
-  ggtitle("All transcripts, by cell-based cluster")
+  ggtitle("All transcripts, by original annotation")
 
 DotPlot(cell_data,
-        group.by = "leiden_res0.5",
+        group.by = "Annotation",
         features = plot_features,
-        cols = c("azure", "tomato3"),
+        cols = c("gray89", "tomato3"),
+        assay = "denoist_RNA") +
+  RotatedAxis() +
+  ggtitle("DenoIST transcripts, by original annotation")
+
+DotPlot(cell_data,
+        group.by = "leiden_0.5",
+        features = plot_features,
+        cols = c("gray89", "tomato3"),
         assay = "nucleus_RNA") +
   RotatedAxis() +
   ggtitle("Nuclear transcripts, by cell-based cluster")
 
 DotPlot(cell_data,
-        group.by = "leiden_res0.5",
+        group.by = "leiden_0.5",
         features = plot_features,
-        cols = c("azure", "tomato3"),
+        cols = c("gray89", "tomato3"),
+        assay = "RNA") +
+  RotatedAxis() +
+  ggtitle("All transcripts, by cell-based cluster")
+
+DotPlot(cell_data,
+        group.by = "leiden_0.5",
+        features = plot_features,
+        cols = c("gray89", "tomato3"),
         assay = "denoist_RNA") +
   RotatedAxis() +
   ggtitle("DenoIST transcripts, by cell-based cluster")
 
-DotPlot(cell_data,
-        group.by = "Annotation",
-        features = plot_features,
-        cols = c("azure", "tomato3"),
-        assay = "denoist_RNA") +
-  RotatedAxis() +
-  ggtitle("DenoIST transcripts, by original annotation")
+# Rscript -e "rmarkdown::render('compare_cellular_nuclear_denoist_annot.Rmd')"
+# Then "mv *.html /home/hnatri/PIPAC_spatial/docs/"
+
 
 ```
 

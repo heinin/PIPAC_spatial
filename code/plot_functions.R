@@ -243,9 +243,7 @@ create_dotplot_heatmap <- function(seurat_object,
                                     border = "black")
     }
     
-    dotplot <- draw(hp, annotation_legend_list = lgd_list)
-    
-    dotplot
+    draw(hp, annotation_legend_list = lgd_list)
 }
 
 
@@ -396,8 +394,6 @@ create_dotplot_heatmap_horizontal <- function(seurat_object,
                                     border = "black")
     }
     
-    dotplot <- draw(hp, annotation_legend_list = lgd_list)
-    
-    dotplot
+    draw(hp, annotation_legend_list = lgd_list)
 }
 

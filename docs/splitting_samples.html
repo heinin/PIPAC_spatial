@@ -394,7 +394,7 @@ aria-hidden="true"></span> </a>
 <div class="tab-content">
 <div id="summary" class="tab-pane fade in active">
 <p>
-<strong>Last updated:</strong> 2025-02-06
+<strong>Last updated:</strong> 2025-09-30
 </p>
 <p>
 <strong>Checks:</strong> <span
@@ -432,10 +432,10 @@ changes </a>
 <div id="strongRMarkdownfilestronguncommittedchanges"
 class="panel-collapse collapse">
 <div class="panel-body">
-<p>The R Markdown is untracked by Git. To know which version of the R
-Markdown file created these results, you’ll want to first commit it to
-the Git repo. If you’re still working on the analysis, you can ignore
-this warning. When you’re finished, you can run
+<p>The R Markdown file has unstaged changes. To know which version of
+the R Markdown file created these results, you’ll want to first commit
+it to the Git repo. If you’re still working on the analysis, you can
+ignore this warning. When you’re finished, you can run
 <code>wflow_publish</code> to commit the R Markdown file and build the
 HTML.</p>
 </div>
@@ -570,13 +570,15 @@ code/plot_functions.R
 <div class="panel panel-default">
 <div class="panel-heading">
 <p class="panel-title">
-<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrong668678e">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomheininPIPACspatialtree2221fdb25852e44537732db34a0abd5f08c4c9b0targetblank2221fdba">
 <span class="glyphicon glyphicon-ok text-success"
-aria-hidden="true"></span> <strong>Repository version:</strong> 668678e
+aria-hidden="true"></span> <strong>Repository version:</strong>
+<a href="https://github.com/heinin/PIPAC_spatial/tree/2221fdb25852e44537732db34a0abd5f08c4c9b0" target="_blank">2221fdb</a>
 </a>
 </p>
 </div>
-<div id="strongRepositoryversionstrong668678e"
+<div
+id="strongRepositoryversionstrongahrefhttpsgithubcomheininPIPACspatialtree2221fdb25852e44537732db34a0abd5f08c4c9b0targetblank2221fdba"
 class="panel-collapse collapse">
 <div class="panel-body">
 <p>
@@ -585,7 +587,8 @@ and connecting the code version to the results is critical for
 reproducibility.
 </p>
 <p>
-The results in this page were generated with repository version 668678e.
+The results in this page were generated with repository version
+<a href="https://github.com/heinin/PIPAC_spatial/tree/2221fdb25852e44537732db34a0abd5f08c4c9b0" target="_blank">2221fdb</a>.
 See the <em>Past versions</em> tab to see a history of the changes made
 to the R Markdown and HTML files.
 </p>
@@ -600,18 +603,29 @@ were generated:
 </p>
 <pre><code>
 Ignored files:
+    Ignored:    .RData
     Ignored:    analysis/figure/
+    Ignored:    cell_annotation_top_markers_denoist.tsv
+    Ignored:    cell_main_cluster_marker_annotations_denoist.tsv
+    Ignored:    celltype_markers.tsv
+    Ignored:    code/.Rhistory
+    Ignored:    code/Proximity_analysis/.DS_Store
+    Ignored:    code/Proximity_analysis/data/
+    Ignored:    code/Proximity_analysis/output/
+    Ignored:    code/RSC_latest_EDM_2025-08-06/
+    Ignored:    code/construct_niches_tumor.Rout
+    Ignored:    code/pairwise_proximity.Rout
+    Ignored:    immune_cluster_marker_annotations.tsv
+    Ignored:    immune_cluster_marker_annotations_2ndpass.tsv
+    Ignored:    main_cluster_marker_annotations.tsv
+    Ignored:    nonimmune_cluster_marker_annotations.tsv
+    Ignored:    nonimmune_cluster_marker_annotations_2ndpass.tsv
 
-Untracked files:
-    Untracked:  analysis/Xenium_processing.Rmd
-    Untracked:  analysis/annotate.Rmd
-    Untracked:  analysis/annotation.Rmd
-    Untracked:  analysis/post_clustering.Rmd
-    Untracked:  analysis/splitting_samples.Rmd
-    Untracked:  code/PIPAC_colors_themes.R
-    Untracked:  code/anndata_to_seurat.R
-    Untracked:  code/plot_functions.R
-    Untracked:  code/rapids_pipeline/
+Unstaged changes:
+    Modified:   analysis/Xenium_preprocess_wholecell.Rmd
+    Modified:   analysis/compare_cellular_nuclear_denoist_annot.Rmd
+    Modified:   analysis/index.Rmd
+    Modified:   analysis/splitting_samples.Rmd
 
 </code></pre>
 <p>
@@ -626,16 +640,114 @@ have uncommitted changes.
 <hr>
 </div>
 <div id="versions" class="tab-pane fade">
+
 <p>
-There are no past versions. Publish this analysis with
-<code>wflow_publish()</code> to start tracking its development.
+These are the previous versions of the repository in which changes were
+made to the R Markdown (<code>analysis/splitting_samples.Rmd</code>) and
+HTML (<code>docs/splitting_samples.html</code>) files. If you’ve
+configured a remote Git repository (see <code>?wflow_git_remote</code>),
+click on the hyperlinks in the table below to view the files as they
+were in that past version.
 </p>
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+File
+</th>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+<th>
+Message
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+Rmd
+</td>
+<td>
+<a href="https://github.com/heinin/PIPAC_spatial/blob/7c46eb323bdb008ec08e843dda368c437753b4c7/analysis/splitting_samples.Rmd" target="_blank">7c46eb3</a>
+</td>
+<td>
+heinin
+</td>
+<td>
+2025-09-29
+</td>
+<td>
+Updated to denoised transcript data
+</td>
+</tr>
+<tr>
+<td>
+Rmd
+</td>
+<td>
+<a href="https://github.com/heinin/PIPAC_spatial/blob/3bbda1950b67a2205d9bebb3344530d4fbf8bcbd/analysis/splitting_samples.Rmd" target="_blank">3bbda19</a>
+</td>
+<td>
+heinin
+</td>
+<td>
+2025-05-13
+</td>
+<td>
+Updated annotations, added feature expression by celltype
+</td>
+</tr>
+<tr>
+<td>
+Rmd
+</td>
+<td>
+<a href="https://github.com/heinin/PIPAC_spatial/blob/64482047ae9660d08678b8cd1d99c7695b427aaa/analysis/splitting_samples.Rmd" target="_blank">6448204</a>
+</td>
+<td>
+heinin
+</td>
+<td>
+2025-02-18
+</td>
+<td>
+Added annotations
+</td>
+</tr>
+<tr>
+<td>
+html
+</td>
+<td>
+<a href="https://rawcdn.githack.com/heinin/PIPAC_spatial/64482047ae9660d08678b8cd1d99c7695b427aaa/docs/splitting_samples.html" target="_blank">6448204</a>
+</td>
+<td>
+heinin
+</td>
+<td>
+2025-02-18
+</td>
+<td>
+Added annotations
+</td>
+</tr>
+</tbody>
+</table>
+</div>
 <hr>
 </div>
 </div>
 </div>
-<div id="packages-and-environment-variables" class="section level3">
-<h3>Packages and environment variables</h3>
+<div id="import-packages" class="section level3">
+<h3>Import packages</h3>
 <pre class="r"><code>suppressPackageStartupMessages({
   library(workflowr)
   library(arrow)
@@ -672,6 +784,43 @@ seurat_data@meta.data %&gt;%
   theme_bw() +
   RotatedAxis()</code></pre>
 <p><img src="figure/splitting_samples.Rmd/unnamed-chunk-3-1.png" width="576" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-3-1">
+Past versions of unnamed-chunk-3-1.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-3-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/heinin/PIPAC_spatial/blob/64482047ae9660d08678b8cd1d99c7695b427aaa/docs/figure/splitting_samples.Rmd/unnamed-chunk-3-1.png" target="_blank">6448204</a>
+</td>
+<td>
+heinin
+</td>
+<td>
+2025-02-18
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 <pre class="r"><code># Metadata
 gs4_deauth()
 metadata  &lt;- gs4_get(&quot;https://docs.google.com/spreadsheets/d/1Oq09oGVTst_X-oC6-TGnteuSxtmsr_t6pQa0fklx6lk/edit?usp=sharing&quot;)
@@ -711,6 +860,43 @@ intersect(seurat_data$TMA, metadata$TMA)</code></pre>
   NoLegend() +
   RotatedAxis()</code></pre>
 <p><img src="figure/splitting_samples.Rmd/unnamed-chunk-4-1.png" width="768" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-4-1">
+Past versions of unnamed-chunk-4-1.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-4-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/heinin/PIPAC_spatial/blob/64482047ae9660d08678b8cd1d99c7695b427aaa/docs/figure/splitting_samples.Rmd/unnamed-chunk-4-1.png" target="_blank">6448204</a>
+</td>
+<td>
+heinin
+</td>
+<td>
+2025-02-18
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 <pre class="r"><code>DimPlot(seurat_data,
         group.by = &quot;TMA&quot;,
         split.by = &quot;TMA&quot;,
@@ -725,6 +911,43 @@ intersect(seurat_data$TMA, metadata$TMA)</code></pre>
   RotatedAxis() +
   NoAxes()</code></pre>
 <p><img src="figure/splitting_samples.Rmd/unnamed-chunk-4-2.png" width="768" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-4-2">
+Past versions of unnamed-chunk-4-2.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-4-2" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/heinin/PIPAC_spatial/blob/64482047ae9660d08678b8cd1d99c7695b427aaa/docs/figure/splitting_samples.Rmd/unnamed-chunk-4-2.png" target="_blank">6448204</a>
+</td>
+<td>
+heinin
+</td>
+<td>
+2025-02-18
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 <pre class="r"><code>  #ggtitle(&quot;20 PCs&quot;)</code></pre>
 </div>
 <div id="splitting-the-samples" class="section level3">
@@ -744,7 +967,7 @@ xenium_paths &lt;- list(&quot;MR_PIPAC-TMA1&quot; = &quot;output-XETG00048__0034
                      &quot;MR_PIPAC-TMA9&quot; = &quot;output-XETG00048__0041382__MR_PIPACTMA9__20250109__205856&quot;)
 
 # Cell stats
-cellstat_path &lt;- &quot;/tgen_labs/banovich/PIPAC/&quot;
+cellstat_path &lt;- &quot;/tgen_labs/banovich/PIPAC/Cell_stats/&quot;
 
 seurat_data_list &lt;- lapply(names(xenium_paths), function(tma){
   # Subsetting data
@@ -816,9 +1039,7 @@ seurat_data_list &lt;- lapply(names(xenium_paths), function(tma){
   
   seurat_data_tma_sub
 })</code></pre>
-<pre><code>[1] &quot;FF-22-95_C1&quot;
-[1] &quot;FF-22-564_D1&quot;
-[1] &quot;S20-09742-B1&quot;
+<pre><code>[1] &quot;S20-09742-B1&quot;
 [1] &quot;S20-06963-K1&quot;
 [1] &quot;S21-00034-C1&quot;
 [1] &quot;S20-08642-A1&quot;
@@ -827,14 +1048,14 @@ seurat_data_list &lt;- lapply(names(xenium_paths), function(tma){
 [1] &quot;S21-00267-A1&quot;
 [1] &quot;S21-00267-E1&quot;
 [1] &quot;S21-08053-B1&quot;
+[1] &quot;FF-22-95_C1&quot;
+[1] &quot;FF-22-564_D1&quot;
 [1] &quot;S21-12164_1A&quot;
 [1] &quot;S21-7886_1A&quot;
 [1] &quot;S21-12261_1A&quot;
 [1] &quot;S21-7951_5A&quot;
 [1] &quot;S21-24369_2A&quot;
 [1] &quot;S21-19972_5A&quot;
-[1] &quot;FF-22-95_B1&quot;
-[1] &quot;FF-22-1698_C1&quot;
 [1] &quot;S20-08332-C1&quot;
 [1] &quot;S20-06963-E1&quot;
 [1] &quot;S20-08642-C1&quot;
@@ -844,14 +1065,14 @@ seurat_data_list &lt;- lapply(names(xenium_paths), function(tma){
 [1] &quot;S20-10400-E1&quot;
 [1] &quot;S21-08053-A1&quot;
 [1] &quot;S21-09793-D1&quot;
+[1] &quot;FF-22-95_B1&quot;
+[1] &quot;FF-22-1698_C1&quot;
 [1] &quot;S21-3057_2A&quot;
 [1] &quot;S21-12164_5A&quot;
 [1] &quot;S21-12261_4A&quot;
 [1] &quot;S21-16496_4B&quot;
 [1] &quot;S21-24369_4A&quot;
 [1] &quot;S21-15128_3A&quot;
-[1] &quot;FF-21-8775_A1&quot;
-[1] &quot;FF-22-1698_D1&quot;
 [1] &quot;S20-06963-C1&quot;
 [1] &quot;S20-09742-A1&quot;
 [1] &quot;S21-10183-D1&quot;
@@ -861,14 +1082,14 @@ seurat_data_list &lt;- lapply(names(xenium_paths), function(tma){
 [1] &quot;S20-10128-B1&quot;
 [1] &quot;S21-00267-B1&quot;
 [1] &quot;S21-08053-E1&quot;
+[1] &quot;FF-21-8775_A1&quot;
+[1] &quot;FF-22-1698_D1&quot;
 [1] &quot;S21-3057_4A&quot;
 [1] &quot;S21-3057_1A&quot;
 [1] &quot;S21-7951_2A&quot;
 [1] &quot;S21-16496_6A&quot;
 [1] &quot;S21-24369_3A&quot;
 [1] &quot;S21-19972_3A&quot;
-[1] &quot;FF-21-8775_B1&quot;
-[1] &quot;FF-22-564_A1-W0&quot;
 [1] &quot;S20-09742-D1&quot;
 [1] &quot;S20-08642-B1&quot;
 [1] &quot;S21-10183-E1&quot;
@@ -877,6 +1098,8 @@ seurat_data_list &lt;- lapply(names(xenium_paths), function(tma){
 [1] &quot;S21-00056-B1&quot;
 [1] &quot;S20-10400-B1&quot;
 [1] &quot;S21-09793-B1&quot;
+[1] &quot;FF-21-8775_B1&quot;
+[1] &quot;FF-22-564_A1-W0&quot;
 [1] &quot;S21-7886_5A&quot;
 [1] &quot;S21-12164_2A&quot;
 [1] &quot;S21-16496_1A&quot;
@@ -884,7 +1107,6 @@ seurat_data_list &lt;- lapply(names(xenium_paths), function(tma){
 [1] &quot;S21-12261_5A&quot;
 [1] &quot;S21-19972_1A&quot;
 [1] &quot;S21-15128_2A&quot;
-[1] &quot;FF-21-8775_D1&quot;
 [1] &quot;S20-08332-A1&quot;
 [1] &quot;S21-10183-C1&quot;
 [1] &quot;S21-00034-F1&quot;
@@ -893,6 +1115,7 @@ seurat_data_list &lt;- lapply(names(xenium_paths), function(tma){
 [1] &quot;S20-10128-C1&quot;
 [1] &quot;S21-00267-C1&quot;
 [1] &quot;S21-08053-C1&quot;
+[1] &quot;FF-21-8775_D1&quot;
 [1] &quot;FF-22-1698_B1&quot;
 [1] &quot;S21-3057_3A&quot;
 [1] &quot;S21-12164_3A&quot;
@@ -901,7 +1124,6 @@ seurat_data_list &lt;- lapply(names(xenium_paths), function(tma){
 [1] &quot;S21-16496_3A&quot;
 [1] &quot;S21-19972_4A&quot;
 [1] &quot;S21-24369_5A&quot;
-[1] &quot;FF-22-564_B1&quot;
 [1] &quot;S20-09742-C1&quot;
 [1] &quot;S20-08642-D1&quot;
 [1] &quot;S21-00034-B1&quot;
@@ -911,6 +1133,7 @@ seurat_data_list &lt;- lapply(names(xenium_paths), function(tma){
 [1] &quot;S21-09793-E1&quot;
 [1] &quot;S21-09793-C1&quot;
 [1] &quot;FF-21-8775_C1&quot;
+[1] &quot;FF-22-564_B1&quot;
 [1] &quot;S21-12164_4B&quot;
 [1] &quot;S21-7886_6A&quot;
 [1] &quot;S21-7951_3A&quot;
@@ -918,7 +1141,6 @@ seurat_data_list &lt;- lapply(names(xenium_paths), function(tma){
 [1] &quot;S21-24369_1A&quot;
 [1] &quot;S21-15128_4A&quot;
 [1] &quot;S21-15128_5A&quot;
-[1] &quot;FF-22-564_C1&quot;
 [1] &quot;S20-06963-I1&quot;
 [1] &quot;S20-08332-D1&quot;
 [1] &quot;S21-00034-E1&quot;
@@ -928,6 +1150,7 @@ seurat_data_list &lt;- lapply(names(xenium_paths), function(tma){
 [1] &quot;S21-01455-A1&quot;
 [1] &quot;S20-10400-C1&quot;
 [1] &quot;S21-08053-D1&quot;
+[1] &quot;FF-22-564_C1&quot;
 [1] &quot;S21-7886_3A&quot;
 [1] &quot;S21-3057_5A&quot;
 [1] &quot;S21-16496_5A&quot;
@@ -938,12 +1161,12 @@ seurat_data_list &lt;- lapply(names(xenium_paths), function(tma){
 [1] &quot;S21-01455-D1&quot;
 [1] &quot;S20-10400-D1&quot;
 [1] &quot;S21-09793-A1&quot;
-[1] &quot;FF-22-564_A1&quot;
 [1] &quot;SS-22-4&quot;
 [1] &quot;SS-22-1&quot;
 [1] &quot;BSJ-38-2&quot;
 [1] &quot;BSJ-38-3&quot;
 [1] &quot;JM-45-4&quot;
+[1] &quot;FF-22-564_A1&quot;
 [1] &quot;SF230912-002062&quot;
 [1] &quot;SF230726-002257&quot;
 [1] &quot;SF230915-002250&quot;
@@ -952,6 +1175,7 @@ seurat_data_list &lt;- lapply(names(xenium_paths), function(tma){
 [1] &quot;20-010121T_(2_5_24)&quot;
 [1] &quot;20-010121N_(5_7_24)&quot;
 [1] &quot;20-010121T_(6_19_24)&quot;
+[1] &quot;S21-00267-D1&quot;
 [1] &quot;SS-22-2&quot;
 [1] &quot;SS-22-3&quot;
 [1] &quot;BSJ-38-4&quot;
@@ -966,8 +1190,7 @@ seurat_data_list &lt;- lapply(names(xenium_paths), function(tma){
 [1] &quot;20-010121N_(2_5_24)&quot;
 [1] &quot;20-010121T_(3_26_24)&quot;
 [1] &quot;20-010121N_(6_19_24)&quot;
-[1] &quot;20-010121T_(5_7_24)&quot;
-[1] &quot;S21-00267-D1&quot;</code></pre>
+[1] &quot;20-010121T_(5_7_24)&quot;</code></pre>
 <pre class="r"><code># Merge objects
 merged_spatial &lt;- merge(x = seurat_data_list[[1]], y = seurat_data_list[1:length(seurat_data_list)])
 # Warning message:
@@ -1000,13 +1223,54 @@ DimPlot(merged_spatial,
   NoLegend() +
   RotatedAxis()</code></pre>
 <p><img src="figure/splitting_samples.Rmd/unnamed-chunk-6-1.png" width="768" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-6-1">
+Past versions of unnamed-chunk-6-1.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-6-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/heinin/PIPAC_spatial/blob/64482047ae9660d08678b8cd1d99c7695b427aaa/docs/figure/splitting_samples.Rmd/unnamed-chunk-6-1.png" target="_blank">6448204</a>
+</td>
+<td>
+heinin
+</td>
+<td>
+2025-02-18
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 <pre class="r"><code># Saving the object for clustering with ScanPy
-#merged_spatial &lt;- JoinLayers(merged_spatial)
-#saveRDS(merged_spatial, &quot;/scratch/hnatri/PIPAC/merged_spatial_filtered_split.rds&quot;)</code></pre>
+names(merged_spatial@assays) &lt;- c(&quot;nucleus_RNA&quot;, &quot;RNA&quot;)
+DefaultAssay(merged_spatial) &lt;- &quot;nucleus_RNA&quot;
+merged_spatial &lt;- JoinLayers(merged_spatial)
+DefaultAssay(merged_spatial) &lt;- &quot;RNA&quot;
+
+#saveRDS(merged_spatial, &quot;/scratch/hnatri/PIPAC/cell_merged_spatial_filtered_splitsamples.rds&quot;)</code></pre>
 </div>
 <div id="spatial-plots-by-tma-and-sample" class="section level4">
 <h4>Spatial plots by TMA and sample</h4>
-<pre class="r"><code>merged_spatial &lt;- readRDS(&quot;/scratch/hnatri/PIPAC/merged_spatial_filtered_split.rds&quot;)
+<pre class="r"><code>#merged_spatial &lt;- readRDS(&quot;/scratch/hnatri/PIPAC/cell_merged_spatial_filtered_splitsamples.rds&quot;)
 
 sp_plots &lt;- lapply(unique(merged_spatial$TMA), function(tma){
   sample_subset &lt;- subset(merged_spatial, subset = TMA == tma)
@@ -1024,30 +1288,363 @@ sp_plots &lt;- lapply(unique(merged_spatial$TMA), function(tma){
 sp_plots</code></pre>
 <pre><code>[[1]]</code></pre>
 <p><img src="figure/splitting_samples.Rmd/unnamed-chunk-7-1.png" width="288" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-7-1">
+Past versions of unnamed-chunk-7-1.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-7-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/heinin/PIPAC_spatial/blob/64482047ae9660d08678b8cd1d99c7695b427aaa/docs/figure/splitting_samples.Rmd/unnamed-chunk-7-1.png" target="_blank">6448204</a>
+</td>
+<td>
+heinin
+</td>
+<td>
+2025-02-18
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 <pre><code>
 [[2]]</code></pre>
 <p><img src="figure/splitting_samples.Rmd/unnamed-chunk-7-2.png" width="288" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-7-2">
+Past versions of unnamed-chunk-7-2.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-7-2" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/heinin/PIPAC_spatial/blob/64482047ae9660d08678b8cd1d99c7695b427aaa/docs/figure/splitting_samples.Rmd/unnamed-chunk-7-2.png" target="_blank">6448204</a>
+</td>
+<td>
+heinin
+</td>
+<td>
+2025-02-18
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 <pre><code>
 [[3]]</code></pre>
 <p><img src="figure/splitting_samples.Rmd/unnamed-chunk-7-3.png" width="288" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-7-3">
+Past versions of unnamed-chunk-7-3.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-7-3" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/heinin/PIPAC_spatial/blob/64482047ae9660d08678b8cd1d99c7695b427aaa/docs/figure/splitting_samples.Rmd/unnamed-chunk-7-3.png" target="_blank">6448204</a>
+</td>
+<td>
+heinin
+</td>
+<td>
+2025-02-18
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 <pre><code>
 [[4]]</code></pre>
 <p><img src="figure/splitting_samples.Rmd/unnamed-chunk-7-4.png" width="288" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-7-4">
+Past versions of unnamed-chunk-7-4.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-7-4" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/heinin/PIPAC_spatial/blob/64482047ae9660d08678b8cd1d99c7695b427aaa/docs/figure/splitting_samples.Rmd/unnamed-chunk-7-4.png" target="_blank">6448204</a>
+</td>
+<td>
+heinin
+</td>
+<td>
+2025-02-18
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 <pre><code>
 [[5]]</code></pre>
 <p><img src="figure/splitting_samples.Rmd/unnamed-chunk-7-5.png" width="288" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-7-5">
+Past versions of unnamed-chunk-7-5.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-7-5" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/heinin/PIPAC_spatial/blob/64482047ae9660d08678b8cd1d99c7695b427aaa/docs/figure/splitting_samples.Rmd/unnamed-chunk-7-5.png" target="_blank">6448204</a>
+</td>
+<td>
+heinin
+</td>
+<td>
+2025-02-18
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 <pre><code>
 [[6]]</code></pre>
 <p><img src="figure/splitting_samples.Rmd/unnamed-chunk-7-6.png" width="288" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-7-6">
+Past versions of unnamed-chunk-7-6.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-7-6" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/heinin/PIPAC_spatial/blob/64482047ae9660d08678b8cd1d99c7695b427aaa/docs/figure/splitting_samples.Rmd/unnamed-chunk-7-6.png" target="_blank">6448204</a>
+</td>
+<td>
+heinin
+</td>
+<td>
+2025-02-18
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 <pre><code>
 [[7]]</code></pre>
 <p><img src="figure/splitting_samples.Rmd/unnamed-chunk-7-7.png" width="288" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-7-7">
+Past versions of unnamed-chunk-7-7.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-7-7" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/heinin/PIPAC_spatial/blob/64482047ae9660d08678b8cd1d99c7695b427aaa/docs/figure/splitting_samples.Rmd/unnamed-chunk-7-7.png" target="_blank">6448204</a>
+</td>
+<td>
+heinin
+</td>
+<td>
+2025-02-18
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 <pre><code>
 [[8]]</code></pre>
 <p><img src="figure/splitting_samples.Rmd/unnamed-chunk-7-8.png" width="288" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-7-8">
+Past versions of unnamed-chunk-7-8.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-7-8" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/heinin/PIPAC_spatial/blob/64482047ae9660d08678b8cd1d99c7695b427aaa/docs/figure/splitting_samples.Rmd/unnamed-chunk-7-8.png" target="_blank">6448204</a>
+</td>
+<td>
+heinin
+</td>
+<td>
+2025-02-18
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 <pre><code>
 [[9]]</code></pre>
 <p><img src="figure/splitting_samples.Rmd/unnamed-chunk-7-9.png" width="288" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-7-9">
+Past versions of unnamed-chunk-7-9.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-7-9" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/heinin/PIPAC_spatial/blob/64482047ae9660d08678b8cd1d99c7695b427aaa/docs/figure/splitting_samples.Rmd/unnamed-chunk-7-9.png" target="_blank">6448204</a>
+</td>
+<td>
+heinin
+</td>
+<td>
+2025-02-18
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 <pre class="r"><code>DimPlot(merged_spatial,
         reduction = &quot;sp&quot;,
         group.by = &quot;Sample&quot;,
@@ -1059,6 +1656,43 @@ sp_plots</code></pre>
     NoLegend() +
     ggtitle(&quot;&quot;)</code></pre>
 <p><img src="figure/splitting_samples.Rmd/unnamed-chunk-8-1.png" width="576" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-8-1">
+Past versions of unnamed-chunk-8-1.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-8-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/heinin/PIPAC_spatial/blob/64482047ae9660d08678b8cd1d99c7695b427aaa/docs/figure/splitting_samples.Rmd/unnamed-chunk-8-1.png" target="_blank">6448204</a>
+</td>
+<td>
+heinin
+</td>
+<td>
+2025-02-18
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 </div>
 </div>
 <div id="cell-numbers-by-sample" class="section level3">
@@ -1072,6 +1706,43 @@ sp_plots</code></pre>
   RotatedAxis() +
   coord_flip()</code></pre>
 <p><img src="figure/splitting_samples.Rmd/unnamed-chunk-9-1.png" width="576" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-9-1">
+Past versions of unnamed-chunk-9-1.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-9-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/heinin/PIPAC_spatial/blob/64482047ae9660d08678b8cd1d99c7695b427aaa/docs/figure/splitting_samples.Rmd/unnamed-chunk-9-1.png" target="_blank">6448204</a>
+</td>
+<td>
+heinin
+</td>
+<td>
+2025-02-18
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 <br>
 <p>
 <button type="button" class="btn btn-default btn-workflowr btn-workflowr-sessioninfo" data-toggle="collapse" data-target="#workflowr-sessioninfo" style="display: block;">
@@ -1149,7 +1820,7 @@ loaded via a namespace (and not attached):
  [91] dotCall64_1.0-2        clue_0.3-64            scales_1.2.1          
  [94] png_0.1-8              knitr_1.43             rstudioapi_0.14       
  [97] rjson_0.2.21           tzdb_0.4.0             reshape2_1.4.4        
-[100] curl_5.0.1             nlme_3.1-162           cachem_1.0.8          
+[100] nlme_3.1-162           curl_5.0.1             cachem_1.0.8          
 [103] zoo_1.8-12             GlobalOptions_0.1.2    KernSmooth_2.23-21    
 [106] parallel_4.3.0         miniUI_0.1.1.1         pillar_1.9.0          
 [109] vctrs_0.6.5            RANN_2.6.1             promises_1.2.0.1      

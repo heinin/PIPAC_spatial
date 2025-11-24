@@ -69,8 +69,8 @@ markers_by_group <- read_sheet(markers_by_group, sheet = "Markers by group")
 
 ```{r, message = F, warning = F, fig.width = 8, fig.height = 4}
 
-seurat_data <- readRDS("/tgen_labs/banovich/PIPAC/Seurat/cell_merged_spatial_filtered_splitsamples_clustered_NC50_NN20_PC20_Seurat_denoIST_metadata.rds")
-DefaultAssay(seurat_data) <- "RNA"
+seurat_data <- readRDS("/tgen_labs/banovich/PIPAC/Seurat/cell_merged_spatial_filtered_splitsamples_clustered_NN30_PC50_Seurat_denoIST.rds")
+DefaultAssay(seurat_data) <- "denoist_RNA"
 seurat_data <- seurat_data %>%
   NormalizeData() %>%
   ScaleData()

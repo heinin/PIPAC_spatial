@@ -42,6 +42,9 @@ source("/home/hnatri/PIPAC_spatial/code/plot_functions.R")
 
 seurat_data <- readRDS("/tgen_labs/banovich/PIPAC/Seurat/cell_merged_spatial_filtered_splitsamples_clustered_NC50_NN20_PC20_Seurat_denoIST_metadata_ncells3k_nk20_niches.rds")
 
+# Arm 3 only
+seurat_data <- subset(seurat_data, subset = Arm == "Arm3")
+
 #==============================================================================#
 # Overall proximity
 #==============================================================================#

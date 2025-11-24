@@ -1,5 +1,5 @@
 ---
-title: "Proximity analysis on PIPAC Xenium data"
+title: "Plotting the results of the proximity analysis on PIPAC Xenium data"
 author: "heinin"
 date: "2025-09-19"
 output:
@@ -16,6 +16,7 @@ editor_options:
 
 suppressPackageStartupMessages({
   library(workflowr)
+  library(dplyr)
   library(Seurat)
   library(SeuratObject)
   library(SeuratDisk)
@@ -27,7 +28,9 @@ suppressPackageStartupMessages({
   library(googlesheets4)
   library(workflowr)
   library(patchwork)
-  library(spatstat)})
+  library(spatstat)
+  library(missMDA)
+  library(FactoMineR)})
 
 ```
 
@@ -44,45 +47,534 @@ options(ggrepel.max.overlaps = Inf)
 source("/home/hnatri/PIPAC_spatial/code/PIPAC_colors_themes.R")
 source("/home/hnatri/PIPAC_spatial/code/plot_functions.R")
 
-calc_enrichment <- function(summary_table, anchor_celltype){
-  enrich_score_ct <- c()
-  for(j in 1:nrow(summary_table)){
-    
-    ct <- summary_table[j, 1] %>% unlist() %>% unname() %>% as.character()
-    total <- summary_table[j, 4] %>% unlist() %>% unname()
-    list1 <- summary_table[j, 2] %>% unlist() %>% unname()
-    list2 <- summary_table[j, 5] %>% unlist() %>% unname()
-    overlap <- summary_table[j, 3] %>% unlist() %>% unname()
-    res <- fisher.test(matrix(c((total - (list1 + list2) + overlap),  (list1-overlap),  (list2 - overlap), overlap), nrow=2))
-    
-    tmp0 <- data.frame(prox_to = anchor_celltype, prox_ct = ct, 
-                       pval = res$p.value, or = res$estimate, or05 = res$conf.int[1], or95 = res$conf.int[2])
-    enrich_score_ct <- rbind(enrich_score_ct, tmp0)
-  }
-  enrich_score_ct <- within(enrich_score_ct, {
-    log_or = log(or)
-    log_or05 = log(or05)
-    log_or95 = log(or95)
-  })
-  enrich_score_ct$prox_ct <- factor(enrich_score_ct$prox_ct, levels = as.character(enrich_score_ct[order(enrich_score_ct$or, decreasing = F),]$prox_ct))
-  return(enrich_score_ct)
-}
-
 ```
 
 ### Import data
 
 ```{r, message = F, warning = F, fig.width = 8, fig.height = 4}
 
-#seurat_data <- readRDS("/tgen_labs/banovich/PIPAC/Seurat/cell_merged_spatial_filtered_splitsamples_clustered_NC50_NN20_PC20_Seurat_denoIST_metadata_ncells3k_nk20_niches.rds")
+seurat_data <- readRDS("/tgen_labs/banovich/PIPAC/Seurat/cell_merged_spatial_filtered_splitsamples_clustered_NN30_PC50_Seurat_denoIST.rds")
+
+enrichment_scores_compiled_tumor <- read.table("/home/hnatri/PIPAC_spatial/enrichment_tumor_scores_compiled.tsv",
+                                               header = T)
+proximity_compiled_tumor <- read.table("/home/hnatri/PIPAC_spatial/tumor_proximity_compiled.tsv",
+                                       header = T)
 
 ```
 
-### Calculating enrichment
+### Which celltypes are proximal to each other
 
-```{r, message = F, warning = F, fig.width = 8, fig.height = 4, eval = F}
+**Myeloid cluster associated with infiltrating lymphocytes:**\
+M1 (L2-L4) - SPP1 intermediate\
+M2 (L5) - suppressive, SPP1 high\
+M6 (L1-L5) - Suppressive, SPP1 intermediate\
+M7 (L3, also F3) - Suppressive, SPP1 intermediate\
+M8 (L5, also Mast, Endo) - Suppressive, cell cycle markers, SPP1 high\
 
+**Myeloid cluster associated with CAFs:**\
+M5 (F2-F3, also L2-L3) - Suppressive, SPP1 intermediate\
+
+**Myeloid cluster associated with tumor cells:**\
+M4 (EpiTumor2 (and less so 1), also L, Plasma, F2-F3) - Possibly not myeloid?\
+
+M3, no significant enrichment.\
+M9, no significant enrichment.\
+
+**CAFs not enriched near tumor cells, but specific myeloid clusters:**\
+F1 (COL1A2): M1\
+F2 (COL1A2, higher FN1): M4-M5\
+F3 (no COL1A2) = M4,5,7,8 and Mast, Endo2, L2-3)\
+F4 (COL1A2): Plasma 1-3, fever F4 near other F clusters.\
+
+```{r, message = F, warning = F, fig.width = 12, fig.height = 28, eval = T}
+
+enrichment_scores_compiled_tumor %>%
+  mutate(pair = paste0(prox_ct, "_", prox_to),
+         sig = ifelse(pvale_adjust < 0.01, "sig", "nonsig")) %>%
+  filter(sig == "sig") %>%
+  drop_na() %>%
+  arrange(pair) %>%
+  ggplot(aes(x = reorder(pair, log_or), y = log_or)) +
+    geom_pointrange(aes(ymin = log_or05, ymax = log_or95)) +
+    labs(y = "OR with 95% Confidence Interval",
+         x = "Celltype pair") +
+  geom_hline(yintercept = 0) +
+  coord_flip() +
+  theme_bw() +
+  facet_wrap(~prox_ct, scales = "free", ncol = 4)
 
 ```
 
+### Plot differences between timepoints and tissues
+
+```{r, message = F, warning = F, fig.width = 10, fig.height = 10, eval = F}
+
+proximity_compiled_tumor$Tissue <- mapvalues(proximity_compiled_tumor$sample,
+                                       from = seurat_data$Sample,
+                                       to = seurat_data$Tissue)
+proximity_compiled_tumor$Timepoint <- mapvalues(proximity_compiled_tumor$sample,
+                                          from = seurat_data$Sample,
+                                          to = seurat_data$Timepoint)
+
+proximity_compiled_tumor$Timepoint <- factor(proximity_compiled_tumor$Timepoint,
+                                       levels = c(0, 6))
+
+#unique(paste0(proximity_compiled$anchor_cell_ct, "_", proximity_compiled$prox_cell_ct))
+
+#testtt <- proximity_compiled %>%
+#  mutate(pair = paste0(anchor_cell_ct, "_", prox_cell_ct)) %>%
+#  arrange(anchor_cell_ct) %>%
+#  filter(Tissue == "Tumor",
+#         anchor_cell_ct == "M2",
+#         prox_cell_ct != "M2")
+summaries <- proximity_compiled_tumor %>%
+  arrange(anchor_cell_ct) %>%
+  mutate(pair = paste0(anchor_cell_ct, "_", prox_cell_ct)) %>%
+  arrange(anchor_cell_ct) %>%
+  filter(Tissue == "Tumor",
+         anchor_cell_ct %in% c("F1", "F2", "F3", "F4", "F5"),
+         prox_cell_ct %in% setdiff(unique(seurat_data$Annotation), c("F1", "F2", "F3", "F4", "F5"))) %>%
+  group_by(Timepoint, pair) %>%
+  dplyr::summarise(nn = n()) %>%
+  mutate(timepoint_pair = paste0(Timepoint, "_", pair)) %>%
+  filter(nn > 10) %>%
+  group_by(pair) %>%
+  filter(n() > 1)
+
+p1 <- proximity_compiled_tumor %>%
+  mutate(pair = paste0(anchor_cell_ct, "_", prox_cell_ct)) %>%
+  mutate(timepoint_pair = paste0(Timepoint, "_", pair)) %>%
+  arrange(anchor_cell_ct) %>%
+  filter(timepoint_pair %in% summaries$timepoint_pair,
+         Tissue == "Tumor",
+         anchor_cell_ct == "F1",
+         prox_cell_ct != "F1") %>%
+  ggboxplot(x = "Timepoint", y = "distance", fill = "Timepoint",
+           add = "jitter", facet.by = "pair",
+           ylim = c(0, 150), short.panel.labs = T) +
+  NoLegend()
+
+p1 + stat_compare_means(label = "p.format", label.y = 130)
+
+p2 <- proximity_compiled_tumor %>%
+  mutate(pair = paste0(anchor_cell_ct, "_", prox_cell_ct)) %>%
+  mutate(timepoint_pair = paste0(Timepoint, "_", pair)) %>%
+  arrange(anchor_cell_ct) %>%
+  filter(timepoint_pair %in% summaries$timepoint_pair,
+         Tissue == "Tumor",
+         anchor_cell_ct == "F2",
+         prox_cell_ct != "F2") %>%
+  ggboxplot(x = "Timepoint", y = "distance", fill = "Timepoint",
+           add = "jitter", facet.by = "pair",
+           ylim = c(0, 150), short.panel.labs = T) +
+  NoLegend()
+
+p2 + stat_compare_means(label = "p.format", label.y = 130)
+
+p3 <- proximity_compiled_tumor %>%
+  mutate(pair = paste0(anchor_cell_ct, "_", prox_cell_ct)) %>%
+  mutate(timepoint_pair = paste0(Timepoint, "_", pair)) %>%
+  arrange(anchor_cell_ct) %>%
+  filter(timepoint_pair %in% summaries$timepoint_pair,
+         Tissue == "Tumor",
+         anchor_cell_ct == "F3",
+         prox_cell_ct != "F3") %>%
+  ggboxplot(x = "Timepoint", y = "distance", fill = "Timepoint",
+           add = "jitter", facet.by = "pair",
+           ylim = c(0, 150), short.panel.labs = T) +
+  NoLegend()
+
+p3 + stat_compare_means(label = "p.format", label.y = 130)
+
+p4 <- proximity_compiled_tumor %>%
+  mutate(pair = paste0(anchor_cell_ct, "_", prox_cell_ct)) %>%
+  mutate(timepoint_pair = paste0(Timepoint, "_", pair)) %>%
+  arrange(anchor_cell_ct) %>%
+  filter(timepoint_pair %in% summaries$timepoint_pair,
+         Tissue == "Tumor",
+         anchor_cell_ct == "F4",
+         prox_cell_ct != "F4") %>%
+  ggboxplot(x = "Timepoint", y = "distance", fill = "Timepoint",
+           add = "jitter", facet.by = "pair",
+           ylim = c(0, 150), short.panel.labs = T) +
+  NoLegend()
+
+p4 + stat_compare_means(label = "p.format", label.y = 130)
+
+#p5 <- proximity_compiled %>%
+#  mutate(pair = paste0(anchor_cell_ct, "_", prox_cell_ct)) %>%
+#  mutate(timepoint_pair = paste0(Timepoint, "_", pair)) %>%
+#  arrange(anchor_cell_ct) %>%
+#  filter(timepoint_pair %in% summaries$timepoint_pair,
+#         Tissue == "Tumor",
+#         anchor_cell_ct == "F5",
+#         prox_cell_ct != "F5") %>%
+#  ggboxplot(x = "Timepoint", y = "distance", fill = "Timepoint",
+#           add = "jitter", facet.by = "pair",
+#           ylim = c(0, 150), short.panel.labs = T) +
+#  NoLegend()
+#
+#p5 + stat_compare_means(label = "p.format", label.y = 130)
+
+#proximity_compiled %>%
+#  mutate(pair = paste0(anchor_cell_ct, "_", prox_cell_ct)) %>%
+#  arrange(anchor_cell_ct) %>%
+#  filter(Tissue == "Tumor",
+#         anchor_cell_ct == "M2",
+#         prox_cell_ct != "M2") %>%
+#  ggplot(aes(x = Timepoint, y = distance, fill = Timepoint)) +
+#    geom_violin(alpha = 0.5) +
+#    geom_point(position = position_jitter(seed = 1, width = 0.2)) +
+#    facet_wrap(~pair) +
+#    theme(legend.position = "none") +
+#    theme_classic()
+
+```
+
+### Heatmaps of celltype proximity before and after PIPAC
+
+#### All tumors
+
+```{r, message = F, warning = F, fig.width = 10, fig.height = 10, eval = F}
+
+enrichment_scores_compiled_tumor <- enrichment_scores_compiled[complete.cases(enrichment_scores_compiled_tumor),]
+
+pval <- reshape2::dcast(prox_to ~ prox_ct, value.var = 'pvale_adjust', data = enrichment_scores_compiled_tumor) 
+or <- reshape2::dcast(prox_to ~ prox_ct, value.var = 'log_or', data = enrichment_scores_compiled_tumor)
+
+rownames(pval) <- pval$prox_to
+pval$prox_to <- NULL
+
+rownames(or) <- or$prox_to
+or$prox_to <- NULL
+
+ct_pval<- pval
+ct_pval[is.na(ct_pval)] = 1
+
+ct_or<- or
+ct_or[is.na(ct_or)] = 0
+ct_or[is.infinite(as.matrix(ct_or))] <- 0
+
+ct_or[ct_pval > 0.05] = 0 # replace non-sig results with 0
+
+calc_heatmap_w <- function(df){width <- ncol(df) * 0.24; return(width)}
+calc_heatmap_h <- function(df){height <- nrow(df) * 0.18; return(height)}
+
+# plot odds ratio
+min01 <- quantile(as.matrix(ct_or), 0.01)
+max99 <- quantile(as.matrix(ct_or), 0.99)
+col_fun = colorRamp2(c(min01, 0, max99), c("#377EB8", "white", "#E41A1C"))
+
+hp <- Heatmap(t(ct_or), name = 'log(OR)',
+              row_title = 'Anchor',
+              row_title_side = 'right',
+              row_names_side = 'left',
+              row_dend_side = 'right',
+              row_title_gp = gpar(fontsize = 15),
+              column_title = 'Nearest Neighbor',
+              column_title_side = "bottom",
+              column_names_side = 'top',
+              column_names_rot = 45,
+              column_dend_side = 'bottom',
+              column_title_gp = gpar(fontsize = 15),
+              rect_gp = gpar(col = "#b8b7b6", lwd = 0.5),
+              width = unit(calc_heatmap_w(ct_or), "in"),
+              height = unit(calc_heatmap_h(ct_or), "in"),
+              na_col = 'white',
+              col = col_fun,
+              row_dend_width = unit(0.5, 'cm'),
+              column_dend_height = unit(0.5, 'cm'))
+
+draw(hp)
+
+#pdf(".pdf",
+#    width = 12,
+#    height = 10)
+
+#draw(hp)
+
+#dev.off()
+
+```
+
+#### Pre-treatment tumors
+
+```{r, message = F, warning = F, fig.width = 10, fig.height = 10}
+
+enrichment_scores_compiled <- read.table("/home/hnatri/PIPAC_spatial/enrichment_pretreatment_scores_compiled.tsv",
+                                         header = T)
+proximity_compiled <- read.table("/home/hnatri/PIPAC_spatial/tumor_pretreatment_proximity_compiled.tsv",
+                                 header = T)
+
+enrichment_scores_compiled <- enrichment_scores_compiled[complete.cases(enrichment_scores_compiled),]
+
+pval <- reshape2::dcast(prox_to ~ prox_ct, value.var = 'pvale_adjust', data = enrichment_scores_compiled) 
+or <- reshape2::dcast(prox_to ~ prox_ct, value.var = 'log_or', data = enrichment_scores_compiled)
+
+rownames(pval) <- pval$prox_to
+pval$prox_to <- NULL
+
+rownames(or) <- or$prox_to
+or$prox_to <- NULL
+
+ct_pval<- pval
+ct_pval[is.na(ct_pval)] = 1
+
+ct_or<- or
+ct_or[is.na(ct_or)] = 0
+ct_or[is.infinite(as.matrix(ct_or))] <- 0
+
+ct_or[ct_pval > 0.05] = 0 # replace non-sig results with 0
+
+calc_heatmap_w <- function(df){width <- ncol(df) * 0.24; return(width)}
+calc_heatmap_h <- function(df){height <- nrow(df) * 0.18; return(height)}
+
+# plot odds ratio
+min01 <- quantile(as.matrix(ct_or), 0.01)
+max99 <- quantile(as.matrix(ct_or), 0.99)
+col_fun = colorRamp2(c(min01, 0, max99), c("#377EB8", "white", "#E41A1C"))
+
+ct_or <- t(ct_or)
+
+hp <- Heatmap(ct_or, name = 'log(OR)',
+              row_title = 'Anchor',
+              row_title_side = 'right',
+              row_names_side = 'left',
+              row_dend_side = 'right',
+              row_title_gp = gpar(fontsize = 15),
+              column_title = 'Nearest Neighbor',
+              column_title_side = "bottom",
+              column_names_side = 'top',
+              column_names_rot = 45,
+              column_dend_side = 'bottom',
+              na_col = 'white', 
+              col = col_fun, 
+              row_dend_width = unit(0.5, 'cm'),
+              column_dend_height = unit(0.5, 'cm'),
+              width = ncol(ct_or)*unit(5, "mm"),
+              height = nrow(ct_or)*unit(5, "mm"))
+
+draw(hp)
+
+#pdf(".pdf",
+#    width = 12,
+#    height = 10)
+
+#draw(hp)
+
+#dev.off()
+
+```
+
+#### Post-treatment tumors
+
+```{r, message = F, warning = F, fig.width = 10, fig.height = 8}
+
+post_enrichment_scores_compiled <- read.table("/home/hnatri/PIPAC_spatial/enrichment_posttreatment_scores_compiled.tsv",
+                                         header = T)
+post_proximity_compiled <- read.table("/home/hnatri/PIPAC_spatial/tumor_posttreatment_proximity_compiled.tsv",
+                                 header = T)
+
+post_enrichment_scores_compiled <- post_enrichment_scores_compiled[complete.cases(post_enrichment_scores_compiled),]
+
+post_pval <- reshape2::dcast(prox_to ~ prox_ct, value.var = 'pvale_adjust', data = post_enrichment_scores_compiled) 
+post_or <- reshape2::dcast(prox_to ~ prox_ct, value.var = 'log_or', data = post_enrichment_scores_compiled)
+
+rownames(post_pval) <- post_pval$prox_to
+post_pval$prox_to <- NULL
+
+rownames(post_or) <- post_or$prox_to
+post_or$prox_to <- NULL
+
+post_ct_pval<- post_pval
+post_ct_pval[is.na(post_ct_pval)] = 1
+
+post_ct_or<- post_or
+post_ct_or[is.na(post_ct_or)] = 0
+post_ct_or[is.infinite(as.matrix(post_ct_or))] <- 0
+
+post_ct_or[post_ct_pval > 0.05] = 0 # replace non-sig results with 0
+
+post_calc_heatmap_w <- function(df){width <- ncol(df) * 0.24; return(width)}
+post_calc_heatmap_h <- function(df){height <- nrow(df) * 0.18; return(height)}
+
+# plot odds ratio
+post_min01 <- quantile(as.matrix(ct_or), 0.01)
+post_max99 <- quantile(as.matrix(ct_or), 0.99)
+post_col_fun = colorRamp2(c(min01, 0, max99), c("#377EB8", "white", "#E41A1C"))
+
+post_ct_or <- t(post_ct_or)
+
+hp <- Heatmap(post_ct_or, name = 'log(OR)', 
+              row_title = 'Anchor', 
+              row_title_side = 'right', 
+              row_names_side = 'left', 
+              row_dend_side = 'right',  
+              row_title_gp = gpar(fontsize = 15), 
+              column_title = 'Nearest Neighbor', 
+              column_title_side = "bottom",
+              column_names_side = 'top', 
+              column_names_rot = 45,
+              column_dend_side = 'bottom',  
+              column_title_gp = gpar(fontsize = 15),
+              rect_gp = gpar(col = "#b8b7b6", lwd = 0.5),
+              na_col = 'white', 
+              col = col_fun, 
+              row_dend_width = unit(2, 'cm'), 
+              column_dend_height = unit(2, 'cm'),
+              width = ncol(ct_or)*unit(5, "mm"), 
+              height = nrow(ct_or)*unit(5, "mm")) 
+
+draw(hp)
+
+#pdf(".pdf",
+#    width = 12,
+#    height = 10)
+
+#draw(hp)
+
+#dev.off()
+
+```
+
+#### Pre-post-delta
+
+```{r, message = F, warning = F, fig.width = 10, fig.height = 8}
+
+ct_or <- ct_or[rownames(post_ct_or), colnames(post_ct_or)]
+
+identical(rownames(ct_or), rownames(post_ct_or))
+identical(colnames(ct_or), colnames(post_ct_or))
+
+delta_or <- ct_or-post_ct_or
+
+hp <- Heatmap(delta_or, name = 'Delta of log(OR)',
+              row_title = 'Anchor',
+              row_title_side = 'right',
+              row_names_side = 'left',
+              row_dend_side = 'right',
+              row_title_gp = gpar(fontsize = 15),
+              column_title = 'Nearest Neighbor',
+              column_title_side = "bottom",
+              column_names_side = 'top',
+              column_names_rot = 45,
+              column_dend_side = 'bottom',
+              na_col = 'white', 
+              col = col_fun, 
+              row_dend_width = unit(0.5, 'cm'),
+              column_dend_height = unit(0.5, 'cm'),
+              width = ncol(ct_or)*unit(5, "mm"),
+              height = nrow(ct_or)*unit(5, "mm"))
+
+draw(hp)
+
+```
+
+### PCA on proximity
+
+```{r, message = F, warning = F, fig.width = 8, fig.height = 4}
+
+# A matrix of mean celltype-celltype distances in each sample
+proximity_compiled_tumor$pair <- paste0(proximity_compiled_tumor$anchor_cell_ct, "_", proximity_compiled_tumor$prox_cell_ct)
+
+proximity_matrix <- proximity_compiled_tumor %>%
+  group_by(sample, pair) %>%
+  dplyr::summarise(mean_distance = mean(distance)) %>%
+  ungroup() %>%
+  pivot_wider(names_from = sample, values_from = mean_distance) %>%
+  column_to_rownames(var = "pair") %>%
+  as.matrix()
+
+#library(naniar)
+#library(missForest)
+#
+#gg_miss_var(as.data.frame(proximity_matrix))
+
+```
+
+```{r, message = F, warning = F, fig.width = 6, fig.height = 4}
+
+# Estimate the number of components from incomplete data
+nb <- estim_ncpPCA(proximity_matrix,
+                   method.cv = "Kfold",
+                   verbose = F)
+
+plot(0:5, nb$criterion, xlab = "nb dim", ylab = "MSEP")
+
+res.comp <- imputePCA(proximity_matrix, ncp = 5) # iterativePCA algorithm
+res.comp$completeObs[1:3,] # the imputed data set
+
+#imp <- cbind.data.frame(res.comp$completeObs, WindDirection)
+
+res.pca <- PCA(res.comp$completeObs,
+               #quanti.sup = 1,
+               #quali.sup = 12,
+               ncp = 5,
+               graph = FALSE)
+
+pcs <- as.data.frame(res.pca$var$coord)
+
+pcs$Tissue <- mapvalues(rownames(pcs),
+                        from = seurat_data$Sample,
+                        to = seurat_data$Tissue) %>% as.character()
+pcs$Arm <- mapvalues(rownames(pcs),
+                        from = seurat_data$Sample,
+                        to = seurat_data$Arm) %>% as.character()
+pcs$DISEASESITE <- mapvalues(rownames(pcs),
+                        from = seurat_data$Sample,
+                        to = seurat_data$DISEASESITE) %>% as.character()
+pcs$GENDER <- mapvalues(rownames(pcs),
+                        from = seurat_data$Sample,
+                        to = seurat_data$GENDER) %>% as.character()
+pcs$Tissue <- mapvalues(rownames(pcs),
+                        from = seurat_data$Sample,
+                        to = seurat_data$Tissue) %>% as.character()
+pcs$Patient_ID <- mapvalues(rownames(pcs),
+                            from = seurat_data$Sample,
+                           to = seurat_data$Patient_ID) %>% as.character()
+pcs$DXSITE <- mapvalues(rownames(pcs),
+                        from = seurat_data$Sample,
+                        to = seurat_data$DXSITE) %>% as.character()
+pcs$Timepoint <- mapvalues(rownames(pcs),
+                           from = seurat_data$Sample,
+                           to = seurat_data$Timepoint) %>% as.numeric()
+
+pcs$Timepoint <- mapvalues(rownames(pcs),
+                           from = seurat_data$Sample,
+                           to = seurat_data$Timepoint) %>% as.numeric()
+pcs$Timepoint <- factor(pcs$Timepoint,
+                        levels = c(0, 6))
+
+
+pcs %>%
+  ggplot(aes(x = Dim.1, y = Dim.2, shape = Timepoint, color = Patient_ID)) +
+  geom_point() +
+  theme_bw()
+
+pcs %>%
+  ggplot(aes(x = Dim.1, y = Dim.3, shape = Timepoint, color = Patient_ID)) +
+  geom_point() +
+  theme_bw()
+
+pcs %>%
+  ggplot(aes(x = Dim.2, y = Dim.3, shape = Timepoint, color = Patient_ID)) +
+  geom_point() +
+  theme_bw()
+
+pcs %>%
+  ggplot(aes(x = Dim.1, y = Dim.2, shape = Timepoint, color = DXSITE)) +
+  geom_point() +
+  theme_bw()
+
+pcs %>%
+  ggplot(aes(x = Dim.1, y = Dim.3, shape = Timepoint, color = DXSITE)) +
+  geom_point() +
+  theme_bw()
+
+pcs %>%
+  ggplot(aes(x = Dim.2, y = Dim.3, shape = Timepoint, color = DXSITE)) +
+  geom_point() +
+  theme_bw()
+
+```
 

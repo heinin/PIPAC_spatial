@@ -1,0 +1,731 @@
+---
+title: "Bulk-RNAseq analysis of CAF cell lines"
+author: "heinin"
+date: "2025-11-11"
+output:
+  workflowr::wflow_html:
+    code_folding: hide
+  html_notebook: default
+editor_options:
+  chunk_output_type: console
+---
+
+### Packages and environment variables
+
+```{r, warning=F, message=F}
+
+#install.packages("ggfun", lib="/home/hnatri/R/rstudio-4.3.0-4-with_modules.sif/libs")
+#packageurl <- "https://cran.r-project.org/src/contrib/ggfun_0.2.0.tar.gz"
+#install.packages(packageurl, repos=NULL, type="source")
+#remotes::install_github("YuLab-SMU/aplot", lib="/home/hnatri/R/rstudio-4.3.0-4-with_modules.sif/libs")
+#BiocManager::install("clusterProfiler", lib="/home/hnatri/R/rstudio-4.3.0-4-with_modules.sif/libs")
+
+suppressPackageStartupMessages({
+  library(workflowr)
+  library(tidyverse)
+  library(edgeR)
+  library(limma)
+  library(plyr)
+  library(EnhancedVolcano)
+  library(patchwork)
+  library(contsurvplot)
+  library(survival)
+  library(survminer)
+  library(googlesheets4)
+  library(clusterProfiler)
+  library(org.Hs.eg.db)})
+
+
+```
+
+### Environment variables and helper functions
+
+```{r, message = F, warning = F}
+
+setwd("/home/hnatri/PIPAC_spatial/")
+set.seed(9999)
+options(scipen = 99999)
+options(ggrepel.max.overlaps = Inf)
+
+source("/home/hnatri/PIPAC_spatial/code/PIPAC_colors_themes.R")
+source("/home/hnatri/PIPAC_spatial/code/plot_functions.R")
+
+```
+
+### Marker information and metadata
+
+```{r, message = F, warning = F, fig.width = 6, fig.height = 4}
+
+# Cell type markers by group
+gs4_deauth()
+markers_by_group  <- gs4_get("https://docs.google.com/spreadsheets/d/1w0wrL-5KwNEWi_VpmriN7YmfwpBPlEYX0MKlwI2ZQu8/edit?usp=sharing")
+markers_by_group <- read_sheet(markers_by_group, sheet = "Markers by group")
+
+```
+
+### Import data
+
+```{r, message = F, warning = F, fig.width = 6, fig.height = 6}
+
+# Count data with genes in rows and samples in columns
+human_counts <- read.table("/tgen_labs/banovich/Raoof_Appendiceal_Bulk/CAF_celllines/CAF_human_gene_count.tsv",
+                            header = T, sep = "\t")
+mouse_counts <- read.table("/tgen_labs/banovich/Raoof_Appendiceal_Bulk/CAF_celllines/CAF_mouse_gene_count.tsv",
+                           header = T, sep = "\t")
+
+```
+
+## Human
+
+### Preprocessing
+
+```{r, message = F, warning = F, fig.width = 5, fig.height = 4}
+
+all_counts_df <- human_counts
+gene_info <- all_counts_df[,grep("gene", colnames(all_counts_df))]
+rownames(all_counts_df) <- all_counts_df$gene_id
+all_counts_df <- all_counts_df[,grep("COL", colnames(all_counts_df))]
+
+# Excluding ribosomal genes
+ribo <- gene_info[grep("^RP", gene_info$gene_name),]
+all_counts_df <- all_counts_df[!(row.names(all_counts_df) %in% ribo$gene_id), ]
+
+# Arranging gene info to match the count matrix
+gene_info <- gene_info %>%
+  filter(gene_id %in% rownames(all_counts_df)) %>%
+  dplyr::arrange(factor(gene_id, levels = rownames(all_counts_df)))
+
+identical(gene_info$gene_id, rownames(all_counts_df))
+
+# Calculating gene length
+#gene_info$length <- abs(gene_info$stop - gene_info$start)
+
+# Create DGEList object
+d0 <- DGEList(all_counts_df, genes = gene_info)
+
+# Calculate normalization factors
+d0 <- calcNormFactors(d0)
+d0
+
+# Filter low-expressed genes
+cutoff <- 1
+drop <- which(apply(rpkm(d0, gene.length = "gene_length"), 1, max) < cutoff)
+d <- d0[-drop,] 
+dim(d) # number of genes left
+
+# Matching sample names with patient metadata
+#appendiceal_metadata <- merge(appendiceal_metadata, sample_key, by = "Patient.ID")
+#appendiceal_metadata <- appendiceal_metadata %>%
+#  filter(X2025.HonestBroker.specimen.number %in% colnames(all_counts_df)) %>%
+#  dplyr::arrange(match(X2025.HonestBroker.specimen.number, colnames(all_counts_df)))
+
+# Dimensionality reduction colored with various metadata
+group_info <- sapply(strsplit(colnames(all_counts_df), "_"), `[`, 2)
+sample_info <-  sapply(strsplit(colnames(all_counts_df), "_"), `[`, 1)
+
+# Set colors and shapes
+cols <- c("deeppink3", "cyan4", "yellow3")
+#shps <- c(15, 16, 17, 18, 15, 16, 17, 18)
+shps <- c(15, 15, 15, 16, 16, 16)
+names(cols) <- unique(sample_info)
+names(shps) <- group_info
+
+plotMDS(d, top = 500, col = cols, pch = shps, cex = 1, labels = colnames(all_counts_df))
+#legend('bottomright', col=cols, legend=unique(sample_info), pch = 16, cex = 0.7)
+#legend('topright', legend=unique(group_info), pch = shps, cex = 0.7)
+
+```
+
+```{r, message = F, warning = F, fig.width = 5, fig.height = 4}
+
+# Total number of reads per sample
+d$samples %>% 
+  rownames_to_column(var = "sample") %>%
+  ggplot(aes(x = reorder(sample, -lib.size), y = lib.size)) +
+  geom_bar(stat = "identity") +
+  theme_classic() +
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1)) +
+  theme(plot.margin = unit(c(0,0,0,1), "cm")) +
+  xlab("Sample") + 
+  ylab("Library size")
+
+```
+
+### DE analysis
+
+```{r, message = F, warning = F, fig.width = 5, fig.height = 4}
+
+#group_info <- sapply(strsplit(metadata_expression$Sample_Treatment, "_"), `[`, 1)
+#sample_info <- c("COL4", "COL5", "COL7", "COL4", "COL5", "COL7")
+
+# Voom transformation and calculation of variance weights.
+# Specify the model to be fitted. We do this before using voom since voom uses
+# variances of the model residuals (observed - fitted).
+# Edit to use the relevant metadata column.
+groups <- data.frame(sample_info = sample_info, group_info = group_info)
+
+#group_info2 <- c("V", "V", "MMC", "MMC", "V", "V", "MMC", "MMC")
+
+mm <- model.matrix(~0 + sample_info + group_info)
+# Renaming columns
+#colnames(mm) <- c("MMC", "V")
+
+# Filtering based on the design matrix
+# Defaults: min.count = 10, min.total.count = 15, large.n = 10, min.prop = 0.7
+keep <- filterByExpr(d, mm)
+d1 <- d[keep,]
+
+# Replotting MDS and library sizes
+plotMDS(d1, top = 500, col = cols, pch = shps)
+legend('bottomright', col=cols, legend=unique(sample_info), pch = 16, cex = 0.7)
+legend('topright', legend=unique(group_info), pch = shps, cex = 0.7)
+
+```
+
+```{r, message = F, warning = F, fig.width = 5, fig.height = 4, eval = F}
+
+# Total number of reads per sample
+d1$samples %>% 
+  rownames_to_column(var = "sample") %>%
+  ggplot(aes(x = reorder(sample, -lib.size), y = lib.size)) +
+  geom_bar(stat = "identity") +
+  theme_classic() +
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1)) +
+  theme(plot.margin = unit(c(0,0,0,1), "cm")) +
+  xlab("Sample") + 
+  ylab("Library size")
+
+
+```
+
+```{r, message = F, warning = F, fig.width = 8, fig.height = 6}
+
+# The above specifies a model where each coefficient corresponds to a group mean
+# Voom
+y1 <- voom(d1, mm, plot = T)
+
+# Fitting linear models in limma
+# lmFit fits a linear model using weighted least squares for each gene:
+fit1 <- lmFit(y1, mm)
+head(coef(fit1))
+
+# Specify comparisons
+contr1 <- makeContrasts(colnames(coef(fit1)), levels = colnames(coef(fit1)))
+contr1
+
+tmp <- contrasts.fit(fit1, contr1)
+tmp <- eBayes(tmp)
+
+top.table <- topTable(tmp, sort.by = "P", n = Inf)
+top.table$gene_name <- mapvalues(x = rownames(top.table),
+                                 from = gene_info$gene_id,
+                                 to = gene_info$gene_name)
+
+# Saving all results
+write.table(top.table, "/home/hnatri/Raoof_Appendiceal_Bulk/human_MMC_V_res.tsv",
+            sep = "\t", quote = F, row.names = T)
+
+# Plotting
+top_sig <- top.table %>%
+  filter(adj.P.Val < 0.05 & logFC > 1)
+  #dplyr::select(gene_name)
+
+p0 <- EnhancedVolcano(top.table,
+                      lab = top.table$gene_name,
+                      x = 'logFC',
+                      y = 'adj.P.Val',
+                      title = "",
+                      subtitle = "",
+                      pCutoff = 0.05,
+                      FCcutoff = 1,
+                      ylim = c(0, max(-log10(top.table[["adj.P.Val"]]), na.rm = TRUE) + 0.5),
+                      caption = "",
+                      titleLabSize = 12,
+                      subtitleLabSize = 2,
+                      legendLabSize = 10,
+                      axisLabSize = 10,
+                      legendIconSize = 3,
+                      labSize = 4)
+
+p0
+
+
+```
+
+### FPKM for each gene
+
+```{r, message = F, warning = F, fig.width = 5, fig.height = 4, eval = F}
+
+# Calculating FPKM for each gene
+metadata_expression <- rpkm(d0, gene.length = "gene_length") %>% t() %>% as.data.frame() %>%
+  rownames_to_column(var = "Sample_Treatment")
+
+metadata_expression$Sample <- sapply(strsplit(metadata_expression$Sample_Treatment, "_"), `[`, 1)
+metadata_expression$Treatment <- sapply(strsplit(metadata_expression$Sample_Treatment, "_"), `[`, 2)
+
+gene_info %>% filter(gene_name == "Tenm4")
+
+# Expression by group
+p1 <- metadata_expression %>%
+  ggplot(aes(x = Treatment, y = ENSMUSG00000048078, fill = Treatment)) +
+  geom_violin(alpha = 0.5) +
+  geom_point(position = position_jitter(seed = 1, width = 0.2)) +
+  ylab("Tenm4 expression (FPKM)") +
+  xlab("Treatment") +
+  theme_classic() +
+  theme(legend.position = "none") +
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1))
+
+p1
+
+```
+
+### Plotting marker genes
+
+```{r, message = F, warning = F, fig.width = 5, fig.height = 4}
+
+# Mouse to human gene names
+mouse_human_genes <- read.table("http://www.informatics.jax.org/downloads/reports/HOM_MouseHumanSequence.rpt",
+                                sep="\t", header = T)
+
+mouse <- split.data.frame(mouse_human_genes,mouse_human_genes$Common.Organism.Name)[[2]]
+human <- split.data.frame(mouse_human_genes,mouse_human_genes$Common.Organism.Name)[[1]]
+mouse <- mouse[,c(1,4)]
+human <- human[,c(1,4)]
+mh_data <- merge.data.frame(mouse, human, by = "DB.Class.Key",all.y = TRUE)
+
+# Markers to plot
+mycafs <- c("TGFB1", "ACTA2", "TAGLN", "HOPX", "MYL9")
+icafs <- c("IL6", "CXCL12", "CXCL13", "CXCL14")
+abcafs <- c("CD74", "HLA-DPB1", "HLA-DPB2", "HLA-DQA1", "HLA-DRA", "HLA-DRB1")
+ficafs <- c("SFRP2", "SFRP4", "COMP", "CXCL14", "PLA2G2A", "ASPN")
+
+all_caf_markers <- c(mycafs, icafs, abcafs, ficafs)
+
+top_sig %>% filter(gene_name %in% all_caf_markers)
+
+# FPKM, no filtering
+# Create DGEList object
+d0 <- DGEList(all_counts_df, genes = gene_info)
+
+# Calculate normalization factors
+d0 <- calcNormFactors(d0)
+d0
+
+# Combining expression and metadata
+metadata_expression <- rpkm(d0, gene.length = "gene_length") %>% t() %>% as.data.frame() %>%
+  rownames_to_column(var = "Sample_Treatment")
+
+metadata_expression$Sample <- sapply(strsplit(metadata_expression$Sample_Treatment, "_"), `[`, 1)
+metadata_expression$Treatment <- sapply(strsplit(metadata_expression$Sample_Treatment, "_"), `[`, 2)
+
+long_df <- metadata_expression %>%
+  pivot_longer(cols = grep("ENS", colnames(metadata_expression), value = T),
+               names_to = "ensembl", values_to = "exp")
+
+# Adding gene names
+long_df$gene <- mapvalues(x = long_df$ensembl,
+                          from = gene_info$gene_id,
+                          to = gene_info$gene_name)
+
+long_df$Hh_gene <- mapvalues(x = long_df$gene,
+                             from = mh_data$Symbol.x,
+                             to = mh_data$Symbol.y)
+
+long_df$Treatment_simple <- ifelse(long_df$Treatment %in% c("V1", "V2"), "V", "MMC")
+
+# Plotting
+long_df %>% filter(Hh_gene %in% icafs) %>%
+  ggplot(aes(x = Treatment_simple, y = exp, color = Treatment_simple, label = Sample)) +
+  geom_violin(alpha = 0.5) +
+  geom_point() +
+  geom_text(hjust=0, vjust=0) +
+  #geom_line(aes(group = Sample), color = "gray20") +
+  facet_wrap(~Hh_gene, scales = "free") +
+  ylab("iCAF expression (FPKM)") +
+  xlab("") +
+  theme_classic() +
+  theme(legend.position = "none") +
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1))
+
+long_df %>% filter(Hh_gene %in% mycafs) %>%
+  ggplot(aes(x = Treatment_simple, y = exp, color = Treatment_simple, label = Sample)) +
+  geom_violin(alpha = 0.5) +
+  geom_point() +
+  geom_text(hjust=0, vjust=0) +
+  #geom_line(aes(group = Sample), color = "gray20") +
+  facet_wrap(~Hh_gene, scales = "free") +
+  ylab("myCAF expression (FPKM)") +
+  xlab("") +
+  theme_classic() +
+  theme(legend.position = "none") +
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1))
+
+long_df %>% filter(Hh_gene %in% abcafs) %>%
+  ggplot(aes(x = Treatment_simple, y = exp, color = Treatment_simple, label = Sample)) +
+  geom_violin(alpha = 0.5) +
+  geom_point() +
+  geom_text(hjust=0, vjust=0) +
+  #geom_line(aes(group = Sample), color = "gray20") +
+  facet_wrap(~Hh_gene, scales = "free") +
+  ylab("abCAF expression (FPKM)") +
+  xlab("") +
+  theme_classic() +
+  theme(legend.position = "none") +
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1))
+
+long_df %>% filter(Hh_gene %in% ficafs) %>%
+  ggplot(aes(x = Treatment_simple, y = exp, color = Treatment_simple, label = Sample)) +
+  geom_violin(alpha = 0.5) +
+  geom_point() +
+  geom_text(hjust=0, vjust=0) +
+  #geom_line(aes(group = Sample), color = "gray20") +
+  facet_wrap(~Hh_gene, scales = "free") +
+  ylab("fiCAF expression (FPKM)") +
+  xlab("") +
+  theme_classic() +
+  theme(legend.position = "none") +
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1))
+
+```
+
+## Mouse
+
+### Preprocessing
+
+```{r, message = F, warning = F, fig.width = 5, fig.height = 4}
+
+# Excluding ribosomal genes
+all_counts_df <- mouse_counts
+gene_info <- all_counts_df[,grep("gene", colnames(all_counts_df))]
+rownames(all_counts_df) <- all_counts_df$gene_id
+all_counts_df <- all_counts_df[,grep("CAF", colnames(all_counts_df))]
+
+ribo <- gene_info[grep("^Rp", gene_info$gene_name),]
+all_counts_df <- all_counts_df[!(rownames(all_counts_df) %in% ribo$gene_id), ]
+
+# Arranging gene info to match the count matrix
+gene_info <- gene_info %>%
+  filter(gene_id %in% rownames(all_counts_df)) %>%
+  dplyr::arrange(factor(gene_id, levels = rownames(all_counts_df)))
+
+identical(gene_info$gene_id, rownames(all_counts_df))
+
+# Calculating gene length
+#gene_info$length <- abs(gene_info$stop - gene_info$start)
+
+# Create DGEList object
+d0 <- DGEList(all_counts_df, genes = gene_info)
+
+# Calculate normalization factors
+d0 <- calcNormFactors(d0)
+d0
+
+# Filter low-expressed genes
+cutoff <- 1
+drop <- which(apply(rpkm(d0, gene.length = "gene_length"), 1, max) < cutoff)
+d <- d0[-drop,] 
+dim(d) # number of genes left
+
+# Matching sample names with patient metadata
+#appendiceal_metadata <- merge(appendiceal_metadata, sample_key, by = "Patient.ID")
+#appendiceal_metadata <- appendiceal_metadata %>%
+#  filter(X2025.HonestBroker.specimen.number %in% colnames(all_counts_df)) %>%
+#  dplyr::arrange(match(X2025.HonestBroker.specimen.number, colnames(all_counts_df)))
+
+# Dimensionality reduction colored with various metadata
+group_info <- sapply(strsplit(colnames(all_counts_df), "_"), `[`, 2)
+sample_info <-  sapply(strsplit(colnames(all_counts_df), "_"), `[`, 1)
+
+# Set colors and shapes
+cols <- c("deeppink3", "cyan4")
+shps <- c(15, 16, 17, 18, 15, 16, 17, 18)
+#shps <- c(15, 15, 15, 16, 16, 16)
+names(cols) <- unique(sample_info)
+names(shps) <- unique(group_info)
+
+plotMDS(d, top = 500, pch = shps, col = cols, cex = 1)
+#legend('bottomright', col=cols, legend=unique(sample_info), pch = 16, cex = 0.7)
+#legend('topright', legend=unique(group_info), pch = shps, cex = 0.7)
+
+```
+
+```{r, message = F, warning = F, fig.width = 5, fig.height = 4}
+
+# Total number of reads per sample
+d$samples %>% 
+  rownames_to_column(var = "sample") %>%
+  ggplot(aes(x = reorder(sample, -lib.size), y = lib.size)) +
+  geom_bar(stat = "identity") +
+  theme_classic() +
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1)) +
+  theme(plot.margin = unit(c(0,0,0,1), "cm")) +
+  xlab("Sample") + 
+  ylab("Library size")
+
+```
+
+### DE analysis
+
+```{r, message = F, warning = F, fig.width = 5, fig.height = 4}
+
+#group_info <- sapply(strsplit(metadata_expression$Sample_Treatment, "_"), `[`, 1)
+#sample_info <- c("COL4", "COL5", "COL7", "COL4", "COL5", "COL7")
+
+# Voom transformation and calculation of variance weights.
+# Specify the model to be fitted. We do this before using voom since voom uses
+# variances of the model residuals (observed - fitted).
+# Edit to use the relevant metadata column.
+groups <- data.frame(sample_info = sample_info, group_info = group_info)
+
+#group_info2 <- c("V", "V", "MMC", "MMC", "V", "V", "MMC", "MMC")
+
+mm <- model.matrix(~0 + sample_info + group_info)
+# Renaming columns
+#colnames(mm) <- c("MMC", "V")
+
+# Filtering based on the design matrix
+# Defaults: min.count = 10, min.total.count = 15, large.n = 10, min.prop = 0.7
+keep <- filterByExpr(d, mm)
+d1 <- d[keep,]
+
+# Replotting MDS and library sizes
+plotMDS(d1, top = 500, col = cols, pch = shps)
+legend('bottomright', col=cols, legend=unique(sample_info), pch = 16, cex = 0.7)
+legend('topright', legend=unique(group_info), pch = shps, cex = 0.7)
+
+```
+
+```{r, message = F, warning = F, fig.width = 5, fig.height = 4}
+
+# Total number of reads per sample
+d1$samples %>% 
+  rownames_to_column(var = "sample") %>%
+  ggplot(aes(x = reorder(sample, -lib.size), y = lib.size)) +
+  geom_bar(stat = "identity") +
+  theme_classic() +
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1)) +
+  theme(plot.margin = unit(c(0,0,0,1), "cm")) +
+  xlab("Sample") + 
+  ylab("Library size")
+
+
+```
+
+```{r, message = F, warning = F, fig.width = 8, fig.height = 6}
+
+# The above specifies a model where each coefficient corresponds to a group mean
+# Voom
+y1 <- voom(d1, mm, plot = T)
+
+# Fitting linear models in limma
+# lmFit fits a linear model using weighted least squares for each gene:
+fit1 <- lmFit(y1, mm)
+head(coef(fit1))
+
+# Specify comparisons
+contr1 <- makeContrasts(colnames(coef(fit1)), levels = colnames(coef(fit1)))
+contr1
+
+tmp <- contrasts.fit(fit1, contr1)
+tmp <- eBayes(tmp)
+
+top.table.mouse <- topTable(tmp, sort.by = "P", n = Inf)
+top.table.mouse$gene_name <- mapvalues(x = rownames(top.table.mouse),
+                                 from = gene_info$gene_id,
+                                 to = gene_info$gene_name)
+
+# Saving all results
+write.table(top.table.mouse, "/home/hnatri/Raoof_Appendiceal_Bulk/mouse_MMC_V_res.tsv",
+            sep = "\t", quote = F, row.names = T)
+
+# Plotting
+top_sig <- top.table.mouse %>%
+  filter(adj.P.Val < 0.05 & logFC > 1)
+  #dplyr::select(gene_name)
+
+p0 <- EnhancedVolcano(top.table.mouse,
+                      lab = top.table.mouse$gene_name,
+                      x = 'logFC',
+                      y = 'adj.P.Val',
+                      title = "",
+                      subtitle = "",
+                      pCutoff = 0.05,
+                      FCcutoff = 1,
+                      ylim = c(0, max(-log10(top.table.mouse[["adj.P.Val"]]), na.rm = TRUE) + 0.5),
+                      caption = "",
+                      titleLabSize = 12,
+                      subtitleLabSize = 2,
+                      legendLabSize = 10,
+                      axisLabSize = 10,
+                      legendIconSize = 3,
+                      labSize = 4)
+
+p0
+
+```
+
+### FPKM for each gene
+
+```{r, message = F, warning = F, fig.width = 5, fig.height = 4, eval = F}
+
+# Calculating FPKM for each gene
+metadata_expression <- rpkm(d0, gene.length = "gene_length") %>% t() %>% as.data.frame() %>%
+  rownames_to_column(var = "Sample_Treatment")
+
+metadata_expression$Sample <- sapply(strsplit(metadata_expression$Sample_Treatment, "_"), `[`, 1)
+metadata_expression$Treatment <- sapply(strsplit(metadata_expression$Sample_Treatment, "_"), `[`, 2)
+
+gene_info %>% filter(gene_name == "Tenm4")
+
+# Expression by group
+p1 <- metadata_expression %>%
+  ggplot(aes(x = Treatment, y = ENSMUSG00000048078, fill = Treatment)) +
+  geom_violin(alpha = 0.5) +
+  geom_point(position = position_jitter(seed = 1, width = 0.2)) +
+  ylab("Tenm4 expression (FPKM)") +
+  xlab("Treatment") +
+  theme_classic() +
+  theme(legend.position = "none") +
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1))
+
+p1
+
+```
+
+### Plotting marker genes
+
+```{r, message = F, warning = F, fig.width = 5, fig.height = 4}
+
+# Mouse to human gene names
+# Converting human gene names to mouse
+mouse_human_genes <- read.table("http://www.informatics.jax.org/downloads/reports/HOM_MouseHumanSequence.rpt",
+                                sep="\t", header = T)
+
+mouse <- split.data.frame(mouse_human_genes,mouse_human_genes$Common.Organism.Name)[[2]]
+human <- split.data.frame(mouse_human_genes,mouse_human_genes$Common.Organism.Name)[[1]]
+mouse <- mouse[,c(1,4)]
+human <- human[,c(1,4)]
+mh_data <- merge.data.frame(mouse, human, by = "DB.Class.Key",all.y = TRUE)
+
+# Markers to plot
+mycafs <- c("TGFB1", "ACTA2", "TAGLN", "HOPX", "MYL9")
+icafs <- c("IL6", "CXCL12", "CXCL13", "CXCL14")
+abcafs <- c("CD74", "HLA-DPB1", "HLA-DPB2", "HLA-DQA1", "HLA-DRA", "HLA-DRB1")
+ficafs <- c("SFRP2", "SFRP4", "COMP", "CXCL14", "PLA2G2A", "ASPN")
+
+all_caf_markers <- c(mycafs, icafs, abcafs, ficafs)
+
+top_sig %>% filter(gene_name %in% all_caf_markers)
+
+# FPKM, no filtering
+# Create DGEList object
+d0 <- DGEList(all_counts_df, genes = gene_info)
+
+# Calculate normalization factors
+d0 <- calcNormFactors(d0)
+d0
+
+# Combining expression and metadata
+metadata_expression <- rpkm(d0, gene.length = "gene_length") %>% t() %>% as.data.frame() %>%
+  rownames_to_column(var = "Sample_Treatment")
+
+metadata_expression$Sample <- sapply(strsplit(metadata_expression$Sample_Treatment, "_"), `[`, 1)
+metadata_expression$Treatment <- sapply(strsplit(metadata_expression$Sample_Treatment, "_"), `[`, 2)
+
+long_df <- metadata_expression %>%
+  pivot_longer(cols = grep("ENS", colnames(metadata_expression), value = T),
+               names_to = "ensembl", values_to = "exp")
+
+# Adding gene names
+long_df$gene <- mapvalues(x = long_df$ensembl,
+                          from = gene_info$gene_id,
+                          to = gene_info$gene_name)
+
+long_df$Hh_gene <- mapvalues(x = long_df$gene,
+                             from = mh_data$Symbol.x,
+                             to = mh_data$Symbol.y)
+
+long_df$Treatment_simple <- ifelse(long_df$Treatment %in% c("V1", "V2"), "V", "MMC")
+
+# Plotting
+long_df %>% filter(Hh_gene %in% icafs) %>%
+  ggplot(aes(x = Treatment_simple, y = exp, color = Treatment_simple, label = Sample)) +
+  geom_violin(alpha = 0.5) +
+  geom_point() +
+  geom_text(hjust=0, vjust=0) +
+  #geom_line(aes(group = Sample), color = "gray20") +
+  facet_wrap(~Hh_gene, scales = "free") +
+  ylab("iCAF expression (FPKM)") +
+  xlab("") +
+  theme_classic() +
+  theme(legend.position = "none") +
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1))
+
+long_df %>% filter(Hh_gene %in% mycafs) %>%
+  ggplot(aes(x = Treatment_simple, y = exp, color = Treatment_simple, label = Sample)) +
+  geom_violin(alpha = 0.5) +
+  geom_point() +
+  geom_text(hjust=0, vjust=0) +
+  #geom_line(aes(group = Sample), color = "gray20") +
+  facet_wrap(~Hh_gene, scales = "free") +
+  ylab("myCAF expression (FPKM)") +
+  xlab("") +
+  theme_classic() +
+  theme(legend.position = "none") +
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1))
+
+long_df %>% filter(Hh_gene %in% abcafs) %>%
+  ggplot(aes(x = Treatment_simple, y = exp, color = Treatment_simple, label = Sample)) +
+  geom_violin(alpha = 0.5) +
+  geom_point() +
+  geom_text(hjust=0, vjust=0) +
+  #geom_line(aes(group = Sample), color = "gray20") +
+  facet_wrap(~Hh_gene, scales = "free") +
+  ylab("abCAF expression (FPKM)") +
+  xlab("") +
+  theme_classic() +
+  theme(legend.position = "none") +
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1))
+
+long_df %>% filter(Hh_gene %in% ficafs) %>%
+  ggplot(aes(x = Treatment_simple, y = exp, color = Treatment_simple, label = Sample)) +
+  geom_violin(alpha = 0.5) +
+  geom_point() +
+  geom_text(hjust=0, vjust=0) +
+  #geom_line(aes(group = Sample), color = "gray20") +
+  facet_wrap(~Hh_gene, scales = "free") +
+  ylab("fiCAF expression (FPKM)") +
+  xlab("") +
+  theme_classic() +
+  theme(legend.position = "none") +
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1))
+
+```
+
+## Pathway enrichment
+
+```{r, message = F, warning = F, fig.width = 6, fig.height = 15, eval = T}
+
+# Ordering genes
+gse_input <- top.table %>%
+  filter(adj.P.Val < 0.1)
+
+gse <- enrichGO(gse_input$gene_id, 
+                ont ="BP", 
+                keyType = "ENSEMBL", 
+                minGSSize = 3, 
+                maxGSSize = 800, 
+                pvalueCutoff = 0.05, 
+                universe = top.table$gene_id,
+                OrgDb = org.Hs.eg.db, 
+                pAdjustMethod = "BH")
+
+dotplot(gse, showCategory=30, font.size=10, color="qvalue") +
+  theme(legend.text=element_text(size=5),
+        legend.position = "top",
+        legend.box = "vertical",
+        text = element_text(size=6))
+
+```
+

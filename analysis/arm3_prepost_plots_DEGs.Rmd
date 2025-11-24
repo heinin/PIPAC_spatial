@@ -226,6 +226,26 @@ table(tumor_DEGs_sig$celltype)
 
 ```
 
+```{r, message = F, warning = F, fig.width = 8, fig.height = 4}
+
+Idents(arm3_tumor) <- arm3_tumor$PrePost
+wholetumor_DEGs <- FindMarkers(arm3_tumor,
+                               ident.1 = Treated,
+                               ident.2 = Baseline,
+                               assay = "RNA",
+                               verbose = F)
+wholetumor_DEGs$feature <- rownames(wholetumor_DEGs)
+
+wholetumor_DEGs_sig <- wholetumor_DEGs %>%
+  filter(p_val_adj < 0.01,
+         abs(avg_log2FC) > 1.5)
+
+dim(wholetumor_DEGs_sig)
+unique(wholetumor_DEGs_sig$feature)
+wholetumor_DEGs_sig
+
+```
+
 ### Tumor-adjacent
 
 ```{r, message = F, warning = F, fig.width = 8, fig.height = 4}
@@ -338,10 +358,10 @@ tumor_lymph <- tumor_lymph %>%
   ScaleData()
 
 degs_tumor_lymph <- FindMarkers(tumor_lymph,
-                           ident.1 = "Treated",
-                           ident.2 = "Baseline",
-                           assay = "RNA",
-                           verbose = F)
+                                ident.1 = "Treated",
+                                ident.2 = "Baseline",
+                                assay = "RNA",
+                                verbose = F)
 degs_tumor_lymph$feature <- rownames(degs_tumor_lymph)
 
 # Distribution of p-values and log2FC

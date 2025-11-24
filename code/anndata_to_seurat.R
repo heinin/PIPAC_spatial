@@ -9,59 +9,51 @@
 #==============================================================================
 
 library(Seurat)
+library(SeuratObject)
+library(SeuratDisk)
 library(reticulate)
 library(anndata)
+library(ggplot2)
 
 #==============================================================================
 # Convert data
 #==============================================================================
 
-data <- read_h5ad("/scratch/hnatri/PIPAC/cell_merged_spatial_filtered_splitsamples_clustered_NC50_NN20_PC20_AnnData.h5ad")
-seurat <- CreateSeuratObject(counts = t(as.matrix(data$raw)), 
-                             meta.data = data$obs)
+seurat_data <- readRDS("/scratch/hnatri/PIPAC/stromal_seurat_data.rds")
 
-head(seurat@meta.data)
+DimPlot(seurat_data,
+        group.by = "leiden_1.5",
+        #cols = pipac_cell_immune_clusters_col,
+        reduction = "umap",
+        raster = T,
+        label = T) +
+  coord_fixed(ratio = 1) +
+  theme_bw() +
+  NoLegend()
 
-#cell_exp <- LayerData(seurat,
-#                      assay = "RNA",
-#                      layer = "counts")
+# Importing each element and building the seurat object
+raw_counts <- read.csv("/scratch/hnatri/PIPAC/RSC_latest_EDM_2025-08-06/stromal_raw_counts.csv", header = F)
+obs <- read.csv("/scratch/hnatri/PIPAC/RSC_latest_EDM_2025-08-06/stromal_obs.csv")
+pcs <- as.matrix(read.csv("/scratch/hnatri/PIPAC/RSC_latest_EDM_2025-08-06/stromal_pcs.csv", header = F))
+umap <- as.matrix(read.csv("/scratch/hnatri/PIPAC/RSC_latest_EDM_2025-08-06/stromal_umap.csv", header = F))
+
+rownames(obs) <- obs$cell_id
+obs <- obs[,-which(names(obs) %in% c("X"))]
+
+colnames(raw_counts) <- rownames(seurat_data)
+rownames(raw_counts) <- obs$cell_id
+rownames(pcs) <- colnames(seurat_data)
+rownames(umap) <- colnames(seurat_data)
+
+seurat <- CreateSeuratObject(counts = t(as.matrix(raw_counts)), 
+                             meta.data = obs)
 
 # Add PCA reduction
-pca <- data$obsm$X_pca
-colnames(pca) <- paste0("PCA_", 1:50)
-rownames(pca) <- colnames(seurat)
-seurat@reductions[["pca"]] <- CreateDimReducObject(embeddings = pca, key = "PCA_", assay = DefaultAssay(seurat))
-
-# Add spatial coordinates
-position_xy <- cbind((seurat$x_centroid)*-1,
-                     (seurat$y_centroid))
-row.names(position_xy) <- row.names(seurat@meta.data)
-colnames(position_xy) <- c("SP_1", "SP_2")
-seurat[["sp"]] <- CreateDimReducObject(
-  embeddings = position_xy, key = "SP_", assay = DefaultAssay(seurat))
-
-#spatial <- data$obsm$SP
-#colnames(spatial) <- paste0("SP_", 1:2)
-#rownames(spatial) <- colnames(seurat)
-#seurat@reductions[["sp"]] <- CreateDimReducObject(embeddings = spatial, key = "SP_", assay = DefaultAssay(seurat))
-
-DimPlot(seurat,
-        group.by = "TMA",
-        split.by = "TMA",
-        ncol = 3,
-        #cols = cluster_col,
-        reduction = "sp",
-        raster = T,
-        label = F) +
-  coord_fixed(ratio = 1) +
-  theme_minimal() +
-  NoLegend() +
-  RotatedAxis()
+colnames(pcs) <- paste0("PCA_", 1:100)
+seurat@reductions[["pca"]] <- CreateDimReducObject(embeddings = pcs, key = "PCA_", assay = DefaultAssay(seurat))
 
 # Add UMAP reduction
-umap <- data$obsm$X_umap
 colnames(umap) <- paste0("UMAP_", 1:2)
-rownames(umap) <- colnames(seurat)
 seurat@reductions[["umap"]] <- CreateDimReducObject(embeddings = umap, key = "UMAP_", assay = DefaultAssay(seurat))
 
 DimPlot(seurat,
@@ -74,9 +66,18 @@ DimPlot(seurat,
   ggtitle("")
 
 # Adding nuclear counts
-merged_spatial <- readRDS("/scratch/hnatri/PIPAC/cell_merged_spatial_filtered_splitsamples.rds")
+#seurat@assays$nucleus_RNA <- seurat_data@assays$nucleus_RNA
+#
+#head(seurat@assays$RNA$counts)
+#head(seurat@assays$nucleus_RNA$counts)
 
-seurat@assays$nucleus_RNA <- merged_spatial@assays$nucleus_RNA
+seurat_data@reductions$pca <- seurat@reductions$pca
+seurat_data@reductions$umap <- seurat@reductions$umap
+
+seurat_data$leiden_0.5 <- seurat$leiden_0.5
+seurat_data$leiden_1.0 <- seurat$leiden_1.0
+seurat_data$leiden_1.5 <- seurat$leiden_1.5
+seurat_data$leiden_2.0 <- seurat$leiden_2.0
 
 # Saving as Seurat
-saveRDS(seurat, "/scratch/hnatri/PIPAC/cell_merged_spatial_filtered_splitsamples_clustered_NC50_NN20_PC20_Seurat.rds")
+saveRDS(seurat_data, "/tgen_labs/banovich/PIPAC/Seurat/stromal_clustered_NN20_PC20_Seurat.rds")

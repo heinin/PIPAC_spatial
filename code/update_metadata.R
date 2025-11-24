@@ -16,7 +16,7 @@ library(tidyverse)
 # Import data
 #==============================================================================#
 
-seurat_data <- readRDS("/tgen_labs/banovich/PIPAC/Seurat/cell_merged_spatial_filtered_splitsamples_clustered_NC50_NN20_PC20_Seurat_denoIST_metadata.rds")
+seurat_data <- readRDS("/tgen_labs/banovich/PIPAC/Seurat/cell_merged_spatial_filtered_splitsamples_clustered_NN30_PC50_Seurat.rds")
 
 gs4_deauth()
 metadata  <- gs4_get("https://docs.google.com/spreadsheets/d/1sXXwOreLxjMSUoPt79c6jmaQpluWkaxA5P5HfDsed3I/edit?usp=sharing")
@@ -36,6 +36,12 @@ setdiff(seurat_data$RPN, best_responses$RPN)
 
 best_responses$RPN <- sprintf("%03d", best_responses$RPN)
 prgs_scores$Subject <- sprintf("%03d", prgs_scores$Subject)
+
+#==============================================================================#
+# Update annotations
+#==============================================================================#
+
+
 
 #==============================================================================#
 # Update metadata

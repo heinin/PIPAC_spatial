@@ -358,7 +358,7 @@ denoist <- function(mat, tx, coords = NULL,
 
 # Copied to isilon /tgen_labs/banovich/PIPAC/Seurat
 # /tgen_labs/banovich/PIPAC/Seurat/cell_merged_spatial_filtered_splitsamples_clustered_NC50_NN20_PC20_Seurat.rds.rds
-cell_seurat_data <- readRDS("/tgen_labs/banovich/PIPAC/Seurat/cell_merged_spatial_filtered_splitsamples_clustered_NC50_NN20_PC20_Seurat.rds")
+cell_seurat_data <- readRDS("/tgen_labs/banovich/PIPAC/Seurat/cell_merged_spatial_filtered_splitsamples_clustered_NN30_PC50_Seurat_metadata.rds")
 
 #==============================================================================
 # Preparing inputs and running DenoIST
@@ -383,7 +383,8 @@ tma_paths <- list("MR_PIPAC-TMA1" = "/tgen_labs/banovich/xenium_run_folders/PIPA
                   "MR_PIPAC-TMA8" = "/tgen_labs/banovich/xenium_run_folders/PIPACTMA/output-XETG00048__0033448__MR_PIPACTMA8__20241224__204450/transcripts.parquet",
                   "MR_PIPAC-TMA9" = "/tgen_labs/banovich/xenium_run_folders/PIPACTMA/output-XETG00048__0041382__MR_PIPACTMA9__20250109__205856/transcripts.parquet")
 
-for(tma in c("MR_PIPAC-TMA8", "MR_PIPAC-TMA9")){
+# c("MR_PIPAC-TMA8", "MR_PIPAC-TMA9")
+for(tma in names(tma_paths)){
   message("Running for ", tma)
   
   cell_seurat_data_tma1 <- subset(cell_seurat_data, subset = TMA == tma)

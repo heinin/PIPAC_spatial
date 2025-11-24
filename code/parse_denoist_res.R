@@ -38,7 +38,7 @@ source("/home/hnatri/PIPAC_spatial/code/plot_functions.R")
 # Import data
 #==============================================================================
 
-cell_seurat_data <- readRDS("/tgen_labs/banovich/PIPAC/Seurat/cell_merged_spatial_filtered_splitsamples_clustered_NC50_NN20_PC20_Seurat.rds")
+cell_seurat_data <- readRDS("/tgen_labs/banovich/PIPAC/Seurat/cell_merged_spatial_filtered_splitsamples_clustered_NN30_PC50_Seurat_metadata.rds")
 
 # DenoIST results
 res_files <- list.files("/scratch/hnatri/DenoIST/TMA_outputs/")
@@ -51,6 +51,8 @@ denoist_counts <- lapply(res_files, function(tma){
   
   return(res)
 })
+
+lapply(denoist_counts, dim)
 
 #denoist_counts_df <- cbind(denoist_counts)
 
@@ -69,12 +71,38 @@ setdiff(rownames(seurat_list[[1]]), rownames(denoist_counts[[1]]))
 
 names(denoist_counts) <- res_files
 
+seurat_list_empty <- list()
+
 for(xx in names(seurat_list)){
   message(xx)
-  seurat_list[[xx]][["denoist_RNA"]] <- CreateAssay5Object(data = as.matrix(denoist_counts[[xx]]))
+  seurat_dataa <- CreateSeuratObject(counts = as.matrix(denoist_counts[[xx]]))
+  
+  seurat_dataa[["denoist_RNA"]] <- seurat_dataa[["RNA"]]
+  DefaultAssay(seurat_dataa) <- "denoist_RNA"
+  seurat_dataa[["RNA"]] <- NULL
+  
+  seurat_list_empty[[xx]] <- seurat_dataa
 }
 
-merged_spatial <- merge(x = seurat_list[[1]], y = seurat_list[2:length(seurat_list)])
-merged_spatial <- JoinLayers(merged_spatial)
+seurat_list_empty[[1]]
+seurat_list_empty[[1]][["RNA"]]
+seurat_list_empty[[1]][["denoist_RNA"]]
+seurat_list_empty[[1]][["nucleus_RNA"]]
+identical(rownames(seurat_list_empty[[1]][["denoist_RNA"]]), rownames(seurat_list_empty[[1]][["RNA"]]))
+identical(colnames(seurat_list_empty[[1]][["denoist_RNA"]]), colnames(seurat_list_empty[[1]][["RNA"]]))
 
-saveRDS(merged_spatial, "/tgen_labs/banovich/PIPAC/Seurat/cell_merged_spatial_filtered_splitsamples_clustered_NC50_NN20_PC20_Seurat_denoIST.rds")
+#library(scCustomize)
+#merged_spatial <- Merge_Seurat_List(seurat_list)
+
+# merged_spatial <- merge(x = seurat_list_empty[[1]], y = seurat_list_empty[2:3])
+merged_spatial_denoist <- merge(x = seurat_list_empty[[1]], y = seurat_list_empty[2:length(seurat_list_empty)])
+
+merged_spatial_denoist <- merge(x = merged_spatial_denoist[[1]], y = merged_spatial_denoist[2:length(merged_spatial_denoist)])
+merged_spatial_denoist <- JoinLayers(merged_spatial_denoist)
+
+identical(rownames(cell_seurat_data[["RNA"]]), rownames(merged_spatial_denoist[["denoist_RNA"]]))
+identical(colnames(cell_seurat_data[["RNA"]]), colnames(merged_spatial_denoist[["denoist_RNA"]]))
+
+cell_seurat_data[["denoist_RNA"]] <- merged_spatial_denoist[["denoist_RNA"]]
+
+saveRDS(cell_seurat_data, "/tgen_labs/banovich/PIPAC/Seurat/cell_merged_spatial_filtered_splitsamples_clustered_NN30_PC50_Seurat_denoIST.rds")

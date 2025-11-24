@@ -79,9 +79,9 @@ seurat_arm3 <- seurat_arm3 %>%
   NormalizeData() %>%
   ScaleData()
 
-length(unique(seurat_arm3$Patient_ID))
-length(unique(seurat_arm3$Sample))
-unique(seurat_arm3$Timepoint)
+# pre tumor cells: 3296+3296
+# post: 829
+# ((3296+3296)-829)/(3296+3296)
 
 ```
 

@@ -17,11 +17,12 @@ Project spreadsheets in [Google Sheets](https://docs.google.com/spreadsheets/d/1
 2. [Splitting sampes on TMAs](splitting_samples.html)\
 3. Clustering using the rapids pipeline (/code/rapids_pipeline)\
 4. [Post-clustering visualization](post_clustering.html)\
-5. [1st pass annotation](annotation.html)\
+5. [1st pass annotation (nuclear transcripts)](annotation.html)\
+5. [1st pass annotation (DenoIST transcripts)](annotation_cell.html)\
 6. Reclustering immune and non-immune subsets using rapids\
-7. [Immune cell annotation](immune_annotation.html)\
-8. [Non-immune annotation](nonimmune_annotation.html)\
-9. [2nd pass annotation](annotation_2nd_pass.html)\
+7. [Immune cell annotation (nuclear transcripts)](immune_annotation.html)\
+8. [Non-immune annotation (nuclear transcripts)](nonimmune_annotation.html)\
+9. [2nd pass annotation (nuclear transcripts)](annotation_2nd_pass.html)\
 10. [Adding patient metadata](add_metadata.html)\
 13. [Feature expression by cell type](feature_expression.html)\
 12. [Plotting by group](plot_by_group.html)\

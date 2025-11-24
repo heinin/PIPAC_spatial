@@ -1,0 +1,1049 @@
+---
+title: "Annotating non-immune cells in the PIPAC Xenium data"
+author: "heinin"
+date: "2025-10-10"
+output:
+  workflowr::wflow_html:
+    code_folding: hide
+  html_notebook: default
+editor_options:
+  chunk_output_type: console
+---
+
+### Packages and environment variables
+
+```{r, warning=F, message=F}
+
+suppressPackageStartupMessages({
+  library(workflowr)
+  library(arrow)
+  library(dplyr)
+  library(Seurat)
+  library(SeuratObject)
+  library(SeuratDisk)
+  library(tidyverse)
+  library(tibble)
+  library(ggplot2)
+  library(ggpubr)
+  library(ggrepel)
+  library(googlesheets4)
+  library(workflowr)})
+
+```
+
+### Environment variables and helper functions
+
+```{r, message = F, warning = F}
+
+setwd("/home/hnatri/PIPAC_spatial/")
+set.seed(9999)
+options(scipen = 99999)
+options(ggrepel.max.overlaps = Inf)
+
+source("/home/hnatri/PIPAC_spatial/code/PIPAC_colors_themes.R")
+source("/home/hnatri/PIPAC_spatial/code/plot_functions.R")
+
+recluster_seurat <- function(seurat_subset, umap_pcs = 10){
+    seurat_subset <- SCTransform(seurat_subset,
+                                 vars.to.regress = c("nCount_RNA", "nFeature_RNA"),
+                                 verbose = F)
+      
+    seurat_subset <- RunPCA(seurat_subset,
+                            npcs = 50,
+                            assay = "SCT",
+                            #features = features,
+                            approx = F,
+                            verbose = F)
+    
+    integrated_data <- RunUMAP(seurat_subset,
+                               reduction = "pca",
+                               reduction.name = "umap",
+                               dims = 1:umap_pcs,
+                               return.model = TRUE,
+                            verbose = F)
+
+    integrated_data <- FindNeighbors(integrated_data,
+                                     reduction = "pca",
+                                     dims = 1:umap_pcs,
+                                     graph.name = c("SCTnn",
+                                                    "SCTsnn"),
+                            verbose = F)
+
+    integrated_data <- FindClusters(integrated_data,
+                                    resolution = c(0.1,0.2,0.3,0.5,0.8,1),
+                                    graph.name = "SCTsnn",
+                            verbose = F)
+    
+    return(integrated_data)
+}
+
+```
+
+### Marker information and metadata
+
+```{r, message = F, warning = F, fig.width = 6, fig.height = 4}
+
+# Cell type markers by group
+gs4_deauth()
+markers_by_group  <- gs4_get("https://docs.google.com/spreadsheets/d/1w0wrL-5KwNEWi_VpmriN7YmfwpBPlEYX0MKlwI2ZQu8/edit?usp=sharing")
+markers_by_group <- read_sheet(markers_by_group, sheet = "Markers by group")
+
+metadata  <- gs4_get("https://docs.google.com/spreadsheets/d/1sXXwOreLxjMSUoPt79c6jmaQpluWkaxA5P5HfDsed3I/edit?usp=sharing")
+markers <- read_sheet(metadata, sheet = "Markers")
+first_pass_annot <- read_sheet(metadata, sheet = "Cell based annotation, non-immune")
+
+```
+
+### Import data
+
+```{r, message = F, warning = F, fig.width = 6, fig.height = 6}
+
+seurat_data <- readRDS("/tgen_labs/banovich/PIPAC/Seurat/cell_nonimmune_clustered_NN30_PC20_Seurat.rds")
+
+DefaultAssay(seurat_data) <- "denoist_RNA"
+seurat_data <- NormalizeData(seurat_data)
+
+DimPlot(seurat_data,
+        group.by = "leiden_1.5",
+        cols = pipac_cell_nonimmune_cluster_col,
+        reduction = "umap",
+        raster = T,
+        label = T) +
+  coord_fixed(ratio = 1) +
+  theme_bw() +
+  NoLegend()
+
+```
+
+### QC metrics for each cluster
+
+```{r, message = F, warning = F, fig.width = 12, fig.height = 8}
+
+VlnPlot(seurat_data,
+        features = c("percent.mt", "nCount_cell_RNA", "nFeature_cell_RNA"),
+        group.by = "leiden_1.5",
+        ncol = 1,
+        pt.size = 0) &
+  theme_bw() &
+  NoLegend()
+
+```
+
+```{r, message = F, warning = F, fig.width = 12, fig.height = 14}
+
+seurat_data$leiden_1.5chr <- as.character(seurat_data$leiden_1.5)
+seurat_data$leiden_1.5chr <- factor(seurat_data$leiden_1.5chr,
+                                    levels = as.character(sort(unique(seurat_data$leiden_1.5))))
+DimPlot(seurat_data,
+        group.by = "leiden_1.5chr",
+        split.by = "leiden_1.5chr",
+        cols = pipac_cell_nonimmune_cluster_col,
+        reduction = "umap",
+        raster = T,
+        #label = T,
+        ncol = 6) +
+  coord_fixed(ratio = 1) +
+  theme_bw() +
+  NoLegend()
+
+```
+
+### Top cluster markers
+
+```{r, message = F, warning = F, fig.width = 5, fig.height = 4}
+
+Idents(seurat_data) <- seurat_data$leiden_1.5
+cluster_markers <- FindAllMarkers(seurat_data,
+                                  return.thresh = 0.01,
+                                  logfc.threshold = 0.5,
+                                  min.pct = 0.20,
+                                  verbose = T)
+
+table(cluster_markers$cluster)
+
+#hist(cluster_markers$avg_log2FC, main = "", xlab = "avg_log2FC", breaks = 100)
+#hist(cluster_markers$p_val, main = "", xlab = "p_val", breaks = 100)
+#hist(cluster_markers$p_val_adj, main = "", xlab = "p_val_adj", breaks = 100)
+
+top_cluster_markers <- cluster_markers %>%
+  arrange(dplyr::desc(avg_log2FC)) %>%
+  group_by(cluster) %>%
+  dplyr::slice(1:5)
+
+```
+
+```{r, message = F, warning = F, fig.width = 10, fig.height = 8}
+
+plot_features <- c("PTPRC",
+                   "CD3D", "CD3E", "CD4", "CD8A", # T cells
+                   "STAT4", "STAT3", "TIGIT", "GZMB",
+                   "SELL", "CD19", # B cells
+                   "CD68", "CD44", "MARCO", "APOE", # Macrophages
+                   "C1QB", "C1QBP",
+                   "MUC5AC", "NOTCH3", "RGS5", "MS4A1", "PGA5", "PLVAP", # Lineage markers
+                   "FN1", "DCN", "LUM", # Fibroblasts
+                   "EGR3", "TP53", "JUN", "KIT", # Tumor
+                   "SOX9", "RNF43", "EPCAM")
+
+seurat_data$leiden_1.5 <- factor(seurat_data$leiden_1.5,
+                                 levels = sort(unique(seurat_data$leiden_1.5)))
+#Idents(seurat_data) <- seurat_data$leiden_1.5
+
+DotPlot(seurat_data,
+        group.by = "leiden_1.5",
+        features = plot_features,
+        cols = c("gray98", "tomato3")) +
+  RotatedAxis()
+
+```
+
+```{r, message = F, warning = F, fig.width = 22, fig.height = 26}
+
+FeaturePlot(seurat_data,
+            features = plot_features,
+            cols = c("gray98", "tomato3"),
+            reduction = "umap",
+            raster = T,
+            ncol = 5) &
+  coord_fixed(ratio = 1) &
+  theme_bw() &
+  NoLegend()
+
+```
+
+```{r, message = F, warning = F, fig.width = 10, fig.height = 18}
+
+create_dotplot_heatmap(seurat_object = seurat_data,
+                       plot_features = unique(top_cluster_markers$gene),
+                       group_var = "leiden_1.5",
+                       group_colors = pipac_cell_nonimmune_cluster_col,
+                       column_title = "",
+                       row_km = 5,
+                       col_km = 5,
+                       row.order = NULL,
+                       col.order = NULL)
+
+```
+
+### Comparing to nuclear annotations
+
+```{r, message = F, warning = F, fig.width = 8, fig.height = 4}
+
+create_barplot(seurat_data,
+               plot_var = "Annotation",
+               group_var = "leiden_1.5",
+               plot_levels = sort(unique(seurat_data$Annotation)),
+               group_levels = sort(unique(seurat_data$leiden_1.5)),
+               plot_colors = pipac_celltype_col,
+               var_names = c("Annotation", "leiden_1.5"),
+               legend_title = "")
+
+create_barplot(seurat_data,
+               group_var = "Annotation",
+               plot_var = "leiden_1.5",
+               group_levels = sort(unique(seurat_data$Annotation)),
+               plot_levels = sort(unique(seurat_data$leiden_1.5)),
+               plot_colors = pipac_cell_nonimmune_cluster_col,
+               var_names = c("leiden_1.5", "Annotation"),
+               legend_title = "")
+
+```
+
+### Saving top markers and annotations
+
+```{r, message = F, warning = F, fig.width = 6, fig.height = 6, eval = T}
+
+output_cluster_markers <- cluster_markers %>%
+  arrange(dplyr::desc(avg_log2FC)) %>%
+  group_by(cluster) %>%
+  dplyr::slice(1:30)
+
+output_cluster_markers <- merge(output_cluster_markers, markers, by.x = "gene", by.y = "Gene")
+
+write.table(output_cluster_markers, "/home/hnatri/PIPAC_spatial/cell_nonimmune_cluster_marker_annotations.tsv",
+            quote = F, row.names = F, sep = "\t")
+
+```
+
+### Plotting cell type markers by group
+
+```{r, message = F, warning = F, fig.width = 16, fig.height = 8, eval = T}
+
+DotPlot(seurat_data,
+        group.by = "leiden_1.5",
+        features = unique(markers_by_group[which(markers_by_group$annotation1 == "Cell-cell crosstalk"),]$feature),
+        cols = c("azure", "tomato3")) +
+  RotatedAxis() +
+  ggtitle("Cell-cell crosstalk")
+
+```
+
+```{r, message = F, warning = F, fig.width = 6, fig.height = 8, eval = T}
+
+DotPlot(seurat_data,
+        group.by = "leiden_1.5",
+        features = unique(markers_by_group[which(markers_by_group$annotation1 == "Macrophage signaling"),]$feature),
+        cols = c("azure", "tomato3")) +
+  RotatedAxis() +
+  ggtitle("Macrophage signaling")
+
+```
+
+```{r, message = F, warning = F, fig.width = 6, fig.height = 8, eval = T}
+
+DotPlot(seurat_data,
+        group.by = "leiden_1.5",
+        features = unique(markers_by_group[which(markers_by_group$annotation1 == "DNA damage and cell faith"),]$feature),
+        cols = c("azure", "tomato3")) +
+  RotatedAxis() +
+  ggtitle("DNA damage and cell faith")
+
+```
+
+```{r, message = F, warning = F, fig.width = 10, fig.height = 8, eval = T}
+
+DotPlot(seurat_data,
+        group.by = "leiden_1.5",
+        features = unique(markers_by_group[which(markers_by_group$annotation1 == "Functional markers"),]$feature),
+        cols = c("azure", "tomato3")) +
+  RotatedAxis() +
+  ggtitle("Functional markers")
+
+```
+
+```{r, message = F, warning = F, fig.width = 6, fig.height = 8, eval = T}
+
+DotPlot(seurat_data,
+        group.by = "leiden_1.5",
+        features = unique(markers_by_group[which(markers_by_group$annotation1 == "Mesothelial"),]$feature),
+        cols = c("azure", "tomato3")) +
+  RotatedAxis() +
+  ggtitle("Mesothelial")
+
+```
+
+```{r, message = F, warning = F, fig.width = 10, fig.height = 8, eval = F}
+
+DotPlot(seurat_data,
+        group.by = "leiden_1.5",
+        features = unique(markers_by_group[which(markers_by_group$annotation1 == "Macrophages"),]$feature),
+        cols = c("azure", "tomato3")) +
+  RotatedAxis() +
+  ggtitle("Macrophages")
+
+```
+
+```{r, message = F, warning = F, fig.width = 10, fig.height = 8, eval = T}
+
+DotPlot(seurat_data,
+        group.by = "leiden_1.5",
+        features = unique(markers_by_group[which(markers_by_group$annotation1 == "CAFs"),]$feature),
+        cols = c("azure", "tomato3")) +
+  RotatedAxis() +
+  ggtitle("CAFs")
+
+```
+
+```{r, message = F, warning = F, fig.width = 6, fig.height = 8, eval = T}
+
+DotPlot(seurat_data,
+        group.by = "leiden_1.5",
+        features = grep("COL", rownames(seurat_data), value = T),
+        cols = c("azure", "tomato3")) +
+  RotatedAxis() +
+  ggtitle("Collagen")
+
+```
+
+### Cell cycle markers
+
+```{r, message = F, warning = F, fig.width = 6, fig.height = 8, eval = T}
+
+s.genes <- cc.genes.updated.2019$s.genes
+g2m.genes <- cc.genes.updated.2019$g2m.genes
+
+DotPlot(seurat_data,
+        group.by = "leiden_1.5",
+        features = c(s.genes, g2m.genes),
+        cols = c("azure", "tomato3")) +
+  RotatedAxis() +
+  ggtitle("S/G2M genes")
+
+```
+
+### Further splitting and clustering non-malignant cells
+
+```{r, message = F, warning = F, fig.width = 6, fig.height = 6, eval = F}
+
+tumor_clusters <- c(7, 8, 25, 32, 33, 35)
+stromal_seurat_data <- subset(seurat_data, subset = leiden_1.5 %in% tumor_clusters, invert = T)
+
+#stromal_seurat_data <- recluster_seurat(stromal_seurat_data, vars_to_regress = NULL)
+
+#saveRDS(stromal_seurat_data, "/scratch/hnatri/PIPAC/stromal_seurat_data.rds")
+
+```
+
+```{r, message = F, warning = F, fig.width = 6, fig.height = 6, eval = T}
+
+stromal_seurat_data <- readRDS("/tgen_labs/banovich/PIPAC/Seurat/stromal_clustered_NN20_PC20_Seurat.rds")
+DefaultAssay(stromal_seurat_data) <- "denoist_RNA"
+stromal_seurat_data <- NormalizeData(stromal_seurat_data)
+
+DimPlot(stromal_seurat_data,
+        group.by = "leiden_1.0",
+        cols = pipac_cell_nonimmune_cluster_col,
+        reduction = "umap",
+        raster = T,
+        label = T) +
+  coord_fixed(ratio = 1) +
+  theme_bw() +
+  NoLegend()
+
+```
+
+#### Marker expression in the non-malignant subset
+
+```{r, message = F, warning = F, fig.width = 5, fig.height = 4}
+
+Idents(stromal_seurat_data) <- stromal_seurat_data$leiden_1.0
+cluster_markers <- FindAllMarkers(stromal_seurat_data,
+                                  return.thresh = 0.01,
+                                  logfc.threshold = 0.5,
+                                  min.pct = 0.20,
+                                  verbose = T)
+
+top_cluster_markers <- cluster_markers %>%
+  arrange(dplyr::desc(avg_log2FC)) %>%
+  group_by(cluster) %>%
+  dplyr::slice(1:5)
+
+```
+
+#### Plotting lineage markers
+
+```{r, message = F, warning = F, fig.width = 12, fig.height = 8}
+
+plot_features <- c("PTPRC",
+                   "CD3D", "CD3E", "CD4", "CD8A", # T cells
+                   "STAT4", "STAT3", "TIGIT", "GZMB",
+                   "SELL", "CD19", # B cells
+                   "CD68", "CD44", "MARCO", "APOE", # Macrophages
+                   "C1QB", "C1QBP", "CD163",
+                   "SPP1", "VCAN",
+                   "MUC5AC", "NOTCH3", "RGS5", "MS4A1", # Lineage markers
+                   "PGA5", "PLVAP", "CCL21", "LYVE",
+                   "SPARCL1", # Endo/peri
+                   "FN1", "DCN", "LUM", # Fibroblasts
+                   "COL1A2", "PDPN", "ACTA2", "LMNA",
+                   "EGR3", "TP53", "JUN", "KIT", # Tumor
+                   "SOX9", "RNF43", "EPCAM", "PECAM", "CEACAM")
+
+stromal_seurat_data$leiden_1.0 <- factor(stromal_seurat_data$leiden_1.0,
+                                 levels = sort(unique(stromal_seurat_data$leiden_1.0)))
+Idents(stromal_seurat_data) <- stromal_seurat_data$leiden_1.0
+
+DotPlot(stromal_seurat_data,
+        group.by = "leiden_1.0",
+        features = plot_features,
+        cols = c("gray98", "tomato3")) +
+  RotatedAxis()
+
+```
+
+```{r, message = F, warning = F, fig.width = 22, fig.height = 26}
+
+FeaturePlot(stromal_seurat_data,
+            features = plot_features,
+            cols = c("gray98", "tomato3"),
+            reduction = "umap",
+            raster = T,
+            ncol = 5) &
+  coord_fixed(ratio = 1) &
+  theme_bw() &
+  NoLegend()
+
+```
+
+#### Plotting top markers
+
+```{r, message = F, warning = F, fig.width = 10, fig.height = 18}
+
+create_dotplot_heatmap(seurat_object = stromal_seurat_data,
+                       plot_features = unique(top_cluster_markers$gene),
+                       group_var = "leiden_1.0",
+                       group_colors = pipac_cell_nonimmune_cluster_col,
+                       column_title = "",
+                       row_km = 5,
+                       col_km = 5,
+                       row.order = NULL,
+                       col.order = NULL)
+
+```
+
+```{r, message = F, warning = F, fig.width = 16, fig.height = 8, eval = T}
+
+DotPlot(stromal_seurat_data,
+        group.by = "leiden_1.0",
+        features = unique(markers_by_group[which(markers_by_group$annotation1 == "Cell-cell crosstalk"),]$feature),
+        cols = c("azure", "tomato3")) +
+  RotatedAxis() +
+  ggtitle("Cell-cell crosstalk")
+
+```
+
+```{r, message = F, warning = F, fig.width = 6, fig.height = 8, eval = T}
+
+DotPlot(seurat_data,
+        group.by = "leiden_1.0",
+        features = unique(markers_by_group[which(markers_by_group$annotation1 == "DNA damage and cell faith"),]$feature),
+        cols = c("azure", "tomato3")) +
+  RotatedAxis() +
+  ggtitle("DNA damage and cell faith")
+
+```
+
+```{r, message = F, warning = F, fig.width = 10, fig.height = 8, eval = T}
+
+DotPlot(stromal_seurat_data,
+        group.by = "leiden_1.0",
+        features = unique(markers_by_group[which(markers_by_group$annotation1 == "Functional markers"),]$feature),
+        cols = c("azure", "tomato3")) +
+  RotatedAxis() +
+  ggtitle("Functional markers")
+
+```
+
+```{r, message = F, warning = F, fig.width = 6, fig.height = 8, eval = T}
+
+DotPlot(stromal_seurat_data,
+        group.by = "leiden_1.0",
+        features = unique(markers_by_group[which(markers_by_group$annotation1 == "Mesothelial"),]$feature),
+        cols = c("azure", "tomato3")) +
+  RotatedAxis() +
+  ggtitle("Mesothelial")
+
+```
+
+```{r, message = F, warning = F, fig.width = 10, fig.height = 8, eval = T}
+
+DotPlot(stromal_seurat_data,
+        group.by = "leiden_1.0",
+        features = unique(markers_by_group[which(markers_by_group$annotation1 == "CAFs"),]$feature),
+        cols = c("azure", "tomato3")) +
+  RotatedAxis() +
+  ggtitle("CAFs")
+
+```
+
+```{r, message = F, warning = F, fig.width = 6, fig.height = 8, eval = T}
+
+DotPlot(stromal_seurat_data,
+        group.by = "leiden_1.0",
+        features = grep("COL", rownames(seurat_data), value = T),
+        cols = c("azure", "tomato3")) +
+  RotatedAxis() +
+  ggtitle("Collagen")
+
+```
+
+### Cell cycle markers
+
+```{r, message = F, warning = F, fig.width = 6, fig.height = 8, eval = T}
+
+s.genes <- cc.genes.updated.2019$s.genes
+g2m.genes <- cc.genes.updated.2019$g2m.genes
+
+DotPlot(stromal_seurat_data,
+        group.by = "leiden_1.0",
+        features = c(s.genes, g2m.genes),
+        cols = c("azure", "tomato3")) +
+  RotatedAxis() +
+  ggtitle("S/G2M genes")
+
+```
+
+### Cluster overlap with previous annotations
+
+```{r, message = F, warning = F, fig.width = 8, fig.height = 4, eval = T}
+
+pipac_celltype_col <- c(pipac_celltype_col, c("NA" = "lightgray"))
+stromal_seurat_data$Annotation <- ifelse(is.na(stromal_seurat_data$Annotation), "NA", stromal_seurat_data$Annotation)
+
+create_barplot(seurat_data,
+               group_var = "Annotation",
+               plot_var = "leiden_0.5",
+               group_levels = sort(unique(seurat_data$Annotation)),
+               plot_levels = sort(unique(seurat_data$leiden_1.0)),
+               plot_colors = pipac_cluster_20_col,
+               var_names = c("leiden_0.5", "Annotation"),
+               legend_title = "")
+
+create_barplot(seurat_data,
+               plot_var = "Annotation",
+               group_var = "leiden_1.0",
+               plot_levels = sort(unique(seurat_data$Annotation)),
+               group_levels = sort(unique(seurat_data$leiden_1.0)),
+               plot_colors = pipac_celltype_col,
+               var_names = c("Annotation", "leiden_0.5"),
+               legend_title = "")
+
+create_barplot(stromal_seurat_data,
+               group_var = "Annotation",
+               plot_var = "leiden_0.5",
+               group_levels = sort(unique(stromal_seurat_data$Annotation)),
+               plot_levels = sort(unique(stromal_seurat_data$leiden_1.0)),
+               plot_colors = pipac_cluster_20_col,
+               var_names = c("leiden_0.5", "Annotation"),
+               legend_title = "")
+
+create_barplot(stromal_seurat_data,
+               plot_var = "Annotation",
+               group_var = "leiden_1.0",
+               plot_levels = sort(unique(stromal_seurat_data$Annotation)),
+               group_levels = sort(unique(stromal_seurat_data$leiden_1.0)),
+               plot_colors = pipac_celltype_col,
+               var_names = c("Annotation", "leiden_0.5"),
+               legend_title = "")
+
+```
+
+### Reclustering difficult clusters from the non-malignant subset
+
+```{r, message = F, warning = F, fig.width = 4, fig.height = 4, eval = T}
+
+stromal_recluster_subset <- subset(stromal_seurat_data, subset = leiden_1.0 %in% c(0, 15, 23, 26))
+stromal_recluster_subset <- recluster_seurat(stromal_recluster_subset, umap_pcs = 10)
+
+DimPlot(stromal_recluster_subset,
+        group.by = "SCTsnn_res.0.8",
+        label = T) +
+  NoLegend()
+
+```
+
+```{r, message = F, warning = F, fig.width = 12, fig.height = 7, eval = T}
+
+stromal_recluster_subset$SCTsnn_res.0.8 <- factor(stromal_recluster_subset$SCTsnn_res.0.8,
+                                 levels = sort(unique(stromal_recluster_subset$SCTsnn_res.0.8)))
+Idents(stromal_recluster_subset) <- stromal_recluster_subset$SCTsnn_res.0.8
+
+DotPlot(stromal_recluster_subset,
+        #group.by = "leiden_1.0",
+        features = plot_features,
+        cols = c("gray89", "tomato3")) +
+  RotatedAxis()
+
+```
+
+```{r, message = F, warning = F, fig.width = 10, fig.height = 18}
+
+Idents(stromal_recluster_subset) <- stromal_recluster_subset$SCTsnn_res.0.8
+stromal_cluster_markers <- FindAllMarkers(stromal_recluster_subset,
+                                          return.thresh = 0.01,
+                                          logfc.threshold = 0.5,
+                                          min.pct = 0.20,
+                                          verbose = T)
+
+table(stromal_cluster_markers$cluster)
+
+stromal_top_cluster_markers <- stromal_cluster_markers %>%
+  arrange(dplyr::desc(avg_log2FC)) %>%
+  group_by(cluster) %>%
+  dplyr::slice(1:5)
+
+create_dotplot_heatmap(seurat_object = stromal_recluster_subset,
+                       plot_features = unique(stromal_top_cluster_markers$gene),
+                       group_var = "SCTsnn_res.0.8",
+                       group_colors = pipac_cell_nonimmune_cluster_col,
+                       column_title = "",
+                       row_km = 5,
+                       col_km = 5,
+                       row.order = NULL,
+                       col.order = NULL)
+
+```
+
+### Different or same cells expressing multiple lineage markers?
+
+#### Cluster 10
+
+```{r, message = F, warning = F, fig.width = 14, fig.height = 4, eval = T}
+
+FeaturePlot(subset(stromal_recluster_subset, subset = SCTsnn_res.0.8 == 10),
+            features = c("DCN", "PLVAP"),
+            blend = T) &
+  theme_bw()
+
+cl10 <- subset(stromal_recluster_subset, subset = SCTsnn_res.0.8 == 10)
+cl10 <- recluster_seurat(cl10, umap_pcs = 10)
+
+FeaturePlot(cl10,
+            features = c("DCN", "PLVAP"),
+            blend = T) &
+  theme_bw()
+
+FeaturePlot(cl10,
+            features = c("DCN", "PLVAP")) &
+  theme_bw()
+
+ncol(cl10)
+table(cl10$SCTsnn_res.0.8)
+
+```
+
+```{r, message = F, warning = F, fig.width = 4, fig.height = 4, eval = T}
+
+DimPlot(cl10,
+        group.by = "SCTsnn_res.0.8",
+        reduction = "umap",
+        label = T) +
+  coord_fixed(ratio = 1) +
+  theme_bw() +
+  NoLegend() +
+  ggtitle("Cluster 10")
+
+```
+
+```{r, message = F, warning = F, fig.width = 14, fig.height = 4}
+
+cl10$SCTsnn_res.0.8 <- factor(cl10$SCTsnn_res.0.8,
+                              levels = sort(unique(cl10$SCTsnn_res.0.8)))
+Idents(cl10) <- cl10$SCTsnn_res.0.8
+
+DotPlot(cl10,
+        group.by = "SCTsnn_res.0.8",
+        features = plot_features,
+        cols = c("gray98", "tomato3")) +
+  RotatedAxis()
+
+Idents(cl10) <- cl10$SCTsnn_res.0.8
+cl10_markers <- FindAllMarkers(cl10,
+                               return.thresh = 0.01,
+                               logfc.threshold = 0.5,
+                               min.pct = 0.20,
+                               verbose = F)
+
+table(cl10_markers$cluster)
+
+cl10_markers %>%
+  arrange(dplyr::desc(avg_log2FC)) %>%
+  group_by(cluster) %>%
+  dplyr::slice(1:5)
+
+nos <- c()
+fibro1 <- c() # FN1 high
+fibro2 <- c(0, 4) # FN1 low, DCN, LUM (iCAF), COL1A2
+peri <- c(3) # NOTCH3, RGS5
+endo <- c(1, 2, 5) # PLVAP
+myel <- c(6)
+
+cl10$annotation <- ifelse(cl10$SCTsnn_res.0.8 %in% peri, "Peri_from_stromal",
+                   ifelse(cl10$SCTsnn_res.0.8 %in% endo, "Endo_from_stromal",
+                   ifelse(cl10$SCTsnn_res.0.8 %in% fibro2, "F2_from_stromal",
+                   ifelse(cl10$SCTsnn_res.0.8 %in% myel, "Myel_from_stromal", NA))))
+
+cl10$annotation <- paste0(cl10$SCTsnn_res.0.8, "_", cl10$annotation)
+
+unique(cl10$annotation)
+
+```
+
+#### Cluster 11
+
+```{r, message = F, warning = F, fig.width = 14, fig.height = 4, eval = T}
+
+FeaturePlot(subset(stromal_recluster_subset, subset = SCTsnn_res.0.8 == 11),
+            features = c("FN1", "CEACAM6"),
+            blend = T) &
+  theme_bw()
+
+reccl11 <- subset(stromal_recluster_subset, subset = SCTsnn_res.0.8 == 11)
+reccl11 <- recluster_seurat(reccl11, umap_pcs = 10)
+
+FeaturePlot(reccl11,
+            features = c("DCN", "MARCO"),
+            blend = T) &
+  theme_bw()
+
+FeaturePlot(reccl11,
+            features = c("DCN", "MARCO")) &
+  theme_bw()
+
+ncol(reccl11)
+table(reccl11$SCTsnn_res.0.8)
+
+```
+
+```{r, message = F, warning = F, fig.width = 4, fig.height = 4, eval = T}
+
+DimPlot(reccl11,
+        group.by = "SCTsnn_res.0.8",
+        reduction = "umap",
+        label = T) +
+  coord_fixed(ratio = 1) +
+  theme_bw() +
+  NoLegend() +
+  ggtitle("Cluster 11")
+
+```
+
+```{r, message = F, warning = F, fig.width = 14, fig.height = 4}
+
+reccl11$SCTsnn_res.0.8 <- factor(reccl11$SCTsnn_res.0.8,
+                              levels = sort(unique(reccl11$SCTsnn_res.0.8)))
+Idents(reccl11) <- reccl11$SCTsnn_res.0.8
+
+DotPlot(reccl11,
+        group.by = "SCTsnn_res.0.8",
+        features = plot_features,
+        cols = c("gray98", "tomato3")) +
+  RotatedAxis()
+
+nos <- c(3)
+fibro1 <- c(0, 1, 2, 4, 7, 8) # FN1 high
+fibro2 <- c() # FN1 low, DCN, LUM (iCAF), COL1A2
+peri <- c() # NOTCH3, RGS5
+endo <- c() # PLVAP
+myel <- c(5, 6)
+
+reccl11$annotation <- ifelse(reccl11$SCTsnn_res.0.8 %in% nos, "NOS_from_stromal",
+                   ifelse(reccl11$SCTsnn_res.0.8 %in% fibro1, "F1_from_stromal",
+                   ifelse(reccl11$SCTsnn_res.0.8 %in% myel, "Myel_from_stromal", NA)))
+
+reccl11$annotation <- paste0(reccl11$SCTsnn_res.0.8, "_", reccl11$annotation)
+
+unique(reccl11$annotation)
+
+
+```
+
+#### Cluster 13
+
+```{r, message = F, warning = F, fig.width = 14, fig.height = 4, eval = T}
+
+FeaturePlot(subset(stromal_recluster_subset, subset = SCTsnn_res.0.8 == 13),
+            features = c("COL1A2", "APOE"),
+            blend = T) &
+  theme_bw()
+
+reccl13 <- subset(stromal_recluster_subset, subset = SCTsnn_res.0.8 == 13)
+reccl13 <- recluster_seurat(reccl13, umap_pcs = 10)
+
+FeaturePlot(reccl13,
+            features = c("COL1A2", "APOE"),
+            blend = T) &
+  theme_bw()
+
+FeaturePlot(reccl13,
+            features = c("COL1A2", "APOE")) &
+  theme_bw()
+
+ncol(reccl13)
+table(reccl13$SCTsnn_res.0.8)
+
+```
+
+```{r, message = F, warning = F, fig.width = 4, fig.height = 4, eval = T}
+
+DimPlot(reccl13,
+        group.by = "SCTsnn_res.0.8",
+        reduction = "umap",
+        label = T) +
+  coord_fixed(ratio = 1) +
+  theme_bw() +
+  NoLegend() +
+  ggtitle("Cluster 13")
+
+```
+
+```{r, message = F, warning = F, fig.width = 14, fig.height = 4}
+
+reccl13$SCTsnn_res.0.8 <- factor(reccl13$SCTsnn_res.0.8,
+                              levels = sort(unique(reccl13$SCTsnn_res.0.8)))
+Idents(reccl13) <- reccl13$SCTsnn_res.0.8
+
+DotPlot(reccl13,
+        group.by = "SCTsnn_res.0.8",
+        features = plot_features,
+        cols = c("gray98", "tomato3")) +
+  RotatedAxis()
+
+nos <- c()
+fibro1 <- c(1, 2) # FN1 high
+fibro2 <- c() # FN1 low, DCN, LUM (iCAF), COL1A2
+peri <- c() # NOTCH3, RGS5
+endo <- c() # PLVAP
+myel <- c(0, 3, 4, 5, 6)
+
+reccl13$annotation <- ifelse(reccl13$SCTsnn_res.0.8 %in% fibro1, "F1_from_stromal",
+                   ifelse(reccl13$SCTsnn_res.0.8 %in% myel, "Myel_from_stromal", NA))
+
+reccl13$annotation <- paste0(reccl13$SCTsnn_res.0.8, "_", reccl13$annotation)
+
+unique(reccl13$annotation)
+
+```
+
+#### Cluster 20
+
+```{r, message = F, warning = F, fig.width = 14, fig.height = 4, eval = T}
+
+reccl20 <- subset(stromal_recluster_subset, subset = SCTsnn_res.0.8 == 20)
+reccl20 <- recluster_seurat(reccl20, umap_pcs = 10)
+
+FeaturePlot(reccl20,
+            features = c("COL1A2", "PLVAP"),
+            blend = T) &
+  theme_bw()
+
+FeaturePlot(reccl20,
+            features = c("COL1A2", "PLVAP")) &
+  theme_bw()
+
+ncol(reccl20)
+table(reccl20$SCTsnn_res.0.8)
+
+```
+
+```{r, message = F, warning = F, fig.width = 4, fig.height = 4, eval = T}
+
+DimPlot(reccl20,
+        group.by = "SCTsnn_res.0.8",
+        reduction = "umap",
+        label = T) +
+  coord_fixed(ratio = 1) +
+  theme_bw() +
+  NoLegend() +
+  ggtitle("Cluster 20")
+
+```
+
+```{r, message = F, warning = F, fig.width = 14, fig.height = 4}
+
+reccl20$SCTsnn_res.0.8 <- factor(reccl20$SCTsnn_res.0.8,
+                              levels = sort(unique(reccl20$SCTsnn_res.0.8)))
+Idents(reccl20) <- reccl20$SCTsnn_res.0.8
+
+DotPlot(reccl20,
+        group.by = "SCTsnn_res.0.8",
+        features = plot_features,
+        cols = c("gray98", "tomato3")) +
+  RotatedAxis()
+
+nos <- c()
+fibro1 <- c(0, 1, 3) # FN1 high
+fibro2 <- c() # FN1 low, DCN, LUM (iCAF), COL1A2
+peri <- c(2) # NOTCH3, RGS5
+endo <- c() # PLVAP
+myel <- c()
+
+reccl20$annotation <- ifelse(reccl20$SCTsnn_res.0.8 %in% fibro1, "F1_from_stromal",
+                   ifelse(reccl20$SCTsnn_res.0.8 %in% peri, "Peri_from_stromal", NA))
+
+reccl20$annotation <- paste0(reccl20$SCTsnn_res.0.8, "_", reccl20$annotation)
+
+```
+
+### Consolidating preliminary annotations
+
+```{r, message = F, warning = F, fig.width = 6, fig.height = 6, eval = T}
+
+# Merging
+seurat_list <- ls(pattern="reccl")
+seurat_list <- str_sort(seurat_list, numeric = TRUE)
+seurat_list <- do.call("list", mget(seurat_list))
+
+#saveRDS(seurat_list, "/scratch/hnatri/PIPAC/seurat_list.Rds")
+seurat_list <- readRDS("/scratch/hnatri/PIPAC/seurat_list.Rds")
+
+seurat_list <- lapply(names(seurat_list), function(xx){
+  #message(xx)
+  cll <- xx
+  xx <- seurat_list[[xx]]
+  xx[["denoist_RNA"]] <- as(object = xx[["denoist_RNA"]], Class = "Assay5")
+  DefaultAssay(xx) <- "denoist_RNA"
+  xx[["RNA"]] <- NULL
+  xx[["nucleus_RNA"]] <- NULL
+  xx[["SCT"]] <- NULL
+  xx$annotation <- paste0(cll, "_", xx$annotation)
+  xx@meta.data <- xx@meta.data[,c("cell_id", "annotation")]
+  
+  xx
+})
+
+seurat_merged <- merge(x = seurat_list[[1]], y = seurat_list[2:3])
+
+saveRDS(seurat_merged, "/scratch/hnatri/PIPAC/seurat_merged.rds")
+#seurat_merged <- readRDS("/scratch/hnatri/PIPAC/seurat_merged.rds")
+
+# Adding most granular annotations to the stromal reclustered subset object
+stromal_recluster_subset$stromal_subcluster_annot <- mapvalues(x = colnames(stromal_recluster_subset),
+                                                              from = colnames(seurat_merged),
+                                                              to = seurat_merged$annotation)
+stromal_recluster_subset@meta.data[-which(colnames(stromal_recluster_subset) %in% colnames(seurat_merged)),]$stromal_subcluster_annot <- NA
+
+# Adding annotations to the complete stromal subset
+stromal_ambig_annot <- read_sheet(metadata, sheet = "Stromal ambiguous recluster")
+#stromal_ambig_annot <- stromal_ambig_annot[-which(is.na(stromal_ambig_annot$annotation)),]
+#stromal_ambig_annot$annotation <- paste0(stromal_ambig_annot$SCTsnn_res.0.8, "_", stromal_ambig_annot$annotation)
+
+stromal_seurat_data$stromal_subcluster_annot <- mapvalues(x = colnames(stromal_seurat_data),
+                                                     from = colnames(stromal_recluster_subset),
+                                                     to = stromal_recluster_subset$stromal_subcluster_annot)
+stromal_seurat_data@meta.data[-which(colnames(stromal_seurat_data) %in% colnames(stromal_recluster_subset)),]$stromal_subcluster_annot <- NA
+
+stromal_recluster_subset$stromal_ambig_annot <- mapvalues(x = stromal_recluster_subset$SCTsnn_res.0.8,
+                                                         from = stromal_ambig_annot$SCTsnn_res.0.8,
+                                                         to = as.character(stromal_ambig_annot$annotation))
+#stromal_recluster_subset@meta.data[-which(stromal_recluster_subset$SCTsnn_res.0.8 %in% stromal_ambig_annot$SCTsnn_res.0.8),]$stromal_ambig_annot <- NA
+
+# Adding stromal annotations to the full non-immune object
+seurat_data$stromal_ambig_annot <- mapvalues(x = colnames(seurat_data),
+                                             from = colnames(stromal_recluster_subset),
+                                             to = as.character(stromal_recluster_subset$stromal_ambig_annot))
+seurat_data@meta.data[-which(colnames(seurat_data) %in% colnames(stromal_recluster_subset)),]$stromal_ambig_annot <- NA
+
+seurat_data$stromal_subcluster_annot <- mapvalues(x = colnames(seurat_data),
+                                                  from = colnames(stromal_recluster_subset),
+                                                  to = stromal_recluster_subset$stromal_subcluster_annot)
+seurat_data@meta.data[-which(colnames(seurat_data) %in% colnames(seurat_merged)),]$stromal_subcluster_annot <- NA
+
+# Adding labels for immune clusters in the whole stromal subset
+stromal_seurat_data$stromal_annot <- ifelse(stromal_seurat_data$leiden_1.0 == 1, "Immune1_from_stromal",
+                                     ifelse(stromal_seurat_data$leiden_1.0 == 11, "Immune2_from_stromal",
+                                      ifelse(stromal_seurat_data$leiden_1.0 == 25, "Immune3_from_stromal", NA)))
+
+seurat_data$stromal_annot <- mapvalues(x = colnames(seurat_data),
+                                       from = colnames(stromal_seurat_data),
+                                       to = stromal_seurat_data$stromal_annot)
+seurat_data@meta.data[-which(colnames(seurat_data) %in% colnames(stromal_seurat_data)),]$stromal_annot <- NA
+
+# Adding annotation for the whole non-immune subset
+# first_pass_annot
+seurat_data$nonimmune_annotation <- mapvalues(x = seurat_data$leiden_1.5,
+                                       from = first_pass_annot$leiden_1.5,
+                                       to = first_pass_annot$annotation)
+seurat_data@meta.data[-which(seurat_data$leiden_1.5 %in% stromal_seurat_data$leiden_1.5),]$nonimmune_annotation <- NA
+
+seurat_data$nonimmune_annotation <- as.character(seurat_data$nonimmune_annotation)
+
+# Combining
+#saveRDS(seurat_data, "/scratch/hnatri/PIPAC/nonimmune_annotated.rds")
+#seurat_data <- readRDS("/scratch/hnatri/PIPAC/nonimmune_annotated.rds")
+
+seurat_data$combined_annotation <- ifelse(is.na(seurat_data$stromal_subcluster_annot), seurat_data$stromal_ambig_annot, seurat_data$stromal_subcluster_annot)
+
+seurat_data$combined_annotation <- ifelse(is.na(seurat_data$combined_annotation), as.character(seurat_data$stromal_annot), as.character(seurat_data$combined_annotation))
+
+seurat_data$combined_annotation <- ifelse(is.na(seurat_data$combined_annotation), seurat_data$nonimmune_annotation, seurat_data$combined_annotation)
+
+#seurat_data$combined_annotation <- ifelse(is.na(seurat_data$combined_annotation), seurat_data$annotation, #NA)
+
+saveRDS(seurat_data, "/scratch/hnatri/PIPAC/nonimmune_annotated.rds")
+
+# Rscript -e "rmarkdown::render('nonimmune_annotation_cell.Rmd')"
+# mv *html /home/hnatri/PIPAC_spatial/docs/
+
+```
+

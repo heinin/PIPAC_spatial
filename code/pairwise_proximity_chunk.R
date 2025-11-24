@@ -42,6 +42,9 @@ source("/home/hnatri/PIPAC_spatial/code/plot_functions.R")
 
 seurat_data <- readRDS("/tgen_labs/banovich/PIPAC/Seurat/cell_merged_spatial_filtered_splitsamples_clustered_NC50_NN20_PC20_Seurat_denoIST_metadata_ncells3k_nk20_niches.rds")
 
+# Arm 3 only
+seurat_data <- subset(seurat_data, subset = Arm == "Arm3")
+
 #==============================================================================#
 # Overall proximity
 #==============================================================================#
@@ -54,7 +57,7 @@ proximity_results <- c()
 
 length(celltype_pairs)
 
-for(ii in seq_along(celltype_pairs)[1:52]){
+for(ii in seq_along(celltype_pairs)[1:2]){
   message(celltype_pairs[[ii]])
   
   ct_pairs <- celltype_pairs[[ii]]
@@ -128,7 +131,35 @@ write.table(proximity_results, "/scratch/hnatri/PIPAC/summarize_tissue_cell-cell
             quote = F, sep = "\t", row.names = F)
 
 #==============================================================================#
-# 
+# Plotting
 #==============================================================================#
 
+test_res <- read.table("/scratch/hnatri/PIPAC/summarize_tissue_cell-cell_interactions_d50_chunk1.tsv",
+                       header = T, sep = "\t")
+
+# Adding metadata
+test_res$Timepoint <- mapvalues(test_res$sample,
+                                from = seurat_data$Sample,
+                                to = seurat_data$Timepoint)
+test_res$BestResponse <- mapvalues(test_res$sample,
+                                from = seurat_data$Sample,
+                                to = seurat_data$BestResponse)
+test_res$Tissue <- mapvalues(test_res$sample,
+                             from = seurat_data$Sample,
+                             to = as.character(seurat_data$Tissue))
+
+test_res$celltype1 <- sapply(strsplit(test_res$pair, split='-', fixed=TRUE), `[`, 1)
+test_res$celltype2 <- sapply(strsplit(test_res$pair, split='-', fixed=TRUE), `[`, 2)
+
+unique(test_res$pair)
+
+test_res %>% filter(Tissue == "Tumor",
+                    sample %in% seurat_data$Sample) %>%
+  ggplot(aes(x = Timepoint, y = normalized_T, fill = Timepoint)) +
+  geom_violin(alpha = 0.5) +
+  geom_jitter(position = position_jitter(seed = 1, width = 0.2)) +
+  facet_wrap(~pair, scales = "free") +
+  theme_classic() +
+  NoLegend()
+  
 
