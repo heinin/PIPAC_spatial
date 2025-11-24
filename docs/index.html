@@ -302,7 +302,7 @@ aria-hidden="true"></span> </a>
 <div class="tab-content">
 <div id="summary" class="tab-pane fade in active">
 <p>
-<strong>Last updated:</strong> 2025-09-29
+<strong>Last updated:</strong> 2025-11-24
 </p>
 <p>
 <strong>Checks:</strong> <span
@@ -352,15 +352,15 @@ HTML.</p>
 <div class="panel panel-default">
 <div class="panel-heading">
 <p class="panel-title">
-<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomheininPIPACspatialtree39d05cb667eecd10f4720b68d1c170937fd6441atargetblank39d05cba">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomheininPIPACspatialtree6872c5a11c85d1ec1f8934a9fd5f039f977b45e2targetblank6872c5aa">
 <span class="glyphicon glyphicon-ok text-success"
 aria-hidden="true"></span> <strong>Repository version:</strong>
-<a href="https://github.com/heinin/PIPAC_spatial/tree/39d05cb667eecd10f4720b68d1c170937fd6441a" target="_blank">39d05cb</a>
+<a href="https://github.com/heinin/PIPAC_spatial/tree/6872c5a11c85d1ec1f8934a9fd5f039f977b45e2" target="_blank">6872c5a</a>
 </a>
 </p>
 </div>
 <div
-id="strongRepositoryversionstrongahrefhttpsgithubcomheininPIPACspatialtree39d05cb667eecd10f4720b68d1c170937fd6441atargetblank39d05cba"
+id="strongRepositoryversionstrongahrefhttpsgithubcomheininPIPACspatialtree6872c5a11c85d1ec1f8934a9fd5f039f977b45e2targetblank6872c5aa"
 class="panel-collapse collapse">
 <div class="panel-body">
 <p>
@@ -370,7 +370,7 @@ reproducibility.
 </p>
 <p>
 The results in this page were generated with repository version
-<a href="https://github.com/heinin/PIPAC_spatial/tree/39d05cb667eecd10f4720b68d1c170937fd6441a" target="_blank">39d05cb</a>.
+<a href="https://github.com/heinin/PIPAC_spatial/tree/6872c5a11c85d1ec1f8934a9fd5f039f977b45e2" target="_blank">6872c5a</a>.
 See the <em>Past versions</em> tab to see a history of the changes made
 to the R Markdown and HTML files.
 </p>
@@ -386,22 +386,23 @@ were generated:
 <pre><code>
 Ignored files:
     Ignored:    .RData
-    Ignored:    cell_annotation_top_markers_denoist.tsv
-    Ignored:    cell_main_cluster_marker_annotations_denoist.tsv
+    Ignored:    cell_immune_cluster_marker_annotations.tsv
+    Ignored:    cell_nonimmune_cluster_marker_annotations.tsv
     Ignored:    celltype_markers.tsv
     Ignored:    code/.Rhistory
     Ignored:    code/Proximity_analysis/.DS_Store
     Ignored:    code/Proximity_analysis/data/
     Ignored:    code/Proximity_analysis/output/
     Ignored:    code/RSC_latest_EDM_2025-08-06/
-    Ignored:    code/construct_niches_tumor.Rout
-    Ignored:    code/pairwise_proximity.Rout
-    Ignored:    code/pairwise_proximity_chunk.Rout
-    Ignored:    immune_cluster_marker_annotations.tsv
+    Ignored:    code/celltype_proximity_tumor.Rout
     Ignored:    immune_cluster_marker_annotations_2ndpass.tsv
-    Ignored:    main_cluster_marker_annotations.tsv
-    Ignored:    nonimmune_cluster_marker_annotations.tsv
+    Ignored:    immune_prelim_annot_topmarkers.tsv
     Ignored:    nonimmune_cluster_marker_annotations_2ndpass.tsv
+    Ignored:    nonimmune_prelim_annot_topmarkers.tsv
+    Ignored:    output/proximity_compiled.tsv
+    Ignored:    output/tumor_proximity_compiled.tsv
+    Ignored:    tumor_posttreatment_proximity_compiled.tsv
+    Ignored:    tumor_pretreatment_proximity_compiled.tsv
 
 Unstaged changes:
     Modified:   analysis/index.Rmd
@@ -449,6 +450,57 @@ Message
 </tr>
 </thead>
 <tbody>
+<tr>
+<td>
+Rmd
+</td>
+<td>
+<a href="https://github.com/heinin/PIPAC_spatial/blob/6872c5a11c85d1ec1f8934a9fd5f039f977b45e2/analysis/index.Rmd" target="_blank">6872c5a</a>
+</td>
+<td>
+heinin
+</td>
+<td>
+2025-11-24
+</td>
+<td>
+Updated analyses, added CAF bulk-analysis
+</td>
+</tr>
+<tr>
+<td>
+Rmd
+</td>
+<td>
+<a href="https://github.com/heinin/PIPAC_spatial/blob/2221fdb25852e44537732db34a0abd5f08c4c9b0/analysis/index.Rmd" target="_blank">2221fdb</a>
+</td>
+<td>
+heinin
+</td>
+<td>
+2025-09-29
+</td>
+<td>
+Updated index
+</td>
+</tr>
+<tr>
+<td>
+html
+</td>
+<td>
+<a href="https://rawcdn.githack.com/heinin/PIPAC_spatial/2221fdb25852e44537732db34a0abd5f08c4c9b0/docs/index.html" target="_blank">2221fdb</a>
+</td>
+<td>
+heinin
+</td>
+<td>
+2025-09-29
+</td>
+<td>
+Updated index
+</td>
+</tr>
 <tr>
 <td>
 Rmd
@@ -627,15 +679,22 @@ nuclear, cellular, and denoised transcript counts</a><br />
 <li><a href="post_clustering.html">Post-clustering
 visualization</a><br />
 </li>
-<li><a href="annotation.html">1st pass annotation</a><br />
+<li><a href="annotation.html">1st pass annotation (nuclear
+transcripts)</a><br />
+</li>
+<li><a href="annotation_cell.html">1st pass annotation (DenoIST
+transcripts)</a><br />
 </li>
 <li>Reclustering immune and non-immune subsets using rapids<br />
 </li>
-<li><a href="immune_annotation.html">Immune cell annotation</a><br />
+<li><a href="immune_annotation.html">Immune cell annotation (nuclear
+transcripts)</a><br />
 </li>
-<li><a href="nonimmune_annotation.html">Non-immune annotation</a><br />
+<li><a href="nonimmune_annotation.html">Non-immune annotation (nuclear
+transcripts)</a><br />
 </li>
-<li><a href="annotation_2nd_pass.html">2nd pass annotation</a><br />
+<li><a href="annotation_2nd_pass.html">2nd pass annotation (nuclear
+transcripts)</a><br />
 </li>
 <li><a href="add_metadata.html">Adding patient metadata</a><br />
 </li>
@@ -648,6 +707,9 @@ type</a><br />
 </li>
 <li><a href="arm3_comparative_analysis.html">Arm 3 first-pass
 comparative analysis</a><br />
+</li>
+<li><a href="CAF_bulkRNAseq.html">CAF bulk-RNAseq with and without
+Mitomycin C</a><br />
 </li>
 </ol>
 <p>Contact: Heini M Natri, <a href="mailto:hnatri@tgen.org"

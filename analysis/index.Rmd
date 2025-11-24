@@ -28,6 +28,7 @@ Project spreadsheets in [Google Sheets](https://docs.google.com/spreadsheets/d/1
 12. [Plotting by group](plot_by_group.html)\
 13. [Niche construction](niche_construction.html)\
 14. [Arm 3 first-pass comparative analysis](arm3_comparative_analysis.html)\
+15. [CAF bulk-RNAseq with and without Mitomycin C](CAF_bulkRNAseq.html)\
 
 
 Contact: Heini M Natri, hnatri@tgen.org
