@@ -432,10 +432,10 @@ changes </a>
 <div id="strongRMarkdownfilestronguncommittedchanges"
 class="panel-collapse collapse">
 <div class="panel-body">
-<p>The R Markdown is untracked by Git. To know which version of the R
-Markdown file created these results, you’ll want to first commit it to
-the Git repo. If you’re still working on the analysis, you can ignore
-this warning. When you’re finished, you can run
+<p>The R Markdown file has unstaged changes. To know which version of
+the R Markdown file created these results, you’ll want to first commit
+it to the Git repo. If you’re still working on the analysis, you can
+ignore this warning. When you’re finished, you can run
 <code>wflow_publish</code> to commit the R Markdown file and build the
 HTML.</p>
 </div>
@@ -570,15 +570,15 @@ code/plot_functions.R
 <div class="panel panel-default">
 <div class="panel-heading">
 <p class="panel-title">
-<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomheininPIPACspatialtree2221fdb25852e44537732db34a0abd5f08c4c9b0targetblank2221fdba">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomheininPIPACspatialtreeb268d77c58bd04c2b47bec1d09f78fdacc194f9atargetblankb268d77a">
 <span class="glyphicon glyphicon-ok text-success"
 aria-hidden="true"></span> <strong>Repository version:</strong>
-<a href="https://github.com/heinin/PIPAC_spatial/tree/2221fdb25852e44537732db34a0abd5f08c4c9b0" target="_blank">2221fdb</a>
+<a href="https://github.com/heinin/PIPAC_spatial/tree/b268d77c58bd04c2b47bec1d09f78fdacc194f9a" target="_blank">b268d77</a>
 </a>
 </p>
 </div>
 <div
-id="strongRepositoryversionstrongahrefhttpsgithubcomheininPIPACspatialtree2221fdb25852e44537732db34a0abd5f08c4c9b0targetblank2221fdba"
+id="strongRepositoryversionstrongahrefhttpsgithubcomheininPIPACspatialtreeb268d77c58bd04c2b47bec1d09f78fdacc194f9atargetblankb268d77a"
 class="panel-collapse collapse">
 <div class="panel-body">
 <p>
@@ -588,7 +588,7 @@ reproducibility.
 </p>
 <p>
 The results in this page were generated with repository version
-<a href="https://github.com/heinin/PIPAC_spatial/tree/2221fdb25852e44537732db34a0abd5f08c4c9b0" target="_blank">2221fdb</a>.
+<a href="https://github.com/heinin/PIPAC_spatial/tree/b268d77c58bd04c2b47bec1d09f78fdacc194f9a" target="_blank">b268d77</a>.
 See the <em>Past versions</em> tab to see a history of the changes made
 to the R Markdown and HTML files.
 </p>
@@ -604,7 +604,7 @@ were generated:
 <pre><code>
 Ignored files:
     Ignored:    .RData
-    Ignored:    analysis/figure/
+    Ignored:    analysis/finalize_annotations.html
     Ignored:    cell_immune_cluster_marker_annotations.tsv
     Ignored:    cell_nonimmune_cluster_marker_annotations.tsv
     Ignored:    celltype_markers.tsv
@@ -618,53 +618,14 @@ Ignored files:
     Ignored:    immune_prelim_annot_topmarkers.tsv
     Ignored:    nonimmune_cluster_marker_annotations_2ndpass.tsv
     Ignored:    nonimmune_prelim_annot_topmarkers.tsv
-
-Untracked files:
-    Untracked:  analysis/CAF_bulkRNAseq.Rmd
-    Untracked:  analysis/finalize_annotations.Rmd
-    Untracked:  analysis/immune_annotation_cell.Rmd
-    Untracked:  analysis/nonimmune_annotation_cell.Rmd
-    Untracked:  code/.RDataTmp
-    Untracked:  code/.RDataTmp1
-    Untracked:  code/celltype_proximity_09232025.R
-    Untracked:  code/celltype_proximity_tumor.R
-    Untracked:  code/denoist_chunk.R
-    Untracked:  code/plot_informative_cluster_markers.R
-    Untracked:  code/slurm.26717417.err
-    Untracked:  code/slurm.26717417.out
-    Untracked:  enrichment_posttreatment_scores_compiled.tsv
-    Untracked:  enrichment_pretreatment_scores_compiled.tsv
-    Untracked:  enrichment_tumor_scores_compiled.tsv
-    Untracked:  output/enrichment_scores_compiled.tsv
-    Untracked:  output/proximity_compiled.tsv
-    Untracked:  tumor_posttreatment_proximity_compiled.tsv
-    Untracked:  tumor_pretreatment_proximity_compiled.tsv
-    Untracked:  tumor_proximity_compiled.tsv
+    Ignored:    output/proximity_compiled.tsv
+    Ignored:    output/tumor_proximity_compiled.tsv
+    Ignored:    tumor_posttreatment_proximity_compiled.tsv
+    Ignored:    tumor_pretreatment_proximity_compiled.tsv
 
 Unstaged changes:
-    Deleted:    Rplots.pdf
-    Modified:   analysis/Xenium_preprocess_wholecell.Rmd
-    Modified:   analysis/add_metadata.Rmd
-    Modified:   analysis/annotation_cell.Rmd
-    Modified:   analysis/arm3_comparative_analysis.Rmd
-    Modified:   analysis/arm3_prepost_plots_DEGs.Rmd
-    Modified:   analysis/compare_cellular_nuclear.Rmd
-    Modified:   analysis/compare_cellular_nuclear_denoist_annot.Rmd
-    Modified:   analysis/index.Rmd
-    Modified:   analysis/niche_construction_ncells3k_nneighbors20.Rmd
-    Modified:   analysis/pca_variance_decomp.Rmd
-    Modified:   analysis/proximity.Rmd
-    Modified:   analysis/splitting_samples.Rmd
-    Modified:   code/PIPAC_colors_themes.R
-    Modified:   code/anndata_to_seurat.R
-    Modified:   code/denoist.R
-    Modified:   code/pairwise_proximity.R
-    Modified:   code/pairwise_proximity_chunk.R
-    Modified:   code/parse_denoist_res.R
-    Modified:   code/plot_functions.R
-    Modified:   code/run_rscript.sh
-    Modified:   code/seurat_to_anndata.R
-    Modified:   code/update_metadata.R
+    Modified:   analysis/CAF_bulkRNAseq.Rmd
+    Modified:   analysis/finalize_annotations.Rmd
 
 </code></pre>
 <p>
@@ -679,10 +640,74 @@ have uncommitted changes.
 <hr>
 </div>
 <div id="versions" class="tab-pane fade">
+
 <p>
-There are no past versions. Publish this analysis with
-<code>wflow_publish()</code> to start tracking its development.
+These are the previous versions of the repository in which changes were
+made to the R Markdown (<code>analysis/CAF_bulkRNAseq.Rmd</code>) and
+HTML (<code>docs/CAF_bulkRNAseq.html</code>) files. If you’ve configured
+a remote Git repository (see <code>?wflow_git_remote</code>), click on
+the hyperlinks in the table below to view the files as they were in that
+past version.
 </p>
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+File
+</th>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+<th>
+Message
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+Rmd
+</td>
+<td>
+<a href="https://github.com/heinin/PIPAC_spatial/blob/6872c5a11c85d1ec1f8934a9fd5f039f977b45e2/analysis/CAF_bulkRNAseq.Rmd" target="_blank">6872c5a</a>
+</td>
+<td>
+heinin
+</td>
+<td>
+2025-11-24
+</td>
+<td>
+Updated analyses, added CAF bulk-analysis
+</td>
+</tr>
+<tr>
+<td>
+html
+</td>
+<td>
+<a href="https://rawcdn.githack.com/heinin/PIPAC_spatial/6872c5a11c85d1ec1f8934a9fd5f039f977b45e2/docs/CAF_bulkRNAseq.html" target="_blank">6872c5a</a>
+</td>
+<td>
+heinin
+</td>
+<td>
+2025-11-24
+</td>
+<td>
+Updated analyses, added CAF bulk-analysis
+</td>
+</tr>
+</tbody>
+</table>
+</div>
 <hr>
 </div>
 </div>
@@ -708,7 +733,8 @@ suppressPackageStartupMessages({
   library(survminer)
   library(googlesheets4)
   library(clusterProfiler)
-  library(org.Hs.eg.db)})</code></pre>
+  library(org.Hs.eg.db)
+  library(org.Mm.eg.db)})</code></pre>
 </div>
 <div id="environment-variables-and-helper-functions"
 class="section level3">
@@ -829,6 +855,43 @@ names(shps) &lt;- group_info
 
 plotMDS(d, top = 500, col = cols, pch = shps, cex = 1, labels = colnames(all_counts_df))</code></pre>
 <p><img src="figure/CAF_bulkRNAseq.Rmd/unnamed-chunk-5-1.png" width="480" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-5-1">
+Past versions of unnamed-chunk-5-1.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-5-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/heinin/PIPAC_spatial/blob/6872c5a11c85d1ec1f8934a9fd5f039f977b45e2/docs/figure/CAF_bulkRNAseq.Rmd/unnamed-chunk-5-1.png" target="_blank">6872c5a</a>
+</td>
+<td>
+heinin
+</td>
+<td>
+2025-11-24
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 <pre class="r"><code>#legend(&#39;bottomright&#39;, col=cols, legend=unique(sample_info), pch = 16, cex = 0.7)
 #legend(&#39;topright&#39;, legend=unique(group_info), pch = shps, cex = 0.7)</code></pre>
 <pre class="r"><code># Total number of reads per sample
@@ -842,6 +905,43 @@ d$samples %&gt;%
   xlab(&quot;Sample&quot;) + 
   ylab(&quot;Library size&quot;)</code></pre>
 <p><img src="figure/CAF_bulkRNAseq.Rmd/unnamed-chunk-6-1.png" width="480" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-6-1">
+Past versions of unnamed-chunk-6-1.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-6-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/heinin/PIPAC_spatial/blob/6872c5a11c85d1ec1f8934a9fd5f039f977b45e2/docs/figure/CAF_bulkRNAseq.Rmd/unnamed-chunk-6-1.png" target="_blank">6872c5a</a>
+</td>
+<td>
+heinin
+</td>
+<td>
+2025-11-24
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 </div>
 <div id="de-analysis" class="section level3">
 <h3>DE analysis</h3>
@@ -870,6 +970,43 @@ plotMDS(d1, top = 500, col = cols, pch = shps)
 legend(&#39;bottomright&#39;, col=cols, legend=unique(sample_info), pch = 16, cex = 0.7)
 legend(&#39;topright&#39;, legend=unique(group_info), pch = shps, cex = 0.7)</code></pre>
 <p><img src="figure/CAF_bulkRNAseq.Rmd/unnamed-chunk-7-1.png" width="480" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-7-1">
+Past versions of unnamed-chunk-7-1.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-7-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/heinin/PIPAC_spatial/blob/6872c5a11c85d1ec1f8934a9fd5f039f977b45e2/docs/figure/CAF_bulkRNAseq.Rmd/unnamed-chunk-7-1.png" target="_blank">6872c5a</a>
+</td>
+<td>
+heinin
+</td>
+<td>
+2025-11-24
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 <pre class="r"><code># Total number of reads per sample
 d1$samples %&gt;% 
   rownames_to_column(var = &quot;sample&quot;) %&gt;%
@@ -884,6 +1021,43 @@ d1$samples %&gt;%
 # Voom
 y1 &lt;- voom(d1, mm, plot = T)</code></pre>
 <p><img src="figure/CAF_bulkRNAseq.Rmd/unnamed-chunk-9-1.png" width="768" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-9-1">
+Past versions of unnamed-chunk-9-1.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-9-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/heinin/PIPAC_spatial/blob/6872c5a11c85d1ec1f8934a9fd5f039f977b45e2/docs/figure/CAF_bulkRNAseq.Rmd/unnamed-chunk-9-1.png" target="_blank">6872c5a</a>
+</td>
+<td>
+heinin
+</td>
+<td>
+2025-11-24
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 <pre class="r"><code># Fitting linear models in limma
 # lmFit fits a linear model using weighted least squares for each gene:
 fit1 &lt;- lmFit(y1, mm)
@@ -940,6 +1114,43 @@ p0 &lt;- EnhancedVolcano(top.table,
 
 p0</code></pre>
 <p><img src="figure/CAF_bulkRNAseq.Rmd/unnamed-chunk-9-2.png" width="768" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-9-2">
+Past versions of unnamed-chunk-9-2.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-9-2" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/heinin/PIPAC_spatial/blob/6872c5a11c85d1ec1f8934a9fd5f039f977b45e2/docs/figure/CAF_bulkRNAseq.Rmd/unnamed-chunk-9-2.png" target="_blank">6872c5a</a>
+</td>
+<td>
+heinin
+</td>
+<td>
+2025-11-24
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 </div>
 <div id="fpkm-for-each-gene" class="section level3">
 <h3>FPKM for each gene</h3>
@@ -1073,6 +1284,43 @@ long_df %&gt;% filter(Hh_gene %in% icafs) %&gt;%
   theme(legend.position = &quot;none&quot;) +
   theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1))</code></pre>
 <p><img src="figure/CAF_bulkRNAseq.Rmd/unnamed-chunk-11-1.png" width="480" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-11-1">
+Past versions of unnamed-chunk-11-1.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-11-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/heinin/PIPAC_spatial/blob/6872c5a11c85d1ec1f8934a9fd5f039f977b45e2/docs/figure/CAF_bulkRNAseq.Rmd/unnamed-chunk-11-1.png" target="_blank">6872c5a</a>
+</td>
+<td>
+heinin
+</td>
+<td>
+2025-11-24
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 <pre class="r"><code>long_df %&gt;% filter(Hh_gene %in% mycafs) %&gt;%
   ggplot(aes(x = Treatment_simple, y = exp, color = Treatment_simple, label = Sample)) +
   geom_violin(alpha = 0.5) +
@@ -1086,6 +1334,43 @@ long_df %&gt;% filter(Hh_gene %in% icafs) %&gt;%
   theme(legend.position = &quot;none&quot;) +
   theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1))</code></pre>
 <p><img src="figure/CAF_bulkRNAseq.Rmd/unnamed-chunk-11-2.png" width="480" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-11-2">
+Past versions of unnamed-chunk-11-2.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-11-2" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/heinin/PIPAC_spatial/blob/6872c5a11c85d1ec1f8934a9fd5f039f977b45e2/docs/figure/CAF_bulkRNAseq.Rmd/unnamed-chunk-11-2.png" target="_blank">6872c5a</a>
+</td>
+<td>
+heinin
+</td>
+<td>
+2025-11-24
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 <pre class="r"><code>long_df %&gt;% filter(Hh_gene %in% abcafs) %&gt;%
   ggplot(aes(x = Treatment_simple, y = exp, color = Treatment_simple, label = Sample)) +
   geom_violin(alpha = 0.5) +
@@ -1099,6 +1384,43 @@ long_df %&gt;% filter(Hh_gene %in% icafs) %&gt;%
   theme(legend.position = &quot;none&quot;) +
   theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1))</code></pre>
 <p><img src="figure/CAF_bulkRNAseq.Rmd/unnamed-chunk-11-3.png" width="480" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-11-3">
+Past versions of unnamed-chunk-11-3.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-11-3" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/heinin/PIPAC_spatial/blob/6872c5a11c85d1ec1f8934a9fd5f039f977b45e2/docs/figure/CAF_bulkRNAseq.Rmd/unnamed-chunk-11-3.png" target="_blank">6872c5a</a>
+</td>
+<td>
+heinin
+</td>
+<td>
+2025-11-24
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 <pre class="r"><code>long_df %&gt;% filter(Hh_gene %in% ficafs) %&gt;%
   ggplot(aes(x = Treatment_simple, y = exp, color = Treatment_simple, label = Sample)) +
   geom_violin(alpha = 0.5) +
@@ -1112,6 +1434,43 @@ long_df %&gt;% filter(Hh_gene %in% icafs) %&gt;%
   theme(legend.position = &quot;none&quot;) +
   theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1))</code></pre>
 <p><img src="figure/CAF_bulkRNAseq.Rmd/unnamed-chunk-11-4.png" width="480" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-11-4">
+Past versions of unnamed-chunk-11-4.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-11-4" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/heinin/PIPAC_spatial/blob/6872c5a11c85d1ec1f8934a9fd5f039f977b45e2/docs/figure/CAF_bulkRNAseq.Rmd/unnamed-chunk-11-4.png" target="_blank">6872c5a</a>
+</td>
+<td>
+heinin
+</td>
+<td>
+2025-11-24
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 </div>
 </div>
 <div id="mouse" class="section level2">
@@ -1215,6 +1574,43 @@ names(shps) &lt;- unique(group_info)
 
 plotMDS(d, top = 500, pch = shps, col = cols, cex = 1)</code></pre>
 <p><img src="figure/CAF_bulkRNAseq.Rmd/unnamed-chunk-12-1.png" width="480" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-12-1">
+Past versions of unnamed-chunk-12-1.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-12-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/heinin/PIPAC_spatial/blob/6872c5a11c85d1ec1f8934a9fd5f039f977b45e2/docs/figure/CAF_bulkRNAseq.Rmd/unnamed-chunk-12-1.png" target="_blank">6872c5a</a>
+</td>
+<td>
+heinin
+</td>
+<td>
+2025-11-24
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 <pre class="r"><code>#legend(&#39;bottomright&#39;, col=cols, legend=unique(sample_info), pch = 16, cex = 0.7)
 #legend(&#39;topright&#39;, legend=unique(group_info), pch = shps, cex = 0.7)</code></pre>
 <pre class="r"><code># Total number of reads per sample
@@ -1228,6 +1624,43 @@ d$samples %&gt;%
   xlab(&quot;Sample&quot;) + 
   ylab(&quot;Library size&quot;)</code></pre>
 <p><img src="figure/CAF_bulkRNAseq.Rmd/unnamed-chunk-13-1.png" width="480" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-13-1">
+Past versions of unnamed-chunk-13-1.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-13-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/heinin/PIPAC_spatial/blob/6872c5a11c85d1ec1f8934a9fd5f039f977b45e2/docs/figure/CAF_bulkRNAseq.Rmd/unnamed-chunk-13-1.png" target="_blank">6872c5a</a>
+</td>
+<td>
+heinin
+</td>
+<td>
+2025-11-24
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 </div>
 <div id="de-analysis-1" class="section level3">
 <h3>DE analysis</h3>
@@ -1256,6 +1689,43 @@ plotMDS(d1, top = 500, col = cols, pch = shps)
 legend(&#39;bottomright&#39;, col=cols, legend=unique(sample_info), pch = 16, cex = 0.7)
 legend(&#39;topright&#39;, legend=unique(group_info), pch = shps, cex = 0.7)</code></pre>
 <p><img src="figure/CAF_bulkRNAseq.Rmd/unnamed-chunk-14-1.png" width="480" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-14-1">
+Past versions of unnamed-chunk-14-1.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-14-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/heinin/PIPAC_spatial/blob/6872c5a11c85d1ec1f8934a9fd5f039f977b45e2/docs/figure/CAF_bulkRNAseq.Rmd/unnamed-chunk-14-1.png" target="_blank">6872c5a</a>
+</td>
+<td>
+heinin
+</td>
+<td>
+2025-11-24
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 <pre class="r"><code># Total number of reads per sample
 d1$samples %&gt;% 
   rownames_to_column(var = &quot;sample&quot;) %&gt;%
@@ -1267,10 +1737,84 @@ d1$samples %&gt;%
   xlab(&quot;Sample&quot;) + 
   ylab(&quot;Library size&quot;)</code></pre>
 <p><img src="figure/CAF_bulkRNAseq.Rmd/unnamed-chunk-15-1.png" width="480" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-15-1">
+Past versions of unnamed-chunk-15-1.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-15-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/heinin/PIPAC_spatial/blob/6872c5a11c85d1ec1f8934a9fd5f039f977b45e2/docs/figure/CAF_bulkRNAseq.Rmd/unnamed-chunk-15-1.png" target="_blank">6872c5a</a>
+</td>
+<td>
+heinin
+</td>
+<td>
+2025-11-24
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 <pre class="r"><code># The above specifies a model where each coefficient corresponds to a group mean
 # Voom
 y1 &lt;- voom(d1, mm, plot = T)</code></pre>
 <p><img src="figure/CAF_bulkRNAseq.Rmd/unnamed-chunk-16-1.png" width="768" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-16-1">
+Past versions of unnamed-chunk-16-1.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-16-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/heinin/PIPAC_spatial/blob/6872c5a11c85d1ec1f8934a9fd5f039f977b45e2/docs/figure/CAF_bulkRNAseq.Rmd/unnamed-chunk-16-1.png" target="_blank">6872c5a</a>
+</td>
+<td>
+heinin
+</td>
+<td>
+2025-11-24
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 <pre class="r"><code># Fitting linear models in limma
 # lmFit fits a linear model using weighted least squares for each gene:
 fit1 &lt;- lmFit(y1, mm)
@@ -1335,6 +1879,43 @@ p0 &lt;- EnhancedVolcano(top.table.mouse,
 
 p0</code></pre>
 <p><img src="figure/CAF_bulkRNAseq.Rmd/unnamed-chunk-16-2.png" width="768" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-16-2">
+Past versions of unnamed-chunk-16-2.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-16-2" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/heinin/PIPAC_spatial/blob/6872c5a11c85d1ec1f8934a9fd5f039f977b45e2/docs/figure/CAF_bulkRNAseq.Rmd/unnamed-chunk-16-2.png" target="_blank">6872c5a</a>
+</td>
+<td>
+heinin
+</td>
+<td>
+2025-11-24
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 </div>
 <div id="fpkm-for-each-gene-1" class="section level3">
 <h3>FPKM for each gene</h3>
@@ -1477,6 +2058,43 @@ long_df %&gt;% filter(Hh_gene %in% icafs) %&gt;%
   theme(legend.position = &quot;none&quot;) +
   theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1))</code></pre>
 <p><img src="figure/CAF_bulkRNAseq.Rmd/unnamed-chunk-18-1.png" width="480" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-18-1">
+Past versions of unnamed-chunk-18-1.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-18-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/heinin/PIPAC_spatial/blob/6872c5a11c85d1ec1f8934a9fd5f039f977b45e2/docs/figure/CAF_bulkRNAseq.Rmd/unnamed-chunk-18-1.png" target="_blank">6872c5a</a>
+</td>
+<td>
+heinin
+</td>
+<td>
+2025-11-24
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 <pre class="r"><code>long_df %&gt;% filter(Hh_gene %in% mycafs) %&gt;%
   ggplot(aes(x = Treatment_simple, y = exp, color = Treatment_simple, label = Sample)) +
   geom_violin(alpha = 0.5) +
@@ -1490,6 +2108,43 @@ long_df %&gt;% filter(Hh_gene %in% icafs) %&gt;%
   theme(legend.position = &quot;none&quot;) +
   theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1))</code></pre>
 <p><img src="figure/CAF_bulkRNAseq.Rmd/unnamed-chunk-18-2.png" width="480" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-18-2">
+Past versions of unnamed-chunk-18-2.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-18-2" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/heinin/PIPAC_spatial/blob/6872c5a11c85d1ec1f8934a9fd5f039f977b45e2/docs/figure/CAF_bulkRNAseq.Rmd/unnamed-chunk-18-2.png" target="_blank">6872c5a</a>
+</td>
+<td>
+heinin
+</td>
+<td>
+2025-11-24
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 <pre class="r"><code>long_df %&gt;% filter(Hh_gene %in% abcafs) %&gt;%
   ggplot(aes(x = Treatment_simple, y = exp, color = Treatment_simple, label = Sample)) +
   geom_violin(alpha = 0.5) +
@@ -1503,6 +2158,43 @@ long_df %&gt;% filter(Hh_gene %in% icafs) %&gt;%
   theme(legend.position = &quot;none&quot;) +
   theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1))</code></pre>
 <p><img src="figure/CAF_bulkRNAseq.Rmd/unnamed-chunk-18-3.png" width="480" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-18-3">
+Past versions of unnamed-chunk-18-3.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-18-3" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/heinin/PIPAC_spatial/blob/6872c5a11c85d1ec1f8934a9fd5f039f977b45e2/docs/figure/CAF_bulkRNAseq.Rmd/unnamed-chunk-18-3.png" target="_blank">6872c5a</a>
+</td>
+<td>
+heinin
+</td>
+<td>
+2025-11-24
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 <pre class="r"><code>long_df %&gt;% filter(Hh_gene %in% ficafs) %&gt;%
   ggplot(aes(x = Treatment_simple, y = exp, color = Treatment_simple, label = Sample)) +
   geom_violin(alpha = 0.5) +
@@ -1516,10 +2208,49 @@ long_df %&gt;% filter(Hh_gene %in% icafs) %&gt;%
   theme(legend.position = &quot;none&quot;) +
   theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1))</code></pre>
 <p><img src="figure/CAF_bulkRNAseq.Rmd/unnamed-chunk-18-4.png" width="480" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-18-4">
+Past versions of unnamed-chunk-18-4.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-18-4" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/heinin/PIPAC_spatial/blob/6872c5a11c85d1ec1f8934a9fd5f039f977b45e2/docs/figure/CAF_bulkRNAseq.Rmd/unnamed-chunk-18-4.png" target="_blank">6872c5a</a>
+</td>
+<td>
+heinin
+</td>
+<td>
+2025-11-24
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 </div>
 </div>
 <div id="pathway-enrichment" class="section level2">
 <h2>Pathway enrichment</h2>
+<div id="human-1" class="section level3">
+<h3>Human</h3>
 <pre class="r"><code># Ordering genes
 gse_input &lt;- top.table %&gt;%
   filter(adj.P.Val &lt; 0.1)
@@ -1540,6 +2271,550 @@ dotplot(gse, showCategory=30, font.size=10, color=&quot;qvalue&quot;) +
         legend.box = &quot;vertical&quot;,
         text = element_text(size=6))</code></pre>
 <p><img src="figure/CAF_bulkRNAseq.Rmd/unnamed-chunk-19-1.png" width="576" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-19-1">
+Past versions of unnamed-chunk-19-1.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-19-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/heinin/PIPAC_spatial/blob/6872c5a11c85d1ec1f8934a9fd5f039f977b45e2/docs/figure/CAF_bulkRNAseq.Rmd/unnamed-chunk-19-1.png" target="_blank">6872c5a</a>
+</td>
+<td>
+heinin
+</td>
+<td>
+2025-11-24
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<pre class="r"><code>dim(gse)</code></pre>
+<pre><code>[1] 182   9</code></pre>
+<pre class="r"><code>gse_input_005 &lt;- top.table %&gt;%
+  filter(adj.P.Val &lt; 0.05)
+
+gse_005 &lt;- enrichGO(gse_input_005$gene_id, 
+                    ont =&quot;BP&quot;, 
+                    keyType = &quot;ENSEMBL&quot;, 
+                    minGSSize = 3, 
+                    maxGSSize = 800, 
+                    pvalueCutoff = 0.05, 
+                    universe = top.table$gene_id,
+                    OrgDb = org.Hs.eg.db, 
+                    pAdjustMethod = &quot;BH&quot;)
+
+dotplot(gse_005, showCategory=30, font.size=10, color=&quot;qvalue&quot;) +
+  theme(legend.text=element_text(size=5),
+        legend.position = &quot;top&quot;,
+        legend.box = &quot;vertical&quot;,
+        text = element_text(size=6))</code></pre>
+<p><img src="figure/CAF_bulkRNAseq.Rmd/unnamed-chunk-19-2.png" width="576" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>dim(gse_005)</code></pre>
+<pre><code>[1] 168   9</code></pre>
+</div>
+<div id="mouse-1" class="section level3">
+<h3>Mouse</h3>
+<pre class="r"><code># Ordering genes
+gse_input &lt;- top.table.mouse %&gt;%
+  filter(adj.P.Val &lt; 0.1)
+
+gse_mouse &lt;- enrichGO(gse_input$gene_id, 
+                      ont =&quot;BP&quot;, 
+                      keyType = &quot;ENSEMBL&quot;, 
+                      minGSSize = 3, 
+                      maxGSSize = 800, 
+                      pvalueCutoff = 0.05, 
+                      universe = top.table.mouse$gene_id,
+                      OrgDb = org.Mm.eg.db, 
+                      pAdjustMethod = &quot;BH&quot;)
+
+dotplot(gse_mouse, showCategory=30, font.size=10, color=&quot;qvalue&quot;) +
+  theme(legend.text=element_text(size=5),
+        legend.position = &quot;top&quot;,
+        legend.box = &quot;vertical&quot;,
+        text = element_text(size=6))</code></pre>
+<p><img src="figure/CAF_bulkRNAseq.Rmd/unnamed-chunk-20-1.png" width="576" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>dim(gse_mouse)</code></pre>
+<pre><code>[1] 109   9</code></pre>
+<pre class="r"><code>gse_input_005 &lt;- top.table.mouse %&gt;%
+  filter(adj.P.Val &lt; 0.05)
+
+gse_mouse_005 &lt;- enrichGO(gse_input_005$gene_id, 
+                      ont =&quot;BP&quot;, 
+                      keyType = &quot;ENSEMBL&quot;, 
+                      minGSSize = 3, 
+                      maxGSSize = 800, 
+                      pvalueCutoff = 0.05, 
+                      universe = top.table.mouse$gene_id,
+                      OrgDb = org.Mm.eg.db, 
+                      pAdjustMethod = &quot;BH&quot;)
+
+dotplot(gse_mouse_005, showCategory=30, font.size=10, color=&quot;qvalue&quot;) +
+  theme(legend.text=element_text(size=5),
+        legend.position = &quot;top&quot;,
+        legend.box = &quot;vertical&quot;,
+        text = element_text(size=6))</code></pre>
+<p><img src="figure/CAF_bulkRNAseq.Rmd/unnamed-chunk-20-2.png" width="576" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>dim(gse_mouse_005)</code></pre>
+<pre><code>[1] 68  9</code></pre>
+<p>Shared pathways between mouse and human</p>
+<pre class="r"><code>intersect(gse_mouse$Description, gse$Description)</code></pre>
+<pre><code> [1] &quot;regulation of apoptotic process&quot;            
+ [2] &quot;apoptotic process&quot;                          
+ [3] &quot;regulation of programmed cell death&quot;        
+ [4] &quot;cell death&quot;                                 
+ [5] &quot;programmed cell death&quot;                      
+ [6] &quot;response to external stimulus&quot;              
+ [7] &quot;tissue development&quot;                         
+ [8] &quot;regulation of developmental process&quot;        
+ [9] &quot;regulation of cell population proliferation&quot;
+[10] &quot;system process&quot;                             
+[11] &quot;response to hormone&quot;                        
+[12] &quot;response to oxygen-containing compound&quot;     </code></pre>
+<p>Pathways unique to mouse or human</p>
+<pre class="r"><code>setdiff(gse_mouse$Description, gse$Description)</code></pre>
+<pre><code> [1] &quot;negative regulation of developmental process&quot;                                             
+ [2] &quot;connective tissue development&quot;                                                            
+ [3] &quot;response to organic substance&quot;                                                            
+ [4] &quot;negative regulation of multicellular organismal process&quot;                                  
+ [5] &quot;cartilage development&quot;                                                                    
+ [6] &quot;response to endogenous stimulus&quot;                                                          
+ [7] &quot;circulatory system development&quot;                                                           
+ [8] &quot;monosaccharide catabolic process&quot;                                                         
+ [9] &quot;response to cytokine&quot;                                                                     
+[10] &quot;cellular response to cytokine stimulus&quot;                                                   
+[11] &quot;regulation of peptidase activity&quot;                                                         
+[12] &quot;response to lipid&quot;                                                                        
+[13] &quot;cellular response to chemical stimulus&quot;                                                   
+[14] &quot;regulation of cysteine-type endopeptidase activity involved in apoptotic process&quot;         
+[15] &quot;regulation of endopeptidase activity&quot;                                                     
+[16] &quot;tube morphogenesis&quot;                                                                       
+[17] &quot;osteoblast differentiation&quot;                                                               
+[18] &quot;cellular response to organic substance&quot;                                                   
+[19] &quot;vasculature development&quot;                                                                  
+[20] &quot;positive regulation of cell population proliferation&quot;                                     
+[21] &quot;positive regulation of programmed cell death&quot;                                             
+[22] &quot;tube development&quot;                                                                         
+[23] &quot;regulation of cysteine-type endopeptidase activity&quot;                                       
+[24] &quot;hexose catabolic process&quot;                                                                 
+[25] &quot;regulation of multicellular organismal development&quot;                                       
+[26] &quot;regulation of cell differentiation&quot;                                                       
+[27] &quot;cell migration&quot;                                                                           
+[28] &quot;angiogenesis&quot;                                                                             
+[29] &quot;cellular response to endogenous stimulus&quot;                                                 
+[30] &quot;response to growth factor&quot;                                                                
+[31] &quot;cell-substrate adhesion&quot;                                                                  
+[32] &quot;negative regulation of cell differentiation&quot;                                              
+[33] &quot;negative regulation of cell development&quot;                                                  
+[34] &quot;cell surface receptor signaling pathway&quot;                                                  
+[35] &quot;positive regulation of apoptotic process&quot;                                                 
+[36] &quot;ossification&quot;                                                                             
+[37] &quot;cellular response to interleukin-1&quot;                                                       
+[38] &quot;cell adhesion&quot;                                                                            
+[39] &quot;chaperone cofactor-dependent protein refolding&quot;                                           
+[40] &quot;cell motility&quot;                                                                            
+[41] &quot;monosaccharide metabolic process&quot;                                                         
+[42] &quot;cellular response to growth factor stimulus&quot;                                              
+[43] &quot;blood vessel development&quot;                                                                 
+[44] &quot;negative regulation of peptidase activity&quot;                                                
+[45] &quot;epithelial cell differentiation&quot;                                                          
+[46] &quot;negative regulation of apoptotic process&quot;                                                 
+[47] &quot;negative regulation of programmed cell death&quot;                                             
+[48] &quot;negative regulation of cell communication&quot;                                                
+[49] &quot;negative regulation of signaling&quot;                                                         
+[50] &quot;glycolytic process through glucose-6-phosphate&quot;                                           
+[51] &quot;collagen biosynthetic process&quot;                                                            
+[52] &quot;anatomical structure formation involved in morphogenesis&quot;                                 
+[53] &quot;blood vessel morphogenesis&quot;                                                               
+[54] &quot;cell-matrix adhesion&quot;                                                                     
+[55] &quot;hexose metabolic process&quot;                                                                 
+[56] &quot;negative regulation of signal transduction&quot;                                               
+[57] &quot;chemotaxis&quot;                                                                               
+[58] &quot;taxis&quot;                                                                                    
+[59] &quot;response to type II interferon&quot;                                                           
+[60] &quot;positive regulation of cysteine-type endopeptidase activity involved in apoptotic process&quot;
+[61] &quot;response to interleukin-1&quot;                                                                
+[62] &quot;response to lipopolysaccharide&quot;                                                           
+[63] &quot;glucose catabolic process&quot;                                                                
+[64] &quot;glycolytic process through fructose-6-phosphate&quot;                                          
+[65] &quot;regulation of bone development&quot;                                                           
+[66] &quot;collagen fibril organization&quot;                                                             
+[67] &quot;regulation of protein metabolic process&quot;                                                  
+[68] &quot;positive regulation of multicellular organismal process&quot;                                  
+[69] &quot;NADH regeneration&quot;                                                                        
+[70] &quot;canonical glycolysis&quot;                                                                     
+[71] &quot;glucose catabolic process to pyruvate&quot;                                                    
+[72] &quot;carbohydrate metabolic process&quot;                                                           
+[73] &quot;cellular response to type II interferon&quot;                                                  
+[74] &quot;&#39;de novo&#39; protein folding&quot;                                                                
+[75] &quot;&#39;de novo&#39; post-translational protein folding&quot;                                             
+[76] &quot;regulation of cellular response to growth factor stimulus&quot;                                
+[77] &quot;negative regulation of immune system process&quot;                                             
+[78] &quot;bone mineralization&quot;                                                                      
+[79] &quot;positive regulation of cysteine-type endopeptidase activity&quot;                              
+[80] &quot;cartilage development involved in endochondral bone morphogenesis&quot;                        
+[81] &quot;DNA modification&quot;                                                                         
+[82] &quot;positive regulation of reactive oxygen species metabolic process&quot;                         
+[83] &quot;positive regulation of phosphorus metabolic process&quot;                                      
+[84] &quot;positive regulation of phosphate metabolic process&quot;                                       
+[85] &quot;negative regulation of response to stimulus&quot;                                              
+[86] &quot;small molecule biosynthetic process&quot;                                                      
+[87] &quot;negative regulation of endopeptidase activity&quot;                                            
+[88] &quot;positive regulation of cell differentiation&quot;                                              
+[89] &quot;regulation of hydrolase activity&quot;                                                         
+[90] &quot;locomotion&quot;                                                                               
+[91] &quot;lymph vessel development&quot;                                                                 
+[92] &quot;retina vasculature development in camera-type eye&quot;                                        
+[93] &quot;gonad development&quot;                                                                        
+[94] &quot;development of primary sexual characteristics&quot;                                            
+[95] &quot;heart development&quot;                                                                        
+[96] &quot;regulation of cartilage development&quot;                                                      
+[97] &quot;regulation of angiogenesis&quot;                                                               </code></pre>
+<pre class="r"><code>setdiff(gse$Description, gse_mouse$Description)</code></pre>
+<pre><code>  [1] &quot;cell cycle process&quot;                                                       
+  [2] &quot;cell cycle&quot;                                                               
+  [3] &quot;mitotic cell cycle&quot;                                                       
+  [4] &quot;mitotic cell cycle process&quot;                                               
+  [5] &quot;chromosome segregation&quot;                                                   
+  [6] &quot;cell division&quot;                                                            
+  [7] &quot;regulation of cell cycle process&quot;                                         
+  [8] &quot;chromosome organization&quot;                                                  
+  [9] &quot;regulation of cell cycle&quot;                                                 
+ [10] &quot;nuclear chromosome segregation&quot;                                           
+ [11] &quot;sister chromatid segregation&quot;                                             
+ [12] &quot;regulation of chromosome segregation&quot;                                     
+ [13] &quot;nuclear division&quot;                                                         
+ [14] &quot;organelle fission&quot;                                                        
+ [15] &quot;mitotic nuclear division&quot;                                                 
+ [16] &quot;negative regulation of cell cycle process&quot;                                
+ [17] &quot;negative regulation of cell cycle&quot;                                        
+ [18] &quot;regulation of mitotic cell cycle&quot;                                         
+ [19] &quot;mitotic sister chromatid segregation&quot;                                     
+ [20] &quot;regulation of sister chromatid segregation&quot;                               
+ [21] &quot;cell cycle phase transition&quot;                                              
+ [22] &quot;mitotic cell cycle phase transition&quot;                                      
+ [23] &quot;negative regulation of cell cycle phase transition&quot;                       
+ [24] &quot;metaphase/anaphase transition of mitotic cell cycle&quot;                      
+ [25] &quot;metaphase/anaphase transition of cell cycle&quot;                              
+ [26] &quot;negative regulation of mitotic cell cycle&quot;                                
+ [27] &quot;DNA-templated DNA replication&quot;                                            
+ [28] &quot;DNA replication&quot;                                                          
+ [29] &quot;meiotic cell cycle&quot;                                                       
+ [30] &quot;negative regulation of mitotic cell cycle phase transition&quot;               
+ [31] &quot;regulation of mitotic metaphase/anaphase transition&quot;                      
+ [32] &quot;regulation of metaphase/anaphase transition of cell cycle&quot;                
+ [33] &quot;regulation of cell cycle phase transition&quot;                                
+ [34] &quot;regulation of chromosome organization&quot;                                    
+ [35] &quot;recombinational repair&quot;                                                   
+ [36] &quot;cell cycle checkpoint signaling&quot;                                          
+ [37] &quot;double-strand break repair via homologous recombination&quot;                  
+ [38] &quot;DNA metabolic process&quot;                                                    
+ [39] &quot;regulation of mitotic cell cycle phase transition&quot;                        
+ [40] &quot;cellular response to stress&quot;                                              
+ [41] &quot;regulation of chromosome separation&quot;                                      
+ [42] &quot;regulation of nuclear division&quot;                                           
+ [43] &quot;regulation of mitotic nuclear division&quot;                                   
+ [44] &quot;double-strand break repair&quot;                                               
+ [45] &quot;positive regulation of cell cycle process&quot;                                
+ [46] &quot;regulation of mitotic sister chromatid segregation&quot;                       
+ [47] &quot;chromosome separation&quot;                                                    
+ [48] &quot;microtubule cytoskeleton organization involved in mitosis&quot;                
+ [49] &quot;spindle organization&quot;                                                     
+ [50] &quot;attachment of spindle microtubules to kinetochore&quot;                        
+ [51] &quot;mitotic spindle organization&quot;                                             
+ [52] &quot;microtubule cytoskeleton organization&quot;                                    
+ [53] &quot;DNA damage response&quot;                                                      
+ [54] &quot;positive regulation of chromosome segregation&quot;                            
+ [55] &quot;positive regulation of cell cycle&quot;                                        
+ [56] &quot;regulation of mitotic sister chromatid separation&quot;                        
+ [57] &quot;mitotic sister chromatid separation&quot;                                      
+ [58] &quot;mitotic cell cycle checkpoint signaling&quot;                                  
+ [59] &quot;DNA recombination&quot;                                                        
+ [60] &quot;negative regulation of sister chromatid segregation&quot;                      
+ [61] &quot;negative regulation of mitotic sister chromatid segregation&quot;              
+ [62] &quot;negative regulation of mitotic metaphase/anaphase transition&quot;             
+ [63] &quot;negative regulation of chromosome segregation&quot;                            
+ [64] &quot;negative regulation of metaphase/anaphase transition of cell cycle&quot;       
+ [65] &quot;negative regulation of chromosome separation&quot;                             
+ [66] &quot;negative regulation of mitotic sister chromatid separation&quot;               
+ [67] &quot;cell cycle DNA replication&quot;                                               
+ [68] &quot;nervous system development&quot;                                               
+ [69] &quot;regulation of organelle organization&quot;                                     
+ [70] &quot;DNA repair&quot;                                                               
+ [71] &quot;mitotic spindle assembly checkpoint signaling&quot;                            
+ [72] &quot;spindle checkpoint signaling&quot;                                             
+ [73] &quot;spindle assembly checkpoint signaling&quot;                                    
+ [74] &quot;mitotic spindle checkpoint signaling&quot;                                     
+ [75] &quot;regulation of DNA-templated DNA replication&quot;                              
+ [76] &quot;chromosome localization&quot;                                                  
+ [77] &quot;negative regulation of chromosome organization&quot;                           
+ [78] &quot;reproductive process&quot;                                                     
+ [79] &quot;cytoskeleton organization&quot;                                                
+ [80] &quot;reproduction&quot;                                                             
+ [81] &quot;negative regulation of nuclear division&quot;                                  
+ [82] &quot;negative regulation of cellular component organization&quot;                   
+ [83] &quot;metaphase chromosome alignment&quot;                                           
+ [84] &quot;non-membrane-bounded organelle assembly&quot;                                  
+ [85] &quot;spindle assembly&quot;                                                         
+ [86] &quot;cell development&quot;                                                         
+ [87] &quot;negative regulation of mitotic nuclear division&quot;                          
+ [88] &quot;negative regulation of organelle organization&quot;                            
+ [89] &quot;establishment of chromosome localization&quot;                                 
+ [90] &quot;meiotic cell cycle process&quot;                                               
+ [91] &quot;regulation of attachment of spindle microtubules to kinetochore&quot;          
+ [92] &quot;DNA integrity checkpoint signaling&quot;                                       
+ [93] &quot;regulation of DNA metabolic process&quot;                                      
+ [94] &quot;G1/S transition of mitotic cell cycle&quot;                                    
+ [95] &quot;sexual reproduction&quot;                                                      
+ [96] &quot;nuclear DNA replication&quot;                                                  
+ [97] &quot;microtubule organizing center organization&quot;                               
+ [98] &quot;centrosome cycle&quot;                                                         
+ [99] &quot;negative regulation of G1/S transition of mitotic cell cycle&quot;             
+[100] &quot;positive regulation of cellular component organization&quot;                   
+[101] &quot;positive regulation of chromosome separation&quot;                             
+[102] &quot;regulation of transferase activity&quot;                                       
+[103] &quot;regulation of cell cycle checkpoint&quot;                                      
+[104] &quot;response to abiotic stimulus&quot;                                             
+[105] &quot;negative regulation of cell cycle G1/S phase transition&quot;                  
+[106] &quot;DNA replication initiation&quot;                                               
+[107] &quot;sister chromatid cohesion&quot;                                                
+[108] &quot;regulation of DNA replication&quot;                                            
+[109] &quot;negative regulation of neuron apoptotic process&quot;                          
+[110] &quot;microtubule-based process&quot;                                                
+[111] &quot;DNA damage checkpoint signaling&quot;                                          
+[112] &quot;meiotic nuclear division&quot;                                                 
+[113] &quot;import across plasma membrane&quot;                                            
+[114] &quot;cell cycle G1/S phase transition&quot;                                         
+[115] &quot;regulation of catalytic activity&quot;                                         
+[116] &quot;positive regulation of cell development&quot;                                  
+[117] &quot;positive regulation of DNA metabolic process&quot;                             
+[118] &quot;signal transduction in response to DNA damage&quot;                            
+[119] &quot;neurogenesis&quot;                                                             
+[120] &quot;apoptotic signaling pathway&quot;                                              
+[121] &quot;tetrahydrofolate metabolic process&quot;                                       
+[122] &quot;regulation of metaphase plate congression&quot;                                
+[123] &quot;mitotic recombination&quot;                                                    
+[124] &quot;folic acid-containing compound metabolic process&quot;                         
+[125] &quot;regulation of DNA-templated DNA replication initiation&quot;                   
+[126] &quot;regulation of spindle checkpoint&quot;                                         
+[127] &quot;regulation of mitotic cell cycle spindle assembly checkpoint&quot;             
+[128] &quot;regulation of mitotic spindle checkpoint&quot;                                 
+[129] &quot;columnar/cuboidal epithelial cell differentiation&quot;                        
+[130] &quot;response to nitrogen compound&quot;                                            
+[131] &quot;response to wounding&quot;                                                     
+[132] &quot;response to peptide&quot;                                                      
+[133] &quot;negative regulation of DNA recombination&quot;                                 
+[134] &quot;cellular response to decreased oxygen levels&quot;                             
+[135] &quot;regulation of cell development&quot;                                           
+[136] &quot;positive regulation of developmental process&quot;                             
+[137] &quot;attachment of mitotic spindle microtubules to kinetochore&quot;                
+[138] &quot;neuroepithelial cell differentiation&quot;                                     
+[139] &quot;cellular response to hypoxia&quot;                                             
+[140] &quot;activation of innate immune response&quot;                                     
+[141] &quot;nervous system process&quot;                                                   
+[142] &quot;amino acid transport&quot;                                                     
+[143] &quot;fibroblast proliferation&quot;                                                 
+[144] &quot;regulation of cytokinesis&quot;                                                
+[145] &quot;intrinsic apoptotic signaling pathway&quot;                                    
+[146] &quot;regulation of cellular component biogenesis&quot;                              
+[147] &quot;cytokinesis&quot;                                                              
+[148] &quot;response to nutrient levels&quot;                                              
+[149] &quot;regulation of molecular function&quot;                                         
+[150] &quot;response to peptide hormone&quot;                                              
+[151] &quot;positive regulation of neurogenesis&quot;                                      
+[152] &quot;glial cell proliferation&quot;                                                 
+[153] &quot;DNA-templated DNA replication maintenance of fidelity&quot;                    
+[154] &quot;centriole assembly&quot;                                                       
+[155] &quot;cellular response to oxygen levels&quot;                                       
+[156] &quot;nuclear pore organization&quot;                                                
+[157] &quot;animal organ regeneration&quot;                                                
+[158] &quot;positive regulation of nervous system development&quot;                        
+[159] &quot;biological process involved in interspecies interaction between organisms&quot;
+[160] &quot;regulation of G1/S transition of mitotic cell cycle&quot;                      
+[161] &quot;double-strand break repair via break-induced replication&quot;                 
+[162] &quot;DNA strand elongation involved in DNA replication&quot;                        
+[163] &quot;serine transport&quot;                                                         
+[164] &quot;positive regulation of spindle checkpoint&quot;                                
+[165] &quot;positive regulation of mitotic cell cycle spindle assembly checkpoint&quot;    
+[166] &quot;negative regulation of neural precursor cell proliferation&quot;               
+[167] &quot;dicarboxylic acid transport&quot;                                              
+[168] &quot;multicellular organismal-level homeostasis&quot;                               
+[169] &quot;spindle localization&quot;                                                     
+[170] &quot;response to extracellular stimulus&quot;                                       </code></pre>
+<p>Overlap with a more stringent significance threshold</p>
+<pre class="r"><code>gse_mouse_001 &lt;- gse_mouse %&gt;%
+  filter(qvalue &lt; 0.01)
+
+gse_001 &lt;- gse %&gt;%
+  filter(qvalue &lt; 0.01)
+
+intersect(gse_mouse_001$Description, gse_001$Description)</code></pre>
+<pre><code>[1] &quot;regulation of apoptotic process&quot;</code></pre>
+<pre class="r"><code>setdiff(gse_mouse_001$Description, gse_001$Description)</code></pre>
+<pre><code> [1] &quot;apoptotic process&quot;                                                               
+ [2] &quot;regulation of programmed cell death&quot;                                             
+ [3] &quot;cell death&quot;                                                                      
+ [4] &quot;programmed cell death&quot;                                                           
+ [5] &quot;response to external stimulus&quot;                                                   
+ [6] &quot;negative regulation of developmental process&quot;                                    
+ [7] &quot;connective tissue development&quot;                                                   
+ [8] &quot;tissue development&quot;                                                              
+ [9] &quot;response to organic substance&quot;                                                   
+[10] &quot;negative regulation of multicellular organismal process&quot;                         
+[11] &quot;cartilage development&quot;                                                           
+[12] &quot;response to endogenous stimulus&quot;                                                 
+[13] &quot;circulatory system development&quot;                                                  
+[14] &quot;regulation of developmental process&quot;                                             
+[15] &quot;monosaccharide catabolic process&quot;                                                
+[16] &quot;response to cytokine&quot;                                                            
+[17] &quot;cellular response to cytokine stimulus&quot;                                          
+[18] &quot;regulation of peptidase activity&quot;                                                
+[19] &quot;response to lipid&quot;                                                               
+[20] &quot;cellular response to chemical stimulus&quot;                                          
+[21] &quot;regulation of cysteine-type endopeptidase activity involved in apoptotic process&quot;
+[22] &quot;regulation of endopeptidase activity&quot;                                            
+[23] &quot;tube morphogenesis&quot;                                                              
+[24] &quot;osteoblast differentiation&quot;                                                      
+[25] &quot;cellular response to organic substance&quot;                                          
+[26] &quot;vasculature development&quot;                                                         
+[27] &quot;positive regulation of cell population proliferation&quot;                            
+[28] &quot;positive regulation of programmed cell death&quot;                                    
+[29] &quot;tube development&quot;                                                                
+[30] &quot;regulation of cysteine-type endopeptidase activity&quot;                              
+[31] &quot;hexose catabolic process&quot;                                                        
+[32] &quot;regulation of multicellular organismal development&quot;                              
+[33] &quot;regulation of cell differentiation&quot;                                              
+[34] &quot;cell migration&quot;                                                                  
+[35] &quot;angiogenesis&quot;                                                                    
+[36] &quot;cellular response to endogenous stimulus&quot;                                        
+[37] &quot;response to growth factor&quot;                                                       
+[38] &quot;cell-substrate adhesion&quot;                                                         </code></pre>
+<pre class="r"><code>setdiff(gse_001$Description, gse_mouse_001$Description)</code></pre>
+<pre><code>  [1] &quot;cell cycle process&quot;                                                
+  [2] &quot;cell cycle&quot;                                                        
+  [3] &quot;mitotic cell cycle&quot;                                                
+  [4] &quot;mitotic cell cycle process&quot;                                        
+  [5] &quot;chromosome segregation&quot;                                            
+  [6] &quot;cell division&quot;                                                     
+  [7] &quot;regulation of cell cycle process&quot;                                  
+  [8] &quot;chromosome organization&quot;                                           
+  [9] &quot;regulation of cell cycle&quot;                                          
+ [10] &quot;nuclear chromosome segregation&quot;                                    
+ [11] &quot;sister chromatid segregation&quot;                                      
+ [12] &quot;regulation of chromosome segregation&quot;                              
+ [13] &quot;nuclear division&quot;                                                  
+ [14] &quot;organelle fission&quot;                                                 
+ [15] &quot;mitotic nuclear division&quot;                                          
+ [16] &quot;negative regulation of cell cycle process&quot;                         
+ [17] &quot;negative regulation of cell cycle&quot;                                 
+ [18] &quot;regulation of mitotic cell cycle&quot;                                  
+ [19] &quot;mitotic sister chromatid segregation&quot;                              
+ [20] &quot;regulation of sister chromatid segregation&quot;                        
+ [21] &quot;cell cycle phase transition&quot;                                       
+ [22] &quot;mitotic cell cycle phase transition&quot;                               
+ [23] &quot;negative regulation of cell cycle phase transition&quot;                
+ [24] &quot;metaphase/anaphase transition of mitotic cell cycle&quot;               
+ [25] &quot;metaphase/anaphase transition of cell cycle&quot;                       
+ [26] &quot;negative regulation of mitotic cell cycle&quot;                         
+ [27] &quot;DNA-templated DNA replication&quot;                                     
+ [28] &quot;DNA replication&quot;                                                   
+ [29] &quot;meiotic cell cycle&quot;                                                
+ [30] &quot;negative regulation of mitotic cell cycle phase transition&quot;        
+ [31] &quot;regulation of mitotic metaphase/anaphase transition&quot;               
+ [32] &quot;regulation of metaphase/anaphase transition of cell cycle&quot;         
+ [33] &quot;regulation of cell cycle phase transition&quot;                         
+ [34] &quot;regulation of chromosome organization&quot;                             
+ [35] &quot;recombinational repair&quot;                                            
+ [36] &quot;cell cycle checkpoint signaling&quot;                                   
+ [37] &quot;double-strand break repair via homologous recombination&quot;           
+ [38] &quot;DNA metabolic process&quot;                                             
+ [39] &quot;regulation of mitotic cell cycle phase transition&quot;                 
+ [40] &quot;cellular response to stress&quot;                                       
+ [41] &quot;regulation of chromosome separation&quot;                               
+ [42] &quot;regulation of nuclear division&quot;                                    
+ [43] &quot;regulation of mitotic nuclear division&quot;                            
+ [44] &quot;double-strand break repair&quot;                                        
+ [45] &quot;positive regulation of cell cycle process&quot;                         
+ [46] &quot;regulation of mitotic sister chromatid segregation&quot;                
+ [47] &quot;chromosome separation&quot;                                             
+ [48] &quot;microtubule cytoskeleton organization involved in mitosis&quot;         
+ [49] &quot;spindle organization&quot;                                              
+ [50] &quot;attachment of spindle microtubules to kinetochore&quot;                 
+ [51] &quot;mitotic spindle organization&quot;                                      
+ [52] &quot;microtubule cytoskeleton organization&quot;                             
+ [53] &quot;DNA damage response&quot;                                               
+ [54] &quot;positive regulation of chromosome segregation&quot;                     
+ [55] &quot;positive regulation of cell cycle&quot;                                 
+ [56] &quot;regulation of mitotic sister chromatid separation&quot;                 
+ [57] &quot;mitotic sister chromatid separation&quot;                               
+ [58] &quot;mitotic cell cycle checkpoint signaling&quot;                           
+ [59] &quot;DNA recombination&quot;                                                 
+ [60] &quot;negative regulation of sister chromatid segregation&quot;               
+ [61] &quot;negative regulation of mitotic sister chromatid segregation&quot;       
+ [62] &quot;negative regulation of mitotic metaphase/anaphase transition&quot;      
+ [63] &quot;negative regulation of chromosome segregation&quot;                     
+ [64] &quot;negative regulation of metaphase/anaphase transition of cell cycle&quot;
+ [65] &quot;negative regulation of chromosome separation&quot;                      
+ [66] &quot;negative regulation of mitotic sister chromatid separation&quot;        
+ [67] &quot;cell cycle DNA replication&quot;                                        
+ [68] &quot;nervous system development&quot;                                        
+ [69] &quot;regulation of organelle organization&quot;                              
+ [70] &quot;DNA repair&quot;                                                        
+ [71] &quot;mitotic spindle assembly checkpoint signaling&quot;                     
+ [72] &quot;spindle checkpoint signaling&quot;                                      
+ [73] &quot;spindle assembly checkpoint signaling&quot;                             
+ [74] &quot;mitotic spindle checkpoint signaling&quot;                              
+ [75] &quot;regulation of DNA-templated DNA replication&quot;                       
+ [76] &quot;chromosome localization&quot;                                           
+ [77] &quot;negative regulation of chromosome organization&quot;                    
+ [78] &quot;reproductive process&quot;                                              
+ [79] &quot;cytoskeleton organization&quot;                                         
+ [80] &quot;reproduction&quot;                                                      
+ [81] &quot;negative regulation of nuclear division&quot;                           
+ [82] &quot;negative regulation of cellular component organization&quot;            
+ [83] &quot;metaphase chromosome alignment&quot;                                    
+ [84] &quot;non-membrane-bounded organelle assembly&quot;                           
+ [85] &quot;spindle assembly&quot;                                                  
+ [86] &quot;cell development&quot;                                                  
+ [87] &quot;negative regulation of mitotic nuclear division&quot;                   
+ [88] &quot;negative regulation of organelle organization&quot;                     
+ [89] &quot;establishment of chromosome localization&quot;                          
+ [90] &quot;meiotic cell cycle process&quot;                                        
+ [91] &quot;regulation of attachment of spindle microtubules to kinetochore&quot;   
+ [92] &quot;DNA integrity checkpoint signaling&quot;                                
+ [93] &quot;regulation of DNA metabolic process&quot;                               
+ [94] &quot;G1/S transition of mitotic cell cycle&quot;                             
+ [95] &quot;system process&quot;                                                    
+ [96] &quot;sexual reproduction&quot;                                               
+ [97] &quot;nuclear DNA replication&quot;                                           
+ [98] &quot;microtubule organizing center organization&quot;                        
+ [99] &quot;centrosome cycle&quot;                                                  
+[100] &quot;negative regulation of G1/S transition of mitotic cell cycle&quot;      </code></pre>
+</div>
+</div>
+<div id="de-and-pathway-enrichment-with-human-and-mouse-combined"
+class="section level2">
+<h2>DE and pathway enrichment with human and mouse combined</h2>
 <br>
 <p>
 <button type="button" class="btn btn-default btn-workflowr btn-workflowr-sessioninfo" data-toggle="collapse" data-target="#workflowr-sessioninfo" style="display: block;">
@@ -1577,21 +2852,21 @@ other attached packages:
  [3] viridisLite_0.4.2          Seurat_5.0.1              
  [5] SeuratObject_5.0.2         sp_1.6-1                  
  [7] circlize_0.4.15            RColorBrewer_1.1-3        
- [9] org.Hs.eg.db_3.18.0        AnnotationDbi_1.64.1      
-[11] IRanges_2.36.0             S4Vectors_0.40.2          
-[13] Biobase_2.62.0             BiocGenerics_0.48.1       
-[15] clusterProfiler_4.13.0.004 googlesheets4_1.1.0       
-[17] survminer_0.4.9            ggpubr_0.6.0              
-[19] survival_3.5-5             contsurvplot_0.2.0        
-[21] patchwork_1.1.2            EnhancedVolcano_1.20.0    
-[23] ggrepel_0.9.3              plyr_1.8.8                
-[25] edgeR_4.0.16               limma_3.58.1              
-[27] lubridate_1.9.2            forcats_1.0.0             
-[29] stringr_1.5.0              dplyr_1.1.2               
-[31] purrr_1.0.2                readr_2.1.4               
-[33] tidyr_1.3.0                tibble_3.2.1              
-[35] ggplot2_3.4.2              tidyverse_2.0.0           
-[37] workflowr_1.7.1           
+ [9] org.Mm.eg.db_3.18.0        org.Hs.eg.db_3.18.0       
+[11] AnnotationDbi_1.64.1       IRanges_2.36.0            
+[13] S4Vectors_0.40.2           Biobase_2.62.0            
+[15] BiocGenerics_0.48.1        clusterProfiler_4.13.0.004
+[17] googlesheets4_1.1.0        survminer_0.4.9           
+[19] ggpubr_0.6.0               survival_3.5-5            
+[21] contsurvplot_0.2.0         patchwork_1.1.2           
+[23] EnhancedVolcano_1.20.0     ggrepel_0.9.3             
+[25] plyr_1.8.8                 edgeR_4.0.16              
+[27] limma_3.58.1               lubridate_1.9.2           
+[29] forcats_1.0.0              stringr_1.5.0             
+[31] dplyr_1.1.2                purrr_1.0.2               
+[33] readr_2.1.4                tidyr_1.3.0               
+[35] tibble_3.2.1               ggplot2_3.4.2             
+[37] tidyverse_2.0.0            workflowr_1.7.1           
 
 loaded via a namespace (and not attached):
   [1] spatstat.sparse_3.0-1   matrixStats_1.0.0       fs_1.6.2               

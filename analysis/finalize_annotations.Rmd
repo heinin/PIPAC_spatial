@@ -374,6 +374,7 @@ hp <- create_dotplot_heatmap(seurat_object = immune,
                              col.order = NULL)
 
 row_order(hp)
+unique(immune$Annotation_Cell)[1]
 
 ```
 

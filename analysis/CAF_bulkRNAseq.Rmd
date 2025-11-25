@@ -33,8 +33,8 @@ suppressPackageStartupMessages({
   library(survminer)
   library(googlesheets4)
   library(clusterProfiler)
-  library(org.Hs.eg.db)})
-
+  library(org.Hs.eg.db)
+  library(org.Mm.eg.db)})
 
 ```
 
@@ -194,7 +194,6 @@ d1$samples %>%
   theme(plot.margin = unit(c(0,0,0,1), "cm")) +
   xlab("Sample") + 
   ylab("Library size")
-
 
 ```
 
@@ -509,7 +508,6 @@ d1$samples %>%
   xlab("Sample") + 
   ylab("Library size")
 
-
 ```
 
 ```{r, message = F, warning = F, fig.width = 8, fig.height = 6}
@@ -705,6 +703,8 @@ long_df %>% filter(Hh_gene %in% ficafs) %>%
 
 ## Pathway enrichment
 
+### Human
+
 ```{r, message = F, warning = F, fig.width = 6, fig.height = 15, eval = T}
 
 # Ordering genes
@@ -727,5 +727,116 @@ dotplot(gse, showCategory=30, font.size=10, color="qvalue") +
         legend.box = "vertical",
         text = element_text(size=6))
 
+dim(gse)
+
+gse_input_005 <- top.table %>%
+  filter(adj.P.Val < 0.05)
+
+gse_005 <- enrichGO(gse_input_005$gene_id, 
+                    ont ="BP", 
+                    keyType = "ENSEMBL", 
+                    minGSSize = 3, 
+                    maxGSSize = 800, 
+                    pvalueCutoff = 0.05, 
+                    universe = top.table$gene_id,
+                    OrgDb = org.Hs.eg.db, 
+                    pAdjustMethod = "BH")
+
+dotplot(gse_005, showCategory=30, font.size=10, color="qvalue") +
+  theme(legend.text=element_text(size=5),
+        legend.position = "top",
+        legend.box = "vertical",
+        text = element_text(size=6))
+
+dim(gse_005)
+
 ```
 
+### Mouse
+
+```{r, message = F, warning = F, fig.width = 6, fig.height = 15, eval = T}
+
+# Ordering genes
+gse_input <- top.table.mouse %>%
+  filter(adj.P.Val < 0.1)
+
+gse_mouse <- enrichGO(gse_input$gene_id, 
+                      ont ="BP", 
+                      keyType = "ENSEMBL", 
+                      minGSSize = 3, 
+                      maxGSSize = 800, 
+                      pvalueCutoff = 0.05, 
+                      universe = top.table.mouse$gene_id,
+                      OrgDb = org.Mm.eg.db, 
+                      pAdjustMethod = "BH")
+
+dotplot(gse_mouse, showCategory=30, font.size=10, color="qvalue") +
+  theme(legend.text=element_text(size=5),
+        legend.position = "top",
+        legend.box = "vertical",
+        text = element_text(size=6))
+
+dim(gse_mouse)
+
+gse_input_005 <- top.table.mouse %>%
+  filter(adj.P.Val < 0.05)
+
+gse_mouse_005 <- enrichGO(gse_input_005$gene_id, 
+                      ont ="BP", 
+                      keyType = "ENSEMBL", 
+                      minGSSize = 3, 
+                      maxGSSize = 800, 
+                      pvalueCutoff = 0.05, 
+                      universe = top.table.mouse$gene_id,
+                      OrgDb = org.Mm.eg.db, 
+                      pAdjustMethod = "BH")
+
+dotplot(gse_mouse_005, showCategory=30, font.size=10, color="qvalue") +
+  theme(legend.text=element_text(size=5),
+        legend.position = "top",
+        legend.box = "vertical",
+        text = element_text(size=6))
+
+dim(gse_mouse_005)
+
+```
+
+Shared pathways between mouse and human
+
+```{r, message = F, warning = F, fig.width = 6, fig.height = 15}
+
+intersect(gse_mouse$Description, gse$Description)
+
+```
+
+Pathways unique to mouse or human
+
+```{r, message = F, warning = F, fig.width = 6, fig.height = 15}
+
+setdiff(gse_mouse$Description, gse$Description)
+setdiff(gse$Description, gse_mouse$Description)
+
+```
+
+Overlap with a more stringent significance threshold
+
+```{r, message = F, warning = F, fig.width = 6, fig.height = 15}
+
+gse_mouse_001 <- gse_mouse %>%
+  filter(qvalue < 0.01)
+
+gse_001 <- gse %>%
+  filter(qvalue < 0.01)
+
+intersect(gse_mouse_001$Description, gse_001$Description)
+setdiff(gse_mouse_001$Description, gse_001$Description)
+setdiff(gse_001$Description, gse_mouse_001$Description)
+
+```
+
+## DE and pathway enrichment with human and mouse combined
+
+```{r, message = F, warning = F, fig.width = 6, fig.height = 15, eval = T}
+
+
+```
