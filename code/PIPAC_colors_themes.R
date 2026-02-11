@@ -67,6 +67,11 @@ pipac_celltypes <- read_sheet(metadata, sheet = "Cell type colors")
 pipac_celltype_col <- pipac_celltypes$Color
 names(pipac_celltype_col) <- pipac_celltypes$Annotation
 
+#final_annotations <- read_sheet(metadata, sheet = "Cell type annotations, all transcripts, final")
+#
+#final_annotations_col <- final_annotations$Color
+#names(final_annotations_col) <- final_annotations$Celltype
+
 # Tissue
 tissue_col <- c("Tumor" = "brown3",
                 "Normal" = "cyan4")

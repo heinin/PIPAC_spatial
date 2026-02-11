@@ -1,8 +1,8 @@
 library(dplyr)
 library(data.table)
 library(spatstat) 
-library(reshape2) 
-
+library(reshape2)
+library(googlesheets4)
 
 # general params
 distance_threshold = 100 # depends on dataset, units, etc 100 generally good for 3 cells 
@@ -16,7 +16,7 @@ nneighbors = 1 # n neighbors to retain in each direction
 
 #cells <- read.csv('/scratch/avannan/early_IPF_xenium/cell_proximity/spatial_prox_input_df_2025-08-07.csv') # replace data table 
 #samples <- unique(cells$sample)
-seurat_data <- readRDS("/tgen_labs/banovich/PIPAC/Seurat/cell_merged_spatial_filtered_splitsamples_clustered_NN30_PC50_Seurat_denoIST.rds")
+seurat_data <- readRDS("/tgen_labs/banovich/PIPAC/Seurat/Freeze/cell_merged_spatial_filtered_splitsamples_clustered_NN30_PC50_Seurat_denoIST_annotated_updated.rds")
 
 seurat_data <- subset(seurat_data, subset = Arm == "Arm3")
 
@@ -24,9 +24,9 @@ seurat_data <- subset(seurat_data, subset = Arm == "Arm3")
 seurat_data <- subset(seurat_data, subset = Tissue == "Tumor")
 
 # Pre/post-treatment only
-#seurat_data <- subset(seurat_data, subset = Timepoint == 6)
+#seurat_data <- subset(seurat_data, subset = Timepoint == 0)
 
-cells <- seurat_data@meta.data[,c("cell_id", "Sample", "Annotation", "x_centroid", "y_centroid")]
+cells <- seurat_data@meta.data[,c("cell_id", "Sample", "Celltype_Final", "x_centroid", "y_centroid")]
 colnames(cells)[2] <- "sample"
 colnames(cells)[3] <- "final_CT"
 samples <- unique(cells$sample)
@@ -202,7 +202,7 @@ write.table(enrichment_scores_compiled,
             "/home/hnatri/PIPAC_spatial/enrichment_tumor_scores_compiled.tsv",
             quote = F, row.names = F, sep = "\t")
 
-#enrichment_scores_compiled <- read.table("/home/hnatri/PIPAC_spatial/tumor_çenrichment_scores_compiled.tsv",
+#enrichment_scores_compiled <- read.table("/home/hnatri/PIPAC_spatial/tumor_enrichment_scores_compiled.tsv",
 #                                         header = T)
 #proximity_compiled <- read.table("/home/hnatri/PIPAC_spatial/tumor_posttreatment_eproximity_compiled.tsv",
 #                                 header = T)

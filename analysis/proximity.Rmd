@@ -53,40 +53,50 @@ source("/home/hnatri/PIPAC_spatial/code/plot_functions.R")
 
 ```{r, message = F, warning = F, fig.width = 8, fig.height = 4}
 
-seurat_data <- readRDS("/tgen_labs/banovich/PIPAC/Seurat/cell_merged_spatial_filtered_splitsamples_clustered_NN30_PC50_Seurat_denoIST.rds")
+seurat_data <- readRDS("/tgen_labs/banovich/PIPAC/Seurat/Freeze/cell_merged_spatial_filtered_splitsamples_clustered_NN30_PC50_Seurat_denoIST_annotated_updated.rds")
 
 enrichment_scores_compiled_tumor <- read.table("/home/hnatri/PIPAC_spatial/enrichment_tumor_scores_compiled.tsv",
                                                header = T)
 proximity_compiled_tumor <- read.table("/home/hnatri/PIPAC_spatial/tumor_proximity_compiled.tsv",
                                        header = T)
 
+setdiff(proximity_compiled_tumor$anchor_cell_ct, seurat_data$Celltype_Final)
+setdiff(seurat_data$Celltype_Final, proximity_compiled_tumor$anchor_cell_ct)
+
+```
+
+Keeping cell types with >500 cells in arm 3
+
+```{r, message = F, warning = F, fig.width = 24, fig.height = 6}
+
+seurat_arm3 <- subset(seurat_data, subset = Arm == "Arm3")
+keeps <- table(seurat_arm3$Celltype_Final) %>%
+  as.data.frame() %>%
+  filter(Freq> 500)
+
+seurat_arm3_subset <- subset(seurat_arm3, subset = Celltype_Final %in% keeps$Var1)
+
+table(seurat_arm3_subset$Celltype_Final)
+table(seurat_arm3_subset$Celltype_Final, seurat_arm3_subset$Tissue)
+
 ```
 
 ### Which celltypes are proximal to each other
 
 **Myeloid cluster associated with infiltrating lymphocytes:**\
-M1 (L2-L4) - SPP1 intermediate\
-M2 (L5) - suppressive, SPP1 high\
-M6 (L1-L5) - Suppressive, SPP1 intermediate\
-M7 (L3, also F3) - Suppressive, SPP1 intermediate\
-M8 (L5, also Mast, Endo) - Suppressive, cell cycle markers, SPP1 high\
 
 **Myeloid cluster associated with CAFs:**\
-M5 (F2-F3, also L2-L3) - Suppressive, SPP1 intermediate\
 
 **Myeloid cluster associated with tumor cells:**\
-M4 (EpiTumor2 (and less so 1), also L, Plasma, F2-F3) - Possibly not myeloid?\
 
-M3, no significant enrichment.\
-M9, no significant enrichment.\
 
-**CAFs not enriched near tumor cells, but specific myeloid clusters:**\
-F1 (COL1A2): M1\
-F2 (COL1A2, higher FN1): M4-M5\
-F3 (no COL1A2) = M4,5,7,8 and Mast, Endo2, L2-3)\
-F4 (COL1A2): Plasma 1-3, fever F4 near other F clusters.\
+```{r, message = F, warning = F, fig.width = 12, fig.height = 40, eval = T}
 
-```{r, message = F, warning = F, fig.width = 12, fig.height = 28, eval = T}
+enrichment_scores_compiled_tumor <- enrichment_scores_compiled_tumor %>%
+  filter(prox_to %in% keeps$Var1 & prox_ct %in% keeps$Var1)
+
+proximity_compiled_tumor <- proximity_compiled_tumor %>%
+  filter(anchor_cell_ct %in% keeps$Var1 & prox_cell_ct %in% keeps$Var1)
 
 enrichment_scores_compiled_tumor %>%
   mutate(pair = paste0(prox_ct, "_", prox_to),
@@ -107,7 +117,7 @@ enrichment_scores_compiled_tumor %>%
 
 ### Plot differences between timepoints and tissues
 
-```{r, message = F, warning = F, fig.width = 10, fig.height = 10, eval = F}
+```{r, message = F, warning = F, fig.width = 10, fig.height = 20, eval = F}
 
 proximity_compiled_tumor$Tissue <- mapvalues(proximity_compiled_tumor$sample,
                                        from = seurat_data$Sample,
@@ -133,7 +143,7 @@ summaries <- proximity_compiled_tumor %>%
   arrange(anchor_cell_ct) %>%
   filter(Tissue == "Tumor",
          anchor_cell_ct %in% c("F1", "F2", "F3", "F4", "F5"),
-         prox_cell_ct %in% setdiff(unique(seurat_data$Annotation), c("F1", "F2", "F3", "F4", "F5"))) %>%
+         prox_cell_ct %in% setdiff(unique(seurat_data$Celltype_Updated), c("F1", "F2", "F3", "F4", "F5"))) %>%
   group_by(Timepoint, pair) %>%
   dplyr::summarise(nn = n()) %>%
   mutate(timepoint_pair = paste0(Timepoint, "_", pair)) %>%
@@ -235,7 +245,7 @@ p4 + stat_compare_means(label = "p.format", label.y = 130)
 
 #### All tumors
 
-```{r, message = F, warning = F, fig.width = 10, fig.height = 10, eval = F}
+```{r, message = F, warning = F, fig.width = 20, fig.height = 20, eval = F}
 
 enrichment_scores_compiled_tumor <- enrichment_scores_compiled[complete.cases(enrichment_scores_compiled_tumor),]
 
@@ -299,14 +309,20 @@ draw(hp)
 
 #### Pre-treatment tumors
 
-```{r, message = F, warning = F, fig.width = 10, fig.height = 10}
+```{r, message = F, warning = F, fig.width = 20, fig.height = 20}
 
-enrichment_scores_compiled <- read.table("/home/hnatri/PIPAC_spatial/enrichment_pretreatment_scores_compiled.tsv",
+enrichment_scores_compiled <- read.table("/home/hnatri/PIPAC_spatial/enrichment_tumor_pretreatment_scores_compiled.tsv",
                                          header = T)
 proximity_compiled <- read.table("/home/hnatri/PIPAC_spatial/tumor_pretreatment_proximity_compiled.tsv",
                                  header = T)
 
 enrichment_scores_compiled <- enrichment_scores_compiled[complete.cases(enrichment_scores_compiled),]
+
+enrichment_scores_compiled <- enrichment_scores_compiled %>%
+  filter(prox_to %in% keeps$Var1 & prox_ct %in% keeps$Var1)
+
+proximity_compiled <- proximity_compiled %>%
+  filter(anchor_cell_ct %in% keeps$Var1 & prox_cell_ct %in% keeps$Var1)
 
 pval <- reshape2::dcast(prox_to ~ prox_ct, value.var = 'pvale_adjust', data = enrichment_scores_compiled) 
 or <- reshape2::dcast(prox_to ~ prox_ct, value.var = 'log_or', data = enrichment_scores_compiled)
@@ -349,10 +365,10 @@ hp <- Heatmap(ct_or, name = 'log(OR)',
               column_dend_side = 'bottom',
               na_col = 'white', 
               col = col_fun, 
-              row_dend_width = unit(0.5, 'cm'),
-              column_dend_height = unit(0.5, 'cm'),
-              width = ncol(ct_or)*unit(5, "mm"),
-              height = nrow(ct_or)*unit(5, "mm"))
+              row_dend_width = unit(1, 'cm'),
+              column_dend_height = unit(1, 'cm'),
+              width = ncol(ct_or)*unit(8, "mm"),
+              height = nrow(ct_or)*unit(8, "mm"))
 
 draw(hp)
 
@@ -368,12 +384,18 @@ draw(hp)
 
 #### Post-treatment tumors
 
-```{r, message = F, warning = F, fig.width = 10, fig.height = 8}
+```{r, message = F, warning = F, fig.width = 20, fig.height = 20}
 
-post_enrichment_scores_compiled <- read.table("/home/hnatri/PIPAC_spatial/enrichment_posttreatment_scores_compiled.tsv",
+post_enrichment_scores_compiled <- read.table("/home/hnatri/PIPAC_spatial/enrichment_tumor_posttreatment_scores_compiled.tsv",
                                          header = T)
 post_proximity_compiled <- read.table("/home/hnatri/PIPAC_spatial/tumor_posttreatment_proximity_compiled.tsv",
                                  header = T)
+
+post_enrichment_scores_compiled <- post_enrichment_scores_compiled %>%
+  filter(prox_to %in% keeps$Var1 & prox_ct %in% keeps$Var1)
+
+post_proximity_compiled <- post_proximity_compiled %>%
+  filter(anchor_cell_ct %in% keeps$Var1 & prox_cell_ct %in% keeps$Var1)
 
 post_enrichment_scores_compiled <- post_enrichment_scores_compiled[complete.cases(post_enrichment_scores_compiled),]
 
@@ -420,10 +442,10 @@ hp <- Heatmap(post_ct_or, name = 'log(OR)',
               rect_gp = gpar(col = "#b8b7b6", lwd = 0.5),
               na_col = 'white', 
               col = col_fun, 
-              row_dend_width = unit(2, 'cm'), 
-              column_dend_height = unit(2, 'cm'),
-              width = ncol(ct_or)*unit(5, "mm"), 
-              height = nrow(ct_or)*unit(5, "mm")) 
+              row_dend_width = unit(1, 'cm'), 
+              column_dend_height = unit(1, 'cm'),
+              width = ncol(ct_or)*unit(8, "mm"), 
+              height = nrow(ct_or)*unit(8, "mm")) 
 
 draw(hp)
 
@@ -439,7 +461,7 @@ draw(hp)
 
 #### Pre-post-delta
 
-```{r, message = F, warning = F, fig.width = 10, fig.height = 8}
+```{r, message = F, warning = F, fig.width = 20, fig.height = 20}
 
 ct_or <- ct_or[rownames(post_ct_or), colnames(post_ct_or)]
 
@@ -461,10 +483,10 @@ hp <- Heatmap(delta_or, name = 'Delta of log(OR)',
               column_dend_side = 'bottom',
               na_col = 'white', 
               col = col_fun, 
-              row_dend_width = unit(0.5, 'cm'),
-              column_dend_height = unit(0.5, 'cm'),
-              width = ncol(ct_or)*unit(5, "mm"),
-              height = nrow(ct_or)*unit(5, "mm"))
+              row_dend_width = unit(1, 'cm'),
+              column_dend_height = unit(1, 'cm'),
+              width = ncol(ct_or)*unit(8, "mm"),
+              height = nrow(ct_or)*unit(8, "mm"))
 
 draw(hp)
 

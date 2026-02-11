@@ -11,12 +11,13 @@
 library(Seurat)
 library(googlesheets4)
 library(tidyverse)
+library(plyr)
 
 #==============================================================================#
 # Import data
 #==============================================================================#
 
-seurat_data <- readRDS("/tgen_labs/banovich/PIPAC/Seurat/cell_merged_spatial_filtered_splitsamples_clustered_NN30_PC50_Seurat.rds")
+seurat_data <- readRDS("/tgen_labs/banovich/PIPAC/Seurat/cell_merged_spatial_filtered_splitsamples_clustered_NN30_PC50_Seurat_denoIST_annotated_updated.rds")
 
 gs4_deauth()
 metadata  <- gs4_get("https://docs.google.com/spreadsheets/d/1sXXwOreLxjMSUoPt79c6jmaQpluWkaxA5P5HfDsed3I/edit?usp=sharing")
@@ -67,4 +68,4 @@ seurat_data$prgs_avg3 <- mapvalues(x = seurat_data$RPN,
 
 
 # Saving
-saveRDS(seurat_data, "/tgen_labs/banovich/PIPAC/Seurat/cell_merged_spatial_filtered_splitsamples_clustered_NC50_NN20_PC20_Seurat_denoIST_metadata.rds")
+saveRDS(seurat_data, "/tgen_labs/banovich/PIPAC/Seurat/cell_merged_spatial_filtered_splitsamples_clustered_NN30_PC50_Seurat_denoIST_annotated_updated.rds")

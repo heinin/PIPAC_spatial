@@ -16,7 +16,7 @@ nneighbors = 1 # n neighbors to retain in each direction
 
 #cells <- read.csv('/scratch/avannan/early_IPF_xenium/cell_proximity/spatial_prox_input_df_2025-08-07.csv') # replace data table 
 #samples <- unique(cells$sample)
-seurat_data <- readRDS("/tgen_labs/banovich/PIPAC/Seurat/cell_merged_spatial_filtered_splitsamples_clustered_NN30_PC50_Seurat_denoIST.rds")
+seurat_data <- readRDS("/tgen_labs/banovich/PIPAC/Seurat/cell_merged_spatial_filtered_splitsamples_clustered_NN30_PC50_Seurat_denoIST_annotated_updated.rds")
 
 seurat_data <- subset(seurat_data, subset = Arm == "Arm3")
 

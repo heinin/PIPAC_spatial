@@ -27,7 +27,8 @@ suppressPackageStartupMessages({
   library(ggpubr)
   library(ggrepel)
   library(googlesheets4)
-  library(workflowr)})
+  library(workflowr)
+  library(RColorBrewer)})
 
 ```
 
@@ -145,7 +146,7 @@ cluster_markers <- FindAllMarkers(nonimmune,
                                   return.thresh = 0.01,
                                   logfc.threshold = 0.5,
                                   min.pct = 0.20,
-                                  verbose = T)
+                                  verbose = F)
 
 top_cluster_markers <- cluster_markers %>%
   arrange(dplyr::desc(avg_log2FC)) %>%
@@ -205,12 +206,13 @@ create_dotplot_heatmap(seurat_object = nonimmune,
 
 ```{r, message = F, warning = F, fig.width = 5, fig.height = 4}
 
+immune <- JoinLayers(immune)
 Idents(immune) <- immune$combined_annotation
 cluster_markers <- FindAllMarkers(immune,
                                   return.thresh = 0.01,
                                   logfc.threshold = 0.5,
                                   min.pct = 0.20,
-                                  verbose = T)
+                                  verbose = F)
 
 top_cluster_markers <- cluster_markers %>%
   arrange(dplyr::desc(avg_log2FC)) %>%
@@ -266,7 +268,7 @@ immune$Annotation_Cell <- mapvalues(immune$combined_annotation,
 
 ### Moving immune clusters from nonimmune object
 
-```{r, message = F, warning = F, fig.width = 22, fig.height = 22, eval = T}
+```{r, message = F, warning = F, fig.width = 22, fig.height = 22, eval = F}
 
 move_clusters <- c("Myel3_stromal_ambig",
                    "reccl11_0_F1_from_stromal",
@@ -302,30 +304,12 @@ saveRDS(immune, "/scratch/hnatri/PIPAC/immune_annotated_modified.rds")
 
 ```
 
-```{r, message = F, warning = F, fig.width = 22, fig.height = 22, eval = F}
-
-move_clusters <- c("")
-
-nonimmune_from_immune <- subset(immune, subset = combined_annotation %in% move_clusters)
-
-nonimmune@reductions$pca <- NULL
-nonimmune@reductions$umap <- NULL
-#immune@reductions$sp <- NULL
-
-nonimmune_from_immune@reductions$pca <- NULL
-nonimmune_from_immune@reductions$umap <- NULL
-#immune_from_nonimmune@reductions$sp <- NULL
-
-nonimmune@meta.data <- nonimmune@meta.data[,c("cell_id", "combined_annotation", "nCount_RNA", "nFeature_RNA")]
-nonimmune_from_nonimmune@meta.data <- nonimmune_from_nonimmune@meta.data[,c("cell_id", "combined_annotation", "nCount_RNA", "nFeature_RNA")]
-
-nonimmune <- merge(nonimmune, nonimmune_from_immune)
-
-```
-
 ### Selected markers
 
-```{r, message = F, warning = F, fig.width = 22, fig.height = 22, eval = T}
+```{r, message = T, warning = F, fig.width = 22, fig.height = 22, eval = T}
+
+nonimmune <- readRDS("/scratch/hnatri/PIPAC/nonimmune_annotated_modified.rds")
+immune <- readRDS("/scratch/hnatri/PIPAC/immune_annotated_modified.rds")
 
 main_plot_features <- c("PTPRC", "CD3D", "CD3E", "CD4", "CD8A", "JAK1", "JAK2", "STAT4", "STAT3", "TIGIT", "GZMB", "SELL", "CD19", "CD68", "CD44", "MARCO", "APOE", "C1QB", "C1QBP", "CD163", "SPP1", "VCAN", "MUC5AC", "NOTCH3", "RGS5", "MS4A1", "PGA5", "PLVAP", "CCL21", "LYVE", "SPARCL1", "FN1", "DCN", "LUM", "COL1A2", "PDPN", "ACTA2", "LMNA", "EGR3", "TP53", "JUN", "FOS", "BRAF", "KIT", "SOX9", "RNF43", "EPCAM", "PECAM", "CEACAM", "TGFB1", "JUNB", "TCF7", "GZMA", "GZMK", "CD47", "CD74", "LYZ", "TREM2", "CD247", "COL5A1", "SPARC", "CD36", "CTLA4", "RGS1", "CCL2", "SELENOP", "LYVE1", "CTSD", "MMP9", "CDK1", "FLT1", "RAMP2", "CCL14", "MCAM", "NRP1", "CEACAM6", "IL32", "TGFBI", "VEGFA", "LAMP1", "IGFBP7", "POSTN", "C1S", "C1R", "CSF1", "NOTCH1", "FOXP3", "IL2RB", "TUBA1B", "S100A9", "C3", "CXCR2", "SDC1", "CD38", "IGHG1", "PRDX4", "ICAM1", "GATA2", "CXCL3")
 
@@ -352,14 +336,18 @@ hp <- create_dotplot_heatmap(seurat_object = nonimmune,
                              row.order = NULL,
                              col.order = NULL)
 
-row_order(hp)
+#for (cl in names(column_order(hp))){
+#  message(paste0("Cluster "), cl)
+#  message(paste0(as.character(unique(nonimmune$Annotation_Cell)[column_order(hp)[[as.character(cl)]]]), #sep = ", "))
+#}
 
 ```
 
-```{r, message = F, warning = F, fig.width = 26, fig.height = 22, eval = T}
+```{r, message = T, warning = F, fig.width = 26, fig.height = 22, eval = T}
 
-immune_prelim <- factor(sort(unique(immune$Annotation_Cell)),
-                        levels = unique(immune$Annotation_Cell))
+immune$Annotation_Cell <- factor(immune$Annotation_Cell,
+                                 levels = sort(unique(immune$Annotation_Cell)))
+immune_prelim <- as.factor(sort(unique(immune$Annotation_Cell)))
 immune_prelim_col <- colorRampPalette(brewer.pal(10, "Paired"))(nb.cols <- length(immune_prelim))
 names(immune_prelim_col) <- levels(immune_prelim)
 
@@ -373,12 +361,136 @@ hp <- create_dotplot_heatmap(seurat_object = immune,
                              row.order = NULL,
                              col.order = NULL)
 
-row_order(hp)
-unique(immune$Annotation_Cell)[1]
+#for (cl in names(column_order(hp))){
+#  message(paste0("Cluster "), cl)
+#  message(paste0(as.character(unique(immune$Annotation_Cell)[column_order(hp)[[as.character(cl)]]]), sep = #", "))
+#}
+
+```
+
+#### Top markers with cell type name
+
+Non-immune
+
+```{r, message = T, warning = F, fig.width = 22, fig.height = 22, eval = T}
+
+nonimmune <- JoinLayers(nonimmune)
+Idents(nonimmune) <- nonimmune$Annotation_Cell
+cluster_markers <- FindAllMarkers(nonimmune,
+                                  return.thresh = 0.01,
+                                  logfc.threshold = 0.5,
+                                  min.pct = 0.20,
+                                  verbose = F)
+
+top_cluster_markers <- cluster_markers %>%
+  arrange(dplyr::desc(avg_log2FC)) %>%
+  group_by(cluster) %>%
+  dplyr::slice(1:15)
+
+```
+
+```{r, message = T, warning = F, fig.width = 26, fig.height = 30, eval = T}
+
+nonimmune$Annotation_Cell <- factor(nonimmune$Annotation_Cell,
+                                    levels = sort(unique(nonimmune$Annotation_Cell)))
+nonimmune_prelim <- as.factor(sort(unique(nonimmune$Annotation_Cell)))
+nonimmune_prelim_col <- colorRampPalette(brewer.pal(10, "Paired"))(nb.cols <- length(nonimmune_prelim))
+names(nonimmune_prelim_col) <- levels(nonimmune_prelim)
+
+hp <- create_dotplot_heatmap(seurat_object = nonimmune,
+                             plot_features = unique(c(top_cluster_markers$gene, main_plot_features)),
+                             group_var = "Annotation_Cell",
+                             group_colors = nonimmune_prelim_col,
+                             column_title = "",
+                             row_km = 24,
+                             col_km = 24,
+                             row.order = NULL,
+                             col.order = NULL)
+
+#for (cl in names(column_order(hp))){
+#  message(paste0("Cluster "), cl)
+#  message(paste0(as.character(unique(nonimmune$Annotation_Cell)[column_order(hp)[[as.character(cl)]]]), #sep = ", "))
+#}
+
+```
+
+Immune
+
+```{r, message = T, warning = F, fig.width = 22, fig.height = 22, eval = T}
+
+immune <- JoinLayers(immune)
+Idents(immune) <- immune$Annotation_Cell
+cluster_markers <- FindAllMarkers(immune,
+                                  return.thresh = 0.01,
+                                  logfc.threshold = 0.5,
+                                  min.pct = 0.20,
+                                  verbose = F)
+
+top_cluster_markers <- cluster_markers %>%
+  arrange(dplyr::desc(avg_log2FC)) %>%
+  group_by(cluster) %>%
+  dplyr::slice(1:15)
+
+```
+
+```{r, message = T, warning = F, fig.width = 26, fig.height = 30, eval = T}
+
+immune$Annotation_Cell <- factor(immune$Annotation_Cell,
+                                 levels = sort(unique(immune$Annotation_Cell)))
+immune_prelim <- as.factor(sort(unique(immune$Annotation_Cell)))
+immune_prelim_col <- colorRampPalette(brewer.pal(10, "Paired"))(nb.cols <- length(immune_prelim))
+names(immune_prelim_col) <- levels(immune_prelim)
+
+hp <- create_dotplot_heatmap(seurat_object = immune,
+                             plot_features = unique(c(top_cluster_markers$gene, main_plot_features)),
+                             group_var = "Annotation_Cell",
+                             group_colors = immune_prelim_col,
+                             column_title = "",
+                             row_km = 24,
+                             col_km = 24,
+                             row.order = NULL,
+                             col.order = NULL)
+
+#for (cl in names(column_order(hp))){
+#  message(paste0("Cluster "), cl)
+#  message(paste0(as.character(unique(immune$Annotation_Cell)[column_order(hp)[[as.character(cl)]]]), sep = #", "))
+#}
 
 ```
 
 ### QC metrics by cell type
+
+```{r, message = F, warning = F, fig.width = 20, fig.height = 30, eval = T}
+
+VlnPlot(nonimmune,
+        features = c("nCount_RNA", "nCount_cell_RNA", "nFeature_RNA",
+                     "nFeature_cell_RNA", "transcript_counts", "cell_area",
+                     "nucleus_area", "nucleus_count"),
+        group.by = "Annotation_Cell",
+        pt.size = 0,
+        ncol = 1,
+        cols = nonimmune_prelim_col) &
+  theme_minimal() &
+  RotatedAxis() &
+  NoLegend()
+
+```
+
+```{r, message = F, warning = F, fig.width = 30, fig.height = 30, eval = T}
+
+VlnPlot(immune,
+        features = c("nCount_RNA", "nCount_cell_RNA", "nFeature_RNA",
+                     "nFeature_cell_RNA", "transcript_counts", "cell_area",
+                     "nucleus_area", "nucleus_count"),
+        group.by = "Annotation_Cell",
+        pt.size = 0,
+        ncol = 1,
+        cols = immune_prelim_col) &
+  theme_minimal() &
+  RotatedAxis() &
+  NoLegend()
+
+```
 
 ### Cells per cell type
 
@@ -428,14 +540,300 @@ ct_table %>% filter(Freq>1000) %>%
 
 ```
 
-### Reclustering MF31
+### Combining similar cluster to less granular annotations
+
+Non-immune
+
+```{r, message = F, warning = F, fig.width = 22, fig.height = 22}
+
+checked <- c("F38", "F27", "TumorEpi5", "TumorEpi4", "TumorEpi3", "TumorEpi6", "TumorEpi1", "F22", "Endo", "Peri", "F13", "F4", "F7", "F3", "F32", "F23", "F25", "F24", "F1", "F15", "F5", "F16", "F17", "F18", "Plasma", "F30", "F31", "F34", "F37", "F33", "F36", "F35", "F28", "F26", "F29", "F11", "F10", "F19", "F20", "F21", "F2", "F12", "F6", "F9", "F8", "F24_LowExp", "F23_LowExp", "TumorEpi2", "F14", "F2")
+
+setdiff(checked, unique(nonimmune$Annotation_Cell))
+setdiff(unique(nonimmune$Annotation_Cell), checked)
+
+checked[duplicated(checked)]
+
+g1 <- c("F16", "F17", "F18")
+g2 <- c("F23_LowExp", "F24_LowExp")
+g3 <- c("Plasma", "F30", "F31", "F32")
+g4 <- c("F34", "F37", "F33", "F36", "F35")
+g5 <- c("F28", "F26", "F29", "F11")
+g6 <- c("F10", "F19", "F20", "F21")
+g7 <- c("F2", "F12")
+g8 <- c("F6", "F9")
+g9 <- c("F8", "F4")
+g10 <- c("F27", "F38")
+g11 <- c("F22", "Fcombined5")
+g12 <- c("F25", "Fcombined3")
+
+nonimmune$Annotation_Cell2 <- ifelse(nonimmune$Annotation_Cell %in% g1, "Fcombined1",
+                              ifelse(nonimmune$Annotation_Cell %in% g2, "Fcombined2",
+                              ifelse(nonimmune$Annotation_Cell %in% g3, "Plasma2",
+                              ifelse(nonimmune$Annotation_Cell %in% g4, "Fcombined3",
+                              ifelse(nonimmune$Annotation_Cell %in% g5, "Fcombined4",
+                              ifelse(nonimmune$Annotation_Cell %in% g6, "Fcombined5",
+                              ifelse(nonimmune$Annotation_Cell %in% g7, "Fcombined6",
+                              ifelse(nonimmune$Annotation_Cell %in% g8, "Fcombined7",
+                              ifelse(nonimmune$Annotation_Cell %in% g9, "Fcombined8",
+                              ifelse(nonimmune$Annotation_Cell %in% g10, "Fcombined10",
+                              ifelse(nonimmune$Annotation_Cell %in% g11, "Fcombined11",
+                              ifelse(nonimmune$Annotation_Cell %in% g12, "Fcombined12",
+                                     as.character(nonimmune$Annotation_Cell)))))))))))))
+
+g13 <- c("Fcombined1", "Fcombined2")
+g14 <- c("Fcombined3", "F25")
+g15 <- c("TumorEpi2", "TumorEpi4")
+g16 <- c("Fcombined7", "F7")
+g17 <- c("Fcombined14", "Fcombined13")
+
+nonimmune$Annotation_Cell2 <- ifelse(nonimmune$Annotation_Cell2 %in% g13, "Fcombined13",
+                              ifelse(nonimmune$Annotation_Cell2 %in% g14, "Fcombined14",
+                              ifelse(nonimmune$Annotation_Cell2 %in% g15, "TumorEpiCombined1",
+                              ifelse(nonimmune$Annotation_Cell2 %in% g16, "Fcombined15",
+                              ifelse(nonimmune$Annotation_Cell2 %in% g17, "Fcombined16",
+                              as.character(nonimmune$Annotation_Cell2))))))
+
+```
+
+Immune
+
+```{r, message = F, warning = F, fig.width = 22, fig.height = 22}
+
+checked <- c("LFambiguous18", "L38", "L17", "L41", "MFambiguous47", "M37", "M34", "M33", "M2", "M6", "MFambiguous46", "M39", "L1", "Treg8", "Treg2", "Treg3", "Treg5", "Treg6", "Treg4", "L2", "Treg7", "Treg15", "LFambiguous10", "Treg13", "Treg10", "Treg11", "Treg16", "Treg14", "Treg17", "Treg18", "Treg9", "Treg12", "L29", "L45", "L26", "L25", "L20", "L28", "L23", "L22", "L24", "L21", "L27", "L16", "L18", "L39", "L37", "MLFambiguous3", "MLFambiguous1", "MLFambiguous2", "MLFambiguous5", "MLFambiguous6", "MLFambiguous7", "MFambiguous19", "MFambiguous21", "MFambiguous22", "MFambiguous23", "MFambiguous20", "MFambiguous26", "MFambiguous14", "MFambiguous18", "M15", "MFambiguous76", "MFambiguous25", "MFambiguous24", "MFambiguous1", "M44", "M51", "M43", "M48", "M50", "M52", "M46", "M49", "M47", "M45", "M40", "M30", "M31", "M3", "M13", "M41", "M32", "M1", "M53", "MFambiguous80", "MFambiguous64", "MFambiguous63", "MFambiguous66", "MFambiguous73", "MFambiguous53", "MFambiguous77", "MFambiguous78", "MFambiguous52", "MFambiguous61", "MFambiguous49", "MFambiguous55", "MFambiguous48", "MFambiguous82", "MFambiguous54", "MFambiguous45", "MFambiguous75", "MFambiguous59", "MFambiguous57", "MFambiguous62", "MFambiguous60", "MFambiguous68", "MFambiguous65", "MFambiguous74", "MFambiguous70", "MFambiguous69", "MFambiguous67", "MFambiguous71", "MFambiguous72", "M36", "MFambiguous51", "M11", "M7", "MFambiguous50", "M38", "MFambiguous56", "MFambiguous58", "L34", "L33", "L31", "L32", "MFambiguous7", "MFambiguous2", "MFambiguous16", "MFambiguous4", "MFambiguous9", "MFambiguous10", "MFambiguous5", "MFambiguous81", "MFambiguous6", "MFambiguous11", "M29", "M12", "M5", "M28", "MFambiguous33", "M25", "M21", "M26", "MFambiguous12", "MFambiguous17", "MFambiguous15", "MFambiguous13", "MFambiguous8", "MFambiguous3", "MFambiguous30", "M14", "M8", "MFambiguous32", "MFambiguous27", "MFambiguous31", "M10", "M24", "M22", "MFambiguous34", "MFambiguous29", "M23", "M27", "M18", "MFambiguous35", "M20", "M17", "M16", "M4", "M9", "MFambiguous28", "M19", "L19", "L15", "L36", "L30", "L35", "L44", "MFambiguous36", "MFambiguous40", "MFambiguous42", "MFambiguous38", "MFambiguous39", "MFambiguous44", "MFambiguous37", "MFambiguous43", "M42", "MFambiguous41", "LFambiguous15", "LFambiguous11", "LFambiguous17", "LFambiguous13", "LFambiguous12", "L40", "LFambiguous14", "LFambiguous8", "LFambiguous16", "LFambiguous7", "LFambiguous9", "LFambiguous6", "LFambiguous5", "LFambiguous4", "LFambiguous1", "LFambiguous3", "LFambiguous2", "Treg1", "Treg19", "MLFambiguous8", "Treg20", "MLFambiguous4", "M35")
+
+setdiff(unique(immune$Annotation_Cell), checked)
+setdiff(checked, unique(immune$Annotation_Cell))
+
+checked[duplicated(checked)]
+
+g1 <- c("L1", "Treg8", "Treg2", "Treg3", "Treg5", "Treg6", "Treg4", "L2", "Treg7", "Treg15", "LFambiguous10", "Treg13", "Treg10", "Treg11", "Treg16", "Treg14", "Treg17", "Treg18", "Treg9", "Treg12")
+g2 <- c("L29", "L45", "L26", "L25", "L20", "L28", "L23", "L22", "L24", "L21", "L27
+L16", "L18")
+g3 <- c("L39", "L37")
+g4 <- c("MLFambiguous3", "MLFambiguous1", "MLFambiguous2", "MLFambiguous5", "MLFambiguous6")
+g5 <- c("MFambiguous19", "MFambiguous21", "MFambiguous22", "MFambiguous23", "MFambiguous20", "MFambiguous26", "MFambiguous14", "MFambiguous18", "M15", "MFambiguous76", "MFambiguous25", "MFambiguous24", "MFambiguous1", "MLFambiguous7")
+g6 <- c("M44", "M51", "M43", "M48", "M50", "M52", "M46", "M49", "M47", "M45")
+g7 <- c("M40", "M30", "M31")
+g8 <- c("M3", "M13", "M41", "M32", "M1", "M53")
+g9 <- c("MFambiguous80", "MFambiguous64", "MFambiguous63", "MFambiguous66", "MFambiguous73", "MFambiguous53", "MFambiguous77", "MFambiguous78", "MFambiguous52", "MFambiguous61", "MFambiguous49", "MFambiguous55", "MFambiguous48", "MFambiguous82", "MFambiguous54", "MFambiguous45", "MFambiguous75", "MFambiguous59", "MFambiguous57", "MFambiguous62", "MFambiguous60", "MFambiguous68", "MFambiguous65", "MFambiguous74", "MFambiguous70", "MFambiguous69", "MFambiguous67", "MFambiguous71", "MFambiguous72")
+g10 <- c("M36", "MFambiguous51", "M11", "M7", "MFambiguous50", "M38", "MFambiguous56", "MFambiguous58")
+g11 <- c("L34", "L33", "L31", "L32")
+g12 <- c("MFambiguous7", "MFambiguous2", "MFambiguous16", "MFambiguous4", "MFambiguous9", "MFambiguous10", "MFambiguous5", "MFambiguous81", "MFambiguous6", "MFambiguous11", "M29", "M12", "M5", "M28", "MFambiguous33", "M25", "M21", "M26", "MFambiguous12", "MFambiguous17", "MFambiguous15", "MFambiguous13", "MFambiguous8", "MFambiguous3")
+g13 <- c("MFambiguous30", "M14", "M8", "MFambiguous32", "MFambiguous27", "MFambiguous31")
+g14 <- c("M10", "M24", "M22", "MFambiguous34", "MFambiguous29", "M23", "M27", "M18", "MFambiguous35")
+g15 <- c("M20", "M17", "M16")
+g16 <- c("M4", "M9", "MFambiguous28", "M19")
+g17 <- c("L19", "L15", "L36", "L30", "L35", "L44")
+g18 <- c("MFambiguous36", "MFambiguous40", "MFambiguous42", "MFambiguous38", "MFambiguous39", "MFambiguous44", "MFambiguous37", "MFambiguous43", "M42", "MFambiguous41", "LFambiguous15", "LFambiguous11", "LFambiguous17", "LFambiguous13", "LFambiguous12", "L40", "LFambiguous14", "LFambiguous8", "LFambiguous16")
+g19 <- c("LFambiguous7", "LFambiguous9", "LFambiguous6", "LFambiguous5", "LFambiguous4", "LFambiguous1", "LFambiguous3", "LFambiguous2", "Treg1", "Treg19", "MLFambiguous8", "Treg20", "MLFambiguous4")
+g20 <- c("L14", "LFambiguous18")
+
+immune$Annotation_Cell2 <- ifelse(immune$Annotation_Cell %in% g1, "Treg1",
+                           ifelse(immune$Annotation_Cell %in% g2, "Lcombined1",
+                           ifelse(immune$Annotation_Cell %in% g3, "Lcombined2",
+                           ifelse(immune$Annotation_Cell %in% g4, "Unclassified1",
+                           ifelse(immune$Annotation_Cell %in% g5, "Unclassified2",
+                           ifelse(immune$Annotation_Cell %in% g6, "Mcombined1",
+                           ifelse(immune$Annotation_Cell %in% g7, "Mcombined2",
+                           ifelse(immune$Annotation_Cell %in% g8, "Mcombined3",
+                           ifelse(immune$Annotation_Cell %in% g9, "Unclassified3",
+                           ifelse(immune$Annotation_Cell %in% g10, "Mcombined4",
+                           ifelse(immune$Annotation_Cell %in% g11, "Lcombined3",
+                           ifelse(immune$Annotation_Cell %in% g12, "Mcombined4",
+                           ifelse(immune$Annotation_Cell %in% g13, "Mcombined5",
+                           ifelse(immune$Annotation_Cell %in% g14, "Mcombined6",
+                           ifelse(immune$Annotation_Cell %in% g15, "Mcombined7",
+                           ifelse(immune$Annotation_Cell %in% g16, "Mcombined8",
+                           ifelse(immune$Annotation_Cell %in% g17, "Lcombined4",
+                           ifelse(immune$Annotation_Cell %in% g18, "Unclassified4",
+                           ifelse(immune$Annotation_Cell %in% g19, "Treg2",
+                                  as.character(immune$Annotation_Cell))))))))))))))))))))
+
+g21 <- c("Mcombined6", "Mcombined7")
+g22 <- c("L27", "Lcombined1", "L38")
+g23 <- c("M37", "L16")
+g24 <- c("M2", "Mcombined5")
+g25 <- c("LFambiguous18", "L41")
+g26 <- c("Lcombined2", "Treg2")
+
+immune$Annotation_Cell2 <- ifelse(immune$Annotation_Cell2 %in% g21, "Lcombined5",
+                           ifelse(immune$Annotation_Cell2 %in% g22, "Mcombined9",
+                           ifelse(immune$Annotation_Cell2 %in% g23, "Plasma1",
+                           ifelse(immune$Annotation_Cell2 %in% g24, "Mcombined10",
+                           ifelse(immune$Annotation_Cell2 %in% g25, "Lcombined6",
+                           ifelse(immune$Annotation_Cell2 %in% g26, "Lcombined7",
+                                  as.character(immune$Annotation_Cell2)))))))
+
+saveRDS(nonimmune, "/scratch/hnatri/PIPAC/nonimmune_annotated_modified_combined.rds")
+saveRDS(immune, "/scratch/hnatri/PIPAC/immune_annotated_modified_combined.rds")
+
+```
+
+### Moving around cells in wrong objects
+
+```{r, message = F, warning = F, fig.width = 22, fig.height = 22, eval = T}
+
+#nonimmune <- readRDS("/scratch/hnatri/PIPAC/nonimmune_annotated_modified_combined.rds")
+#immune <- readRDS("/scratch/hnatri/PIPAC/immune_annotated_modified_combined.rds")
+
+immune_from_nonimmune <- subset(nonimmune, subset = Annotation_Cell2 == "Plasma2")
+
+immune@reductions$pca <- NULL
+immune@reductions$umap <- NULL
+#immune@reductions$sp <- NULL
+
+immune_from_nonimmune@reductions$pca <- NULL
+immune_from_nonimmune@reductions$umap <- NULL
+#immune_from_nonimmune@reductions$sp <- NULL
+
+immune@meta.data <- immune@meta.data[,c("cell_id", "combined_annotation", "Annotation_Cell2", "Annotation_Cell")]
+immune_from_nonimmune@meta.data <- immune_from_nonimmune@meta.data[,c("cell_id", "combined_annotation", "Annotation_Cell2", "Annotation_Cell")]
+nonimmune@meta.data <- nonimmune@meta.data[,c("cell_id", "combined_annotation", "Annotation_Cell2", "Annotation_Cell")]
+
+immune <- merge(immune, immune_from_nonimmune)
+nonimmune <- subset(nonimmune, subset = Annotation_Cell2 == "Plasma2", invert = T)
+
+saveRDS(nonimmune, "/scratch/hnatri/PIPAC/nonimmune_annotated_modified_combined.rds")
+saveRDS(immune, "/scratch/hnatri/PIPAC/immune_annotated_modified_combined.rds")
+
+```
+
+### Plotting after combining clusters
+
+Non-immune
+
+```{r, message = T, warning = F, fig.width = 22, fig.height = 22, eval = T}
+
+nonimmune <- JoinLayers(nonimmune)
+Idents(nonimmune) <- nonimmune$Annotation_Cell2
+cluster_markers <- FindAllMarkers(nonimmune,
+                                  return.thresh = 0.01,
+                                  logfc.threshold = 0.5,
+                                  min.pct = 0.20,
+                                  verbose = F)
+
+top_cluster_markers <- cluster_markers %>%
+  arrange(dplyr::desc(avg_log2FC)) %>%
+  group_by(cluster) %>%
+  dplyr::slice(1:15)
+
+```
+
+```{r, message = T, warning = F, fig.width = 26, fig.height = 30, eval = T}
+
+nonimmune$Annotation_Cell2 <- factor(nonimmune$Annotation_Cell2,
+                                    levels = sort(unique(nonimmune$Annotation_Cell2)))
+nonimmune_prelim <- as.factor(sort(unique(nonimmune$Annotation_Cell2)))
+nonimmune_prelim_col <- colorRampPalette(brewer.pal(10, "Paired"))(nb.cols <- length(nonimmune_prelim))
+names(nonimmune_prelim_col) <- levels(nonimmune_prelim)
+
+hp <- create_dotplot_heatmap(seurat_object = nonimmune,
+                             plot_features = unique(c(top_cluster_markers$gene, main_plot_features)),
+                             group_var = "Annotation_Cell2",
+                             group_colors = nonimmune_prelim_col,
+                             column_title = "",
+                             row_km = 6,
+                             col_km = 6,
+                             row.order = NULL,
+                             col.order = NULL)
+
+#for (cl in names(column_order(hp))){
+#  message(paste0("Cluster "), cl)
+#  message(paste0(as.character(unique(nonimmune$Annotation_Cell2)[column_order(hp)[[as.character(cl)]]]), #sep = ", "))
+#}
+
+```
+
+Immune
+
+```{r, message = T, warning = F, fig.width = 8, fig.height = 22, eval = T}
+
+immune <- JoinLayers(immune)
+Idents(immune) <- immune$Annotation_Cell2
+cluster_markers <- FindAllMarkers(immune,
+                                  return.thresh = 0.01,
+                                  logfc.threshold = 0.5,
+                                  min.pct = 0.20,
+                                  verbose = F)
+
+top_cluster_markers <- cluster_markers %>%
+  arrange(dplyr::desc(avg_log2FC)) %>%
+  group_by(cluster) %>%
+  dplyr::slice(1:15)
+
+```
+
+```{r, message = T, warning = F, fig.width = 24, fig.height = 30, eval = T}
+
+immune$Annotation_Cell2 <- factor(immune$Annotation_Cell2,
+                                 levels = sort(unique(immune$Annotation_Cell2)))
+immune_prelim <- as.factor(sort(unique(immune$Annotation_Cell2)))
+immune_prelim_col <- colorRampPalette(brewer.pal(10, "Paired"))(nb.cols <- length(immune_prelim))
+names(immune_prelim_col) <- levels(immune_prelim)
+
+hp <- create_dotplot_heatmap(seurat_object = immune,
+                             plot_features = unique(c(top_cluster_markers$gene, main_plot_features)),
+                             group_var = "Annotation_Cell2",
+                             group_colors = immune_prelim_col,
+                             column_title = "",
+                             row_km = 12,
+                             col_km = 12,
+                             row.order = NULL,
+                             col.order = NULL)
+
+#for (cl in names(column_order(hp))){
+#  message(paste0("Cluster "), cl)
+#  message(paste0(as.character(unique(immune$Annotation_Cell2)[column_order(hp)[[as.character(cl)]]]), sep #= ", "))
+#}
+
+```
+
+#### Cells per cell type
+
+```{r, message = F, warning = F, fig.width = 14, fig.height = 5, eval = T}
+
+ct_table <- as.data.frame(table(nonimmune$Annotation_Cell2))
+colnames(ct_table) <- c("Annotation_Cell2", "Freq")
+
+min(ct_table$Freq)
+
+ggplot(ct_table, aes(x = reorder(Annotation_Cell2, -Freq), y = Freq, fill = Annotation_Cell2)) +
+       geom_bar(stat="identity", position='stack', width = 0.8) +
+       scale_fill_manual(name = "Celltype", values = nonimmune_prelim_col) +
+       xlab("") +
+       ylab("Cell count") +
+       theme_classic() +
+       theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1)) +
+       NoLegend()
+
+```
+
+```{r, message = F, warning = F, fig.width = 20, fig.height = 5, eval = T}
+
+ct_table <- as.data.frame(table(immune$Annotation_Cell2))
+colnames(ct_table) <- c("Annotation_Cell2", "Freq")
+
+min(ct_table$Freq)
+
+ggplot(ct_table, aes(x = reorder(Annotation_Cell2, -Freq), y = Freq, fill = Annotation_Cell2)) +
+       geom_bar(stat="identity", position='stack', width = 0.8) +
+       scale_fill_manual(name = "Celltype", values = immune_prelim_col) +
+       xlab("") +
+       ylab("Cell count") +
+       theme_classic() +
+       theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1)) +
+       NoLegend()
+
+```
+
+### Reclustering pericytes
 
 ```{r, message = F, warning = F, fig.width = 4, fig.height = 4, eval = F}
 
-MF31 <- subset(nonimmune, subset = Annotation_Cell == "MF31")
-MF31 <- recluster_seurat(MF31, umap_pcs = 20)
+Peri <- subset(nonimmune, subset = Annotation_Cell2 == "Peri")
+Peri <- recluster_seurat(Peri, umap_pcs = 20)
 
-DimPlot(MF31,
+DimPlot(Peri,
         group.by = "SCTsnn_res.0.8",
         reduction = "umap",
         label = T) +
@@ -443,13 +841,13 @@ DimPlot(MF31,
   theme_bw() +
   NoLegend()
 
-table(MF31$SCTsnn_res.0.8)
+table(Peri$SCTsnn_res.0.8)
 
 ```
 
 ```{r, message = F, warning = F, fig.width = 22, fig.height = 6, eval = F}
 
-DotPlot(MF31,
+DotPlot(Peri,
         group.by = "SCTsnn_res.0.8",
         features = main_plot_features,
         cols = c("gray98", "tomato3")) +
@@ -459,7 +857,7 @@ DotPlot(MF31,
 
 ```{r, message = F, warning = F, fig.width = 9, fig.height = 6, eval = F}
 
-FeaturePlot(MF31,
+FeaturePlot(Peri,
             features = c("CD68", "CD163", "COL1A2", "DCN", "FN1", "EPCAM"),
             cols = c("gray89", "tomato3"),
             reduction = "umap",
@@ -474,7 +872,7 @@ FeaturePlot(MF31,
 
 ```{r, message = F, warning = F, fig.width = 22, fig.height = 36, eval = F}
 
-FeaturePlot(MF31,
+FeaturePlot(Peri,
             features = main_plot_features,
             cols = c("gray98", "tomato3"),
             reduction = "umap",
@@ -486,128 +884,23 @@ FeaturePlot(MF31,
 
 ```
 
-### Reclustering all other MF clusters
-
-```{r, message = F, warning = F, fig.width = 4, fig.height = 4, eval = F}
-
-mfs <- subset(nonimmune, subset = Annotation_Cell %in% paste0("MF", seq(1, 30)))
-mfs <- recluster_seurat(mfs, umap_pcs = 20)
-
-DimPlot(mfs,
-        group.by = "SCTsnn_res.0.8",
-        reduction = "umap",
-        label = T) +
-  coord_fixed(ratio = 1) +
-  theme_bw() +
-  NoLegend()
-
-mfss <- as.factor(paste0("MF", seq(1, 31)))
-mfs_col <- colorRampPalette(brewer.pal(10, "Paired"))(nb.cols <- length(mfss))
-names(mfs_col) <- levels(mfss)
-
-DimPlot(mfs,
-        group.by = "Annotation_Cell",
-        reduction = "umap",
-        cols = mfs_col,
-        label = T) +
-  coord_fixed(ratio = 1) +
-  theme_bw() +
-  NoLegend()
-
-```
-
-```{r, message = F, warning = F, fig.width = 9, fig.height = 6, eval = F}
-
-FeaturePlot(mfs,
-            features = c("CD68", "CD163", "COL1A2", "DCN", "FN1", "EPCAM"),
-            cols = c("gray89", "tomato3"),
-            reduction = "umap",
-            order = T,
-            raster = T,
-            ncol = 3) &
-  coord_fixed(ratio = 1) &
-  theme_bw() &
-  NoLegend()
-
-```
-
-```{r, message = F, warning = F, fig.width = 10, fig.height = 22, eval = F}
-
-create_dotplot_heatmap(seurat_object = mfs,
-                       plot_features = main_plot_features,
-                       group_var = "Annotation_Cell",
-                       group_colors = mfs_col,
-                       column_title = "",
-                       row_km = 5,
-                       col_km = 5,
-                       row.order = NULL,
-                       col.order = NULL)
-
-```
-
-### Reclustering EndoPeri2
-
-```{r, message = F, warning = F, fig.width = 4, fig.height = 4, eval = F}
-
-endoperi2 <- subset(nonimmune, subset = Annotation_Cell == "EndoPeri2")
-endoperi2 <- recluster_seurat(endoperi2, umap_pcs = 20)
-
-DimPlot(endoperi2,
-        group.by = "SCTsnn_res.0.8",
-        reduction = "umap",
-        label = T) +
-  coord_fixed(ratio = 1) +
-  theme_bw() +
-  NoLegend()
-
-```
-
-```{r, message = F, warning = F, fig.width = 9, fig.height = 6, eval = F}
-
-FeaturePlot(endoperi2,
-            features = c("RGS5", "NOTCH3", "PLVAP", "COL1A2", "DCN", "FN1", "EPCAM"),
-            cols = c("gray89", "tomato3"),
-            reduction = "umap",
-            order = T,
-            raster = T,
-            ncol = 3) &
-  coord_fixed(ratio = 1) &
-  theme_bw() &
-  NoLegend()
-
-```
-
-```{r, message = F, warning = F, fig.width = 8, fig.height = 20, eval = F}
-
-endoperis <- as.factor(sort(unique(endoperi2$SCTsnn_res.0.8)))
-endoperi_col <- colorRampPalette(brewer.pal(10, "Paired"))(nb.cols <- length(endoperis))
-names(endoperi_col) <- levels(endoperis)
-
-create_dotplot_heatmap(seurat_object = endoperi2,
-                       plot_features = main_plot_features,
-                       group_var = "SCTsnn_res.0.8",
-                       group_colors = endoperi_col,
-                       column_title = "",
-                       row_km = 5,
-                       col_km = 5,
-                       row.order = NULL,
-                       col.order = NULL)
-
-```
-
-### Combining similar cluster to less granular annotations
-
-```{r, message = F, warning = F, fig.width = 22, fig.height = 22}
-
-
-```
-
 ### Saving annotated data
 
 ```{r, message = F, warning = F, fig.width = 22, fig.height = 22}
 
-# Adding final annotations to the complete clustered object
+#nonimmune <- readRDS("/scratch/hnatri/PIPAC/nonimmune_annotated_modified_combined.rds")
+#immune <- readRDS("/scratch/hnatri/PIPAC/immune_annotated_modified_combined.rds")
 
+# Adding final annotations to the complete clustered object
+seurat_data <- readRDS("/tgen_labs/banovich/PIPAC/Seurat/cell_merged_spatial_filtered_splitsamples_clustered_NN30_PC50_Seurat_denoIST.rds")
+
+merged_data <- merge(nonimmune, immune)
+
+seurat_data$Celltype <- mapvalues(seurat_data$cell_id,
+                                  from = merged_data$cell_id,
+                                  to = merged_data$Annotation_Cell2)
+
+saveRDS(seurat_data, "/tgen_labs/banovich/PIPAC/Seurat/cell_merged_spatial_filtered_splitsamples_clustered_NN30_PC50_Seurat_denoIST_annotated.rds")
 
 # Rscript -e "rmarkdown::render('finalize_annotations.Rmd')"
 

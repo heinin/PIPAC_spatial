@@ -395,7 +395,7 @@ aria-hidden="true"></span> </a>
 <div class="tab-content">
 <div id="summary" class="tab-pane fade in active">
 <p>
-<strong>Last updated:</strong> 2025-11-20
+<strong>Last updated:</strong> 2026-02-09
 </p>
 <p>
 <strong>Checks:</strong> <span
@@ -581,10 +581,10 @@ tumor_proximity_compiled.tsv
 </tr>
 <tr>
 <td style="text-align:left;">
-/home/hnatri/PIPAC_spatial/enrichment_pretreatment_scores_compiled.tsv
+/home/hnatri/PIPAC_spatial/enrichment_tumor_pretreatment_scores_compiled.tsv
 </td>
 <td style="text-align:left;">
-enrichment_pretreatment_scores_compiled.tsv
+enrichment_tumor_pretreatment_scores_compiled.tsv
 </td>
 </tr>
 <tr>
@@ -597,10 +597,10 @@ tumor_pretreatment_proximity_compiled.tsv
 </tr>
 <tr>
 <td style="text-align:left;">
-/home/hnatri/PIPAC_spatial/enrichment_posttreatment_scores_compiled.tsv
+/home/hnatri/PIPAC_spatial/enrichment_tumor_posttreatment_scores_compiled.tsv
 </td>
 <td style="text-align:left;">
-enrichment_posttreatment_scores_compiled.tsv
+enrichment_tumor_posttreatment_scores_compiled.tsv
 </td>
 </tr>
 <tr>
@@ -619,15 +619,15 @@ tumor_posttreatment_proximity_compiled.tsv
 <div class="panel panel-default">
 <div class="panel-heading">
 <p class="panel-title">
-<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomheininPIPACspatialtree2221fdb25852e44537732db34a0abd5f08c4c9b0targetblank2221fdba">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomheininPIPACspatialtree09d976d4d54a881c98393883e960921e8f5f6dbctargetblank09d976da">
 <span class="glyphicon glyphicon-ok text-success"
 aria-hidden="true"></span> <strong>Repository version:</strong>
-<a href="https://github.com/heinin/PIPAC_spatial/tree/2221fdb25852e44537732db34a0abd5f08c4c9b0" target="_blank">2221fdb</a>
+<a href="https://github.com/heinin/PIPAC_spatial/tree/09d976d4d54a881c98393883e960921e8f5f6dbc" target="_blank">09d976d</a>
 </a>
 </p>
 </div>
 <div
-id="strongRepositoryversionstrongahrefhttpsgithubcomheininPIPACspatialtree2221fdb25852e44537732db34a0abd5f08c4c9b0targetblank2221fdba"
+id="strongRepositoryversionstrongahrefhttpsgithubcomheininPIPACspatialtree09d976d4d54a881c98393883e960921e8f5f6dbctargetblank09d976da"
 class="panel-collapse collapse">
 <div class="panel-body">
 <p>
@@ -637,7 +637,7 @@ reproducibility.
 </p>
 <p>
 The results in this page were generated with repository version
-<a href="https://github.com/heinin/PIPAC_spatial/tree/2221fdb25852e44537732db34a0abd5f08c4c9b0" target="_blank">2221fdb</a>.
+<a href="https://github.com/heinin/PIPAC_spatial/tree/09d976d4d54a881c98393883e960921e8f5f6dbc" target="_blank">09d976d</a>.
 See the <em>Past versions</em> tab to see a history of the changes made
 to the R Markdown and HTML files.
 </p>
@@ -652,68 +652,70 @@ were generated:
 </p>
 <pre><code>
 Ignored files:
-    Ignored:    .RData
-    Ignored:    analysis/figure/
-    Ignored:    analysis/finalize_annotations.html
+    Ignored:    cell_annotation_final_topmarkers.tsv
     Ignored:    cell_immune_cluster_marker_annotations.tsv
     Ignored:    cell_nonimmune_cluster_marker_annotations.tsv
     Ignored:    celltype_markers.tsv
+    Ignored:    code/.RData
+    Ignored:    code/.Rapp.history
     Ignored:    code/.Rhistory
     Ignored:    code/Proximity_analysis/.DS_Store
     Ignored:    code/Proximity_analysis/data/
     Ignored:    code/Proximity_analysis/output/
     Ignored:    code/RSC_latest_EDM_2025-08-06/
     Ignored:    code/celltype_proximity_tumor.Rout
+    Ignored:    code/scGSEA_CAFs.Rout
+    Ignored:    code/update_metadata.Rout
     Ignored:    immune_cluster_marker_annotations_2ndpass.tsv
     Ignored:    immune_prelim_annot_topmarkers.tsv
     Ignored:    nonimmune_cluster_marker_annotations_2ndpass.tsv
     Ignored:    nonimmune_prelim_annot_topmarkers.tsv
+    Ignored:    output/proximity_compiled.tsv
+    Ignored:    output/tumor_proximity_compiled.tsv
+    Ignored:    tumor_posttreatment_proximity_compiled.tsv
+    Ignored:    tumor_pretreatment_proximity_compiled.tsv
+    Ignored:    tumor_proximity_compiled.tsv
 
 Untracked files:
-    Untracked:  analysis/finalize_annotations.Rmd
-    Untracked:  analysis/immune_annotation_cell.Rmd
-    Untracked:  analysis/nonimmune_annotation_cell.Rmd
+    Untracked:  CT26_CAF_CMS4signature.pdf
+    Untracked:  CT26_CAF_UMAP.pdf
+    Untracked:  CT26_CAF_UMAP_sample.pdf
+    Untracked:  CT26_CAF_celltypeprops.pdf
+    Untracked:  CT26_CAF_pathways.pdf
+    Untracked:  Rplots.pdf
+    Untracked:  analysis/CAF_analysis.Rmd
+    Untracked:  analysis/PDX_CAF_scRNAseq_CMS.Rmd
+    Untracked:  analysis/PDX_CAF_scRNAseq_analysis.Rmd
+    Untracked:  analysis/PDX_CAF_scRNAseq_processing.Rmd
+    Untracked:  analysis/pretty_plots.Rmd
+    Untracked:  analysis/recluster.Rmd
+    Untracked:  analysis/updating_annotations.Rmd
     Untracked:  code/.RDataTmp
     Untracked:  code/.RDataTmp1
-    Untracked:  code/celltype_proximity_09232025.R
-    Untracked:  code/celltype_proximity_tumor.R
-    Untracked:  code/denoist_chunk.R
-    Untracked:  code/plot_informative_cluster_markers.R
-    Untracked:  code/slurm.26717417.err
-    Untracked:  code/slurm.26717417.out
-    Untracked:  enrichment_posttreatment_scores_compiled.tsv
-    Untracked:  enrichment_pretreatment_scores_compiled.tsv
-    Untracked:  enrichment_tumor_scores_compiled.tsv
-    Untracked:  output/enrichment_scores_compiled.tsv
-    Untracked:  output/proximity_compiled.tsv
-    Untracked:  tumor_posttreatment_proximity_compiled.tsv
-    Untracked:  tumor_pretreatment_proximity_compiled.tsv
-    Untracked:  tumor_proximity_compiled.tsv
+    Untracked:  code/.RDataTmp2
+    Untracked:  code/.RDataTmp3
+    Untracked:  code/.RDataTmp4
+    Untracked:  code/scGSEA_CAFs.R
+    Untracked:  enrichment_tumor_posttreatment_scores_compiled.tsv
+    Untracked:  enrichment_tumor_pretreatment_scores_compiled.tsv
+    Untracked:  enrichment_tumorscores_compiled.tsv
+    Untracked:  geneSets.CMS.rda
+    Untracked:  ncells.tsv
+    Untracked:  templates.CMS.rda
 
 Unstaged changes:
-    Deleted:    Rplots.pdf
-    Modified:   analysis/Xenium_preprocess_wholecell.Rmd
-    Modified:   analysis/add_metadata.Rmd
-    Modified:   analysis/annotation_cell.Rmd
+    Modified:   analysis/CAF_bulkRNAseq.Rmd
+    Modified:   analysis/arm3_DEGs.Rmd
     Modified:   analysis/arm3_comparative_analysis.Rmd
-    Modified:   analysis/arm3_prepost_plots_DEGs.Rmd
-    Modified:   analysis/compare_cellular_nuclear.Rmd
-    Modified:   analysis/compare_cellular_nuclear_denoist_annot.Rmd
-    Modified:   analysis/index.Rmd
-    Modified:   analysis/niche_construction_ncells3k_nneighbors20.Rmd
-    Modified:   analysis/pca_variance_decomp.Rmd
+    Modified:   analysis/finalize_annotations.Rmd
     Modified:   analysis/proximity.Rmd
-    Modified:   analysis/splitting_samples.Rmd
     Modified:   code/PIPAC_colors_themes.R
     Modified:   code/anndata_to_seurat.R
-    Modified:   code/denoist.R
-    Modified:   code/pairwise_proximity.R
-    Modified:   code/pairwise_proximity_chunk.R
-    Modified:   code/parse_denoist_res.R
-    Modified:   code/plot_functions.R
-    Modified:   code/run_rscript.sh
+    Modified:   code/celltype_proximity_09232025.R
+    Modified:   code/celltype_proximity_tumor.R
     Modified:   code/seurat_to_anndata.R
     Modified:   code/update_metadata.R
+    Modified:   enrichment_tumor_scores_compiled.tsv
 
 </code></pre>
 <p>
@@ -759,6 +761,40 @@ Message
 </tr>
 </thead>
 <tbody>
+<tr>
+<td>
+Rmd
+</td>
+<td>
+<a href="https://github.com/heinin/PIPAC_spatial/blob/6872c5a11c85d1ec1f8934a9fd5f039f977b45e2/analysis/proximity.Rmd" target="_blank">6872c5a</a>
+</td>
+<td>
+heinin
+</td>
+<td>
+2025-11-24
+</td>
+<td>
+Updated analyses, added CAF bulk-analysis
+</td>
+</tr>
+<tr>
+<td>
+html
+</td>
+<td>
+<a href="https://rawcdn.githack.com/heinin/PIPAC_spatial/6872c5a11c85d1ec1f8934a9fd5f039f977b45e2/docs/proximity.html" target="_blank">6872c5a</a>
+</td>
+<td>
+heinin
+</td>
+<td>
+2025-11-24
+</td>
+<td>
+Updated analyses, added CAF bulk-analysis
+</td>
+</tr>
 <tr>
 <td>
 Rmd
@@ -817,43 +853,116 @@ source(&quot;/home/hnatri/PIPAC_spatial/code/plot_functions.R&quot;)</code></pre
 </div>
 <div id="import-data" class="section level3">
 <h3>Import data</h3>
-<pre class="r"><code>seurat_data &lt;- readRDS(&quot;/tgen_labs/banovich/PIPAC/Seurat/cell_merged_spatial_filtered_splitsamples_clustered_NN30_PC50_Seurat_denoIST.rds&quot;)
+<pre class="r"><code>seurat_data &lt;- readRDS(&quot;/tgen_labs/banovich/PIPAC/Seurat/Freeze/cell_merged_spatial_filtered_splitsamples_clustered_NN30_PC50_Seurat_denoIST_annotated_updated.rds&quot;)
 
 enrichment_scores_compiled_tumor &lt;- read.table(&quot;/home/hnatri/PIPAC_spatial/enrichment_tumor_scores_compiled.tsv&quot;,
                                                header = T)
 proximity_compiled_tumor &lt;- read.table(&quot;/home/hnatri/PIPAC_spatial/tumor_proximity_compiled.tsv&quot;,
-                                       header = T)</code></pre>
+                                       header = T)
+
+setdiff(proximity_compiled_tumor$anchor_cell_ct, seurat_data$Celltype_Final)</code></pre>
+<pre><code>character(0)</code></pre>
+<pre class="r"><code>setdiff(seurat_data$Celltype_Final, proximity_compiled_tumor$anchor_cell_ct)</code></pre>
+<pre><code>character(0)</code></pre>
+<p>Keeping cell types with &gt;500 cells in arm 3</p>
+<pre class="r"><code>seurat_arm3 &lt;- subset(seurat_data, subset = Arm == &quot;Arm3&quot;)
+keeps &lt;- table(seurat_arm3$Celltype_Final) %&gt;%
+  as.data.frame() %&gt;%
+  filter(Freq&gt; 500)
+
+seurat_arm3_subset &lt;- subset(seurat_arm3, subset = Celltype_Final %in% keeps$Var1)
+
+table(seurat_arm3_subset$Celltype_Final)</code></pre>
+<pre><code>
+            B1          Endo1          Endo2          Endo5          Endo6 
+           636            981           1021           6444           4239 
+         Endo7          Endo8          Endo9            F13            F14 
+          1623           1416            658           2308           7883 
+           F15            F16            F20            F23            F24 
+         11141           6308           1571           2848           9318 
+           F27             F3             F4             F5             F6 
+          2832           4003           2027          15968            554 
+            F7             F8             L2             L3             L5 
+           652           1105            592           1169           5146 
+           M10            M13             M2             M4             M5 
+           660           6126           3598            806           3149 
+            M6             M9          Neut1          Peri1          Peri2 
+          1174            806           1401           3638           3959 
+         Peri3          Peri5          Peri6          Peri8        Plasma4 
+           535           2753           2065           1323            859 
+     TumorEpi1      TumorEpi4      TumorEpi5 Unclassified10  Unclassified3 
+          1425           3939           1952            921           2005 
+ Unclassified6  Unclassified7  Unclassified8 
+          1557           1219           1201 </code></pre>
+<pre class="r"><code>table(seurat_arm3_subset$Celltype_Final, seurat_arm3_subset$Tissue)</code></pre>
+<pre><code>                
+                 Normal Tumor
+  B1                386   250
+  Endo1             799   182
+  Endo2             381   640
+  Endo5            2909  3535
+  Endo6            2028  2211
+  Endo7             753   870
+  Endo8             842   574
+  Endo9             433   225
+  F13               713  1595
+  F14              3016  4867
+  F15              2770  8371
+  F16              2757  3551
+  F20               340  1231
+  F23               564  2284
+  F24              4959  4359
+  F27               692  2140
+  F3               2247  1756
+  F4                948  1079
+  F5               4994 10974
+  F6                103   451
+  F7                 83   569
+  F8                263   842
+  L2                252   340
+  L3                505   664
+  L5               1637  3509
+  M10               298   362
+  M13              3115  3011
+  M2               1029  2569
+  M4                 40   766
+  M5               1256  1893
+  M6                236   938
+  M9                293   513
+  Neut1             548   853
+  Peri1            2161  1477
+  Peri2            1671  2288
+  Peri3             145   390
+  Peri5            1230  1523
+  Peri6             586  1479
+  Peri8             551   772
+  Plasma4            37   822
+  TumorEpi1          17  1408
+  TumorEpi4           1  3938
+  TumorEpi5           1  1951
+  Unclassified10    375   546
+  Unclassified3     687  1318
+  Unclassified6     387  1170
+  Unclassified7     470   749
+  Unclassified8     736   465</code></pre>
 </div>
 <div id="which-celltypes-are-proximal-to-each-other"
 class="section level3">
 <h3>Which celltypes are proximal to each other</h3>
 <p><strong>Myeloid cluster associated with infiltrating
 lymphocytes:</strong><br />
-M1 (L2-L4) - SPP1 intermediate<br />
-M2 (L5) - suppressive, SPP1 high<br />
-M6 (L1-L5) - Suppressive, SPP1 intermediate<br />
-M7 (L3, also F3) - Suppressive, SPP1 intermediate<br />
-M8 (L5, also Mast, Endo) - Suppressive, cell cycle markers, SPP1
-high<br />
 </p>
 <p><strong>Myeloid cluster associated with CAFs:</strong><br />
-M5 (F2-F3, also L2-L3) - Suppressive, SPP1 intermediate<br />
 </p>
 <p><strong>Myeloid cluster associated with tumor cells:</strong><br />
-M4 (EpiTumor2 (and less so 1), also L, Plasma, F2-F3) - Possibly not
-myeloid?<br />
 </p>
-<p>M3, no significant enrichment.<br />
-M9, no significant enrichment.<br />
-</p>
-<p><strong>CAFs not enriched near tumor cells, but specific myeloid
-clusters:</strong><br />
-F1 (COL1A2): M1<br />
-F2 (COL1A2, higher FN1): M4-M5<br />
-F3 (no COL1A2) = M4,5,7,8 and Mast, Endo2, L2-3)<br />
-F4 (COL1A2): Plasma 1-3, fever F4 near other F clusters.<br />
-</p>
-<pre class="r"><code>enrichment_scores_compiled_tumor %&gt;%
+<pre class="r"><code>enrichment_scores_compiled_tumor &lt;- enrichment_scores_compiled_tumor %&gt;%
+  filter(prox_to %in% keeps$Var1 &amp; prox_ct %in% keeps$Var1)
+
+proximity_compiled_tumor &lt;- proximity_compiled_tumor %&gt;%
+  filter(anchor_cell_ct %in% keeps$Var1 &amp; prox_cell_ct %in% keeps$Var1)
+
+enrichment_scores_compiled_tumor %&gt;%
   mutate(pair = paste0(prox_ct, &quot;_&quot;, prox_to),
          sig = ifelse(pvale_adjust &lt; 0.01, &quot;sig&quot;, &quot;nonsig&quot;)) %&gt;%
   filter(sig == &quot;sig&quot;) %&gt;%
@@ -867,7 +976,44 @@ F4 (COL1A2): Plasma 1-3, fever F4 near other F clusters.<br />
   coord_flip() +
   theme_bw() +
   facet_wrap(~prox_ct, scales = &quot;free&quot;, ncol = 4)</code></pre>
-<p><img src="figure/proximity.Rmd/unnamed-chunk-4-1.png" width="1152" style="display: block; margin: auto;" /></p>
+<p><img src="figure/proximity.Rmd/unnamed-chunk-5-1.png" width="1152" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-5-1">
+Past versions of unnamed-chunk-5-1.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-5-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/heinin/PIPAC_spatial/blob/6872c5a11c85d1ec1f8934a9fd5f039f977b45e2/docs/figure/proximity.Rmd/unnamed-chunk-5-1.png" target="_blank">6872c5a</a>
+</td>
+<td>
+heinin
+</td>
+<td>
+2025-11-24
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 </div>
 <div id="plot-differences-between-timepoints-and-tissues"
 class="section level3">
@@ -896,7 +1042,7 @@ summaries &lt;- proximity_compiled_tumor %&gt;%
   arrange(anchor_cell_ct) %&gt;%
   filter(Tissue == &quot;Tumor&quot;,
          anchor_cell_ct %in% c(&quot;F1&quot;, &quot;F2&quot;, &quot;F3&quot;, &quot;F4&quot;, &quot;F5&quot;),
-         prox_cell_ct %in% setdiff(unique(seurat_data$Annotation), c(&quot;F1&quot;, &quot;F2&quot;, &quot;F3&quot;, &quot;F4&quot;, &quot;F5&quot;))) %&gt;%
+         prox_cell_ct %in% setdiff(unique(seurat_data$Celltype_Updated), c(&quot;F1&quot;, &quot;F2&quot;, &quot;F3&quot;, &quot;F4&quot;, &quot;F5&quot;))) %&gt;%
   group_by(Timepoint, pair) %&gt;%
   dplyr::summarise(nn = n()) %&gt;%
   mutate(timepoint_pair = paste0(Timepoint, &quot;_&quot;, pair)) %&gt;%
@@ -1057,12 +1203,18 @@ draw(hp)
 </div>
 <div id="pre-treatment-tumors" class="section level4">
 <h4>Pre-treatment tumors</h4>
-<pre class="r"><code>enrichment_scores_compiled &lt;- read.table(&quot;/home/hnatri/PIPAC_spatial/enrichment_pretreatment_scores_compiled.tsv&quot;,
+<pre class="r"><code>enrichment_scores_compiled &lt;- read.table(&quot;/home/hnatri/PIPAC_spatial/enrichment_tumor_pretreatment_scores_compiled.tsv&quot;,
                                          header = T)
 proximity_compiled &lt;- read.table(&quot;/home/hnatri/PIPAC_spatial/tumor_pretreatment_proximity_compiled.tsv&quot;,
                                  header = T)
 
 enrichment_scores_compiled &lt;- enrichment_scores_compiled[complete.cases(enrichment_scores_compiled),]
+
+enrichment_scores_compiled &lt;- enrichment_scores_compiled %&gt;%
+  filter(prox_to %in% keeps$Var1 &amp; prox_ct %in% keeps$Var1)
+
+proximity_compiled &lt;- proximity_compiled %&gt;%
+  filter(anchor_cell_ct %in% keeps$Var1 &amp; prox_cell_ct %in% keeps$Var1)
 
 pval &lt;- reshape2::dcast(prox_to ~ prox_ct, value.var = &#39;pvale_adjust&#39;, data = enrichment_scores_compiled) 
 or &lt;- reshape2::dcast(prox_to ~ prox_ct, value.var = &#39;log_or&#39;, data = enrichment_scores_compiled)
@@ -1105,13 +1257,50 @@ hp &lt;- Heatmap(ct_or, name = &#39;log(OR)&#39;,
               column_dend_side = &#39;bottom&#39;,
               na_col = &#39;white&#39;, 
               col = col_fun, 
-              row_dend_width = unit(0.5, &#39;cm&#39;),
-              column_dend_height = unit(0.5, &#39;cm&#39;),
-              width = ncol(ct_or)*unit(5, &quot;mm&quot;),
-              height = nrow(ct_or)*unit(5, &quot;mm&quot;))
+              row_dend_width = unit(1, &#39;cm&#39;),
+              column_dend_height = unit(1, &#39;cm&#39;),
+              width = ncol(ct_or)*unit(8, &quot;mm&quot;),
+              height = nrow(ct_or)*unit(8, &quot;mm&quot;))
 
 draw(hp)</code></pre>
-<p><img src="figure/proximity.Rmd/unnamed-chunk-7-1.png" width="960" style="display: block; margin: auto;" /></p>
+<p><img src="figure/proximity.Rmd/unnamed-chunk-8-1.png" width="1920" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-8-1">
+Past versions of unnamed-chunk-8-1.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-8-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/heinin/PIPAC_spatial/blob/6872c5a11c85d1ec1f8934a9fd5f039f977b45e2/docs/figure/proximity.Rmd/unnamed-chunk-8-1.png" target="_blank">6872c5a</a>
+</td>
+<td>
+heinin
+</td>
+<td>
+2025-11-24
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 <pre class="r"><code>#pdf(&quot;.pdf&quot;,
 #    width = 12,
 #    height = 10)
@@ -1122,10 +1311,16 @@ draw(hp)</code></pre>
 </div>
 <div id="post-treatment-tumors" class="section level4">
 <h4>Post-treatment tumors</h4>
-<pre class="r"><code>post_enrichment_scores_compiled &lt;- read.table(&quot;/home/hnatri/PIPAC_spatial/enrichment_posttreatment_scores_compiled.tsv&quot;,
+<pre class="r"><code>post_enrichment_scores_compiled &lt;- read.table(&quot;/home/hnatri/PIPAC_spatial/enrichment_tumor_posttreatment_scores_compiled.tsv&quot;,
                                          header = T)
 post_proximity_compiled &lt;- read.table(&quot;/home/hnatri/PIPAC_spatial/tumor_posttreatment_proximity_compiled.tsv&quot;,
                                  header = T)
+
+post_enrichment_scores_compiled &lt;- post_enrichment_scores_compiled %&gt;%
+  filter(prox_to %in% keeps$Var1 &amp; prox_ct %in% keeps$Var1)
+
+post_proximity_compiled &lt;- post_proximity_compiled %&gt;%
+  filter(anchor_cell_ct %in% keeps$Var1 &amp; prox_cell_ct %in% keeps$Var1)
 
 post_enrichment_scores_compiled &lt;- post_enrichment_scores_compiled[complete.cases(post_enrichment_scores_compiled),]
 
@@ -1172,13 +1367,50 @@ hp &lt;- Heatmap(post_ct_or, name = &#39;log(OR)&#39;,
               rect_gp = gpar(col = &quot;#b8b7b6&quot;, lwd = 0.5),
               na_col = &#39;white&#39;, 
               col = col_fun, 
-              row_dend_width = unit(2, &#39;cm&#39;), 
-              column_dend_height = unit(2, &#39;cm&#39;),
-              width = ncol(ct_or)*unit(5, &quot;mm&quot;), 
-              height = nrow(ct_or)*unit(5, &quot;mm&quot;)) 
+              row_dend_width = unit(1, &#39;cm&#39;), 
+              column_dend_height = unit(1, &#39;cm&#39;),
+              width = ncol(ct_or)*unit(8, &quot;mm&quot;), 
+              height = nrow(ct_or)*unit(8, &quot;mm&quot;)) 
 
 draw(hp)</code></pre>
-<p><img src="figure/proximity.Rmd/unnamed-chunk-8-1.png" width="960" style="display: block; margin: auto;" /></p>
+<p><img src="figure/proximity.Rmd/unnamed-chunk-9-1.png" width="1920" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-9-1">
+Past versions of unnamed-chunk-9-1.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-9-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/heinin/PIPAC_spatial/blob/6872c5a11c85d1ec1f8934a9fd5f039f977b45e2/docs/figure/proximity.Rmd/unnamed-chunk-9-1.png" target="_blank">6872c5a</a>
+</td>
+<td>
+heinin
+</td>
+<td>
+2025-11-24
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 <pre class="r"><code>#pdf(&quot;.pdf&quot;,
 #    width = 12,
 #    height = 10)
@@ -1210,13 +1442,50 @@ hp &lt;- Heatmap(delta_or, name = &#39;Delta of log(OR)&#39;,
               column_dend_side = &#39;bottom&#39;,
               na_col = &#39;white&#39;, 
               col = col_fun, 
-              row_dend_width = unit(0.5, &#39;cm&#39;),
-              column_dend_height = unit(0.5, &#39;cm&#39;),
-              width = ncol(ct_or)*unit(5, &quot;mm&quot;),
-              height = nrow(ct_or)*unit(5, &quot;mm&quot;))
+              row_dend_width = unit(1, &#39;cm&#39;),
+              column_dend_height = unit(1, &#39;cm&#39;),
+              width = ncol(ct_or)*unit(8, &quot;mm&quot;),
+              height = nrow(ct_or)*unit(8, &quot;mm&quot;))
 
 draw(hp)</code></pre>
-<p><img src="figure/proximity.Rmd/unnamed-chunk-9-1.png" width="960" style="display: block; margin: auto;" /></p>
+<p><img src="figure/proximity.Rmd/unnamed-chunk-10-1.png" width="1920" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-10-1">
+Past versions of unnamed-chunk-10-1.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-10-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/heinin/PIPAC_spatial/blob/6872c5a11c85d1ec1f8934a9fd5f039f977b45e2/docs/figure/proximity.Rmd/unnamed-chunk-10-1.png" target="_blank">6872c5a</a>
+</td>
+<td>
+heinin
+</td>
+<td>
+2025-11-24
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 </div>
 </div>
 <div id="pca-on-proximity" class="section level3">
@@ -1242,25 +1511,25 @@ nb &lt;- estim_ncpPCA(proximity_matrix,
                    verbose = F)
 
 plot(0:5, nb$criterion, xlab = &quot;nb dim&quot;, ylab = &quot;MSEP&quot;)</code></pre>
-<p><img src="figure/proximity.Rmd/unnamed-chunk-11-1.png" width="576" style="display: block; margin: auto;" /></p>
+<p><img src="figure/proximity.Rmd/unnamed-chunk-12-1.png" width="576" style="display: block; margin: auto;" /></p>
 <pre class="r"><code>res.comp &lt;- imputePCA(proximity_matrix, ncp = 5) # iterativePCA algorithm
 res.comp$completeObs[1:3,] # the imputed data set</code></pre>
 <pre><code>         20-010121T_(2_5_24) 20-010121T_(3_26_24) 20-010121T_(5_7_24)
-B1_B1               11.98845             27.81441            24.66759
-B1_DC               22.53503             25.22894            22.46041
-B1_Endo1            23.21335             20.57846            32.34658
-         20-010121T_(6_19_24) BSJ-38-1  BSJ-38-3   JM-45-1  JM-45-3
-B1_B1                10.52710 16.81228 15.000269  9.046612 25.76966
-B1_DC                24.36328 18.77784  8.299403 14.356003 39.02638
-B1_Endo1             28.21909 18.72778 20.128392 17.164768 36.55322
+B1_B1               11.75262             28.93119            25.39426
+B1_Endo5            34.19636             23.69453            22.78767
+B1_Endo9            16.78028             23.69782            24.40786
+         20-010121T_(6_19_24)  BSJ-38-1 BSJ-38-3   JM-45-1  JM-45-3
+B1_B1                10.52710  9.816394 15.39865  8.724545 19.56464
+B1_Endo5             18.64418 12.850758 19.25089 36.646644 31.01463
+B1_Endo9             29.24049 23.389834 22.67010 11.789939 40.30685
          SF230726-002257 SF230912-002063 SF230915-002249 SF231027-005404
-B1_B1           12.15591        9.603317        8.221449        19.56984
-B1_DC           23.52740       28.579921       21.686956        22.22787
-B1_Endo1        23.81207       34.315085       16.236748        39.88652
+B1_B1           12.15591        9.603317        8.221449        13.11467
+B1_Endo5        31.75589       36.341718       18.441634        28.88021
+B1_Endo9        49.37971       33.672060       26.129466        29.01170
            SS-22-1  SS-22-3
-B1_B1     5.955864 23.03500
-B1_DC    30.793000 33.35659
-B1_Endo1 32.333422 33.36800</code></pre>
+B1_B1     5.955864 24.06566
+B1_Endo5 26.208450 35.35927
+B1_Endo9 33.835817 40.89355</code></pre>
 <pre class="r"><code>#imp &lt;- cbind.data.frame(res.comp$completeObs, WindDirection)
 
 res.pca &lt;- PCA(res.comp$completeObs,
@@ -1307,32 +1576,32 @@ pcs %&gt;%
   ggplot(aes(x = Dim.1, y = Dim.2, shape = Timepoint, color = Patient_ID)) +
   geom_point() +
   theme_bw()</code></pre>
-<p><img src="figure/proximity.Rmd/unnamed-chunk-11-2.png" width="576" style="display: block; margin: auto;" /></p>
+<p><img src="figure/proximity.Rmd/unnamed-chunk-12-2.png" width="576" style="display: block; margin: auto;" /></p>
 <pre class="r"><code>pcs %&gt;%
   ggplot(aes(x = Dim.1, y = Dim.3, shape = Timepoint, color = Patient_ID)) +
   geom_point() +
   theme_bw()</code></pre>
-<p><img src="figure/proximity.Rmd/unnamed-chunk-11-3.png" width="576" style="display: block; margin: auto;" /></p>
+<p><img src="figure/proximity.Rmd/unnamed-chunk-12-3.png" width="576" style="display: block; margin: auto;" /></p>
 <pre class="r"><code>pcs %&gt;%
   ggplot(aes(x = Dim.2, y = Dim.3, shape = Timepoint, color = Patient_ID)) +
   geom_point() +
   theme_bw()</code></pre>
-<p><img src="figure/proximity.Rmd/unnamed-chunk-11-4.png" width="576" style="display: block; margin: auto;" /></p>
+<p><img src="figure/proximity.Rmd/unnamed-chunk-12-4.png" width="576" style="display: block; margin: auto;" /></p>
 <pre class="r"><code>pcs %&gt;%
   ggplot(aes(x = Dim.1, y = Dim.2, shape = Timepoint, color = DXSITE)) +
   geom_point() +
   theme_bw()</code></pre>
-<p><img src="figure/proximity.Rmd/unnamed-chunk-11-5.png" width="576" style="display: block; margin: auto;" /></p>
+<p><img src="figure/proximity.Rmd/unnamed-chunk-12-5.png" width="576" style="display: block; margin: auto;" /></p>
 <pre class="r"><code>pcs %&gt;%
   ggplot(aes(x = Dim.1, y = Dim.3, shape = Timepoint, color = DXSITE)) +
   geom_point() +
   theme_bw()</code></pre>
-<p><img src="figure/proximity.Rmd/unnamed-chunk-11-6.png" width="576" style="display: block; margin: auto;" /></p>
+<p><img src="figure/proximity.Rmd/unnamed-chunk-12-6.png" width="576" style="display: block; margin: auto;" /></p>
 <pre class="r"><code>pcs %&gt;%
   ggplot(aes(x = Dim.2, y = Dim.3, shape = Timepoint, color = DXSITE)) +
   geom_point() +
   theme_bw()</code></pre>
-<p><img src="figure/proximity.Rmd/unnamed-chunk-11-7.png" width="576" style="display: block; margin: auto;" /></p>
+<p><img src="figure/proximity.Rmd/unnamed-chunk-12-7.png" width="576" style="display: block; margin: auto;" /></p>
 <br>
 <p>
 <button type="button" class="btn btn-default btn-workflowr btn-workflowr-sessioninfo" data-toggle="collapse" data-target="#workflowr-sessioninfo" style="display: block;">
@@ -1372,11 +1641,11 @@ other attached packages:
 [10] spatstat.linnet_3.1-1  spatstat.model_3.2-4   rpart_4.1.19          
 [13] spatstat.explore_3.2-1 nlme_3.1-162           spatstat.random_3.1-5 
 [16] spatstat.geom_3.2-1    spatstat.data_3.0-1    patchwork_1.1.2       
-[19] googlesheets4_1.1.1    ggrepel_0.9.3          ggpubr_0.6.0          
+[19] googlesheets4_1.1.0    ggrepel_0.9.3          ggpubr_0.6.0          
 [22] lubridate_1.9.2        forcats_1.0.0          stringr_1.5.0         
-[25] purrr_1.0.1            readr_2.1.4            tidyr_1.3.0           
+[25] purrr_1.0.2            readr_2.1.4            tidyr_1.3.0           
 [28] tibble_3.2.1           ggplot2_3.4.2          tidyverse_2.0.0       
-[31] SeuratDisk_0.0.0.9021  Seurat_5.0.1           SeuratObject_5.0.1    
+[31] SeuratDisk_0.0.0.9021  Seurat_5.0.1           SeuratObject_5.0.2    
 [34] sp_1.6-1               dplyr_1.1.2            workflowr_1.7.1       
 
 loaded via a namespace (and not attached):
@@ -1398,7 +1667,7 @@ loaded via a namespace (and not attached):
  [46] parallelly_1.36.0     leiden_0.4.3          codetools_0.2-19     
  [49] DT_0.28               shape_1.4.6           tidyselect_1.2.0     
  [52] farver_2.1.1          stats4_4.3.0          matrixStats_1.0.0    
- [55] googledrive_2.1.1     jsonlite_1.8.5        GetoptLong_1.0.5     
+ [55] googledrive_2.1.0     jsonlite_1.8.5        GetoptLong_1.0.5     
  [58] ellipsis_0.3.2        progressr_0.13.0      emmeans_1.8.6        
  [61] iterators_1.0.14      ggridges_0.5.4        survival_3.5-5       
  [64] foreach_1.5.2         tools_4.3.0           ica_1.0-3            
@@ -1419,17 +1688,17 @@ loaded via a namespace (and not attached):
 [109] reshape2_1.4.4        curl_5.0.1            coda_0.19-4          
 [112] GlobalOptions_0.1.2   cachem_1.0.8          zoo_1.8-12           
 [115] KernSmooth_2.23-21    parallel_4.3.0        miniUI_0.1.1.1       
-[118] pillar_1.9.0          vctrs_0.6.2           RANN_2.6.1           
+[118] pillar_1.9.0          vctrs_0.6.5           RANN_2.6.1           
 [121] promises_1.2.0.1      car_3.1-2             xtable_1.8-4         
 [124] cluster_2.1.4         evaluate_0.21         magick_2.7.4         
 [127] mvtnorm_1.2-2         cli_3.6.1             compiler_4.3.0       
-[130] rlang_1.1.1           crayon_1.5.2          future.apply_1.11.0  
+[130] rlang_1.1.6           crayon_1.5.2          future.apply_1.11.0  
 [133] ggsignif_0.6.4        labeling_0.4.2        ps_1.7.5             
 [136] getPass_0.2-4         fs_1.6.2              stringi_1.7.12       
 [139] deldir_1.0-9          munsell_0.5.0         lazyeval_0.2.2       
 [142] Matrix_1.6-5          RcppHNSW_0.5.0        hms_1.1.3            
-[145] bit64_4.0.5           future_1.32.0         shiny_1.7.4          
-[148] highr_0.10            ROCR_1.0-11           gargle_1.5.0         
+[145] bit64_4.6.0-1         future_1.32.0         shiny_1.7.4          
+[148] highr_0.10            ROCR_1.0-11           gargle_1.4.0         
 [151] igraph_1.4.3          broom_1.0.5           bslib_0.5.0          
 [154] bit_4.0.5            </code></pre>
 </div>

@@ -1,0 +1,215 @@
+---
+  title: "Reclustering large clusters"
+author: "heinin"
+date: "2025-12-04"
+output:
+  workflowr::wflow_html:
+  code_folding: hide
+html_notebook: default
+editor_options:
+  chunk_output_type: console
+---
+  
+### Packages and environment variables
+  
+```{r, warning=F, message=F}
+
+suppressPackageStartupMessages({
+  library(workflowr)
+  library(arrow)
+  library(dplyr)
+  library(Seurat)
+  library(SeuratObject)
+  library(SeuratDisk)
+  library(tidyverse)
+  library(tibble)
+  library(ggplot2)
+  library(ggpubr)
+  library(ggrepel)
+  library(googlesheets4)
+  library(workflowr)
+  library(RColorBrewer)})
+
+```
+
+### Environment variables and helper functions
+
+```{r, message = F, warning = F}
+
+setwd("/home/hnatri/PIPAC_spatial/")
+set.seed(9999)
+options(scipen = 99999)
+options(ggrepel.max.overlaps = Inf)
+
+source("/home/hnatri/PIPAC_spatial/code/PIPAC_colors_themes.R")
+source("/home/hnatri/PIPAC_spatial/code/plot_functions.R")
+
+recluster_seurat <- function(seurat_subset, umap_pcs = 10){
+    seurat_subset <- SCTransform(seurat_subset,
+                                 vars.to.regress = c("nCount_RNA", "nFeature_RNA"),
+                                 verbose = F)
+      
+    seurat_subset <- RunPCA(seurat_subset,
+                            npcs = 50,
+                            assay = "SCT",
+                            #features = features,
+                            approx = F,
+                            verbose = F)
+    
+    integrated_data <- RunUMAP(seurat_subset,
+                               reduction = "pca",
+                               reduction.name = "umap",
+                               dims = 1:umap_pcs,
+                               return.model = TRUE,
+                            verbose = F)
+
+    integrated_data <- FindNeighbors(integrated_data,
+                                     reduction = "pca",
+                                     dims = 1:umap_pcs,
+                                     graph.name = c("SCTnn",
+                                                    "SCTsnn"),
+                            verbose = F)
+
+    integrated_data <- FindClusters(integrated_data,
+                                    resolution = c(0.1,0.2,0.3,0.5,0.8,1),
+                                    graph.name = "SCTsnn",
+                            verbose = F)
+    
+    return(integrated_data)
+}
+
+```
+
+### Marker information and metadata
+
+```{r, message = F, warning = F, fig.width = 6, fig.height = 4}
+
+# Cell type markers by group
+gs4_deauth()
+markers_by_group  <- gs4_get("https://docs.google.com/spreadsheets/d/1w0wrL-5KwNEWi_VpmriN7YmfwpBPlEYX0MKlwI2ZQu8/edit?usp=sharing")
+markers_by_group <- read_sheet(markers_by_group, sheet = "Markers by group")
+
+metadata  <- gs4_get("https://docs.google.com/spreadsheets/d/1sXXwOreLxjMSUoPt79c6jmaQpluWkaxA5P5HfDsed3I/edit?usp=sharing")
+markers <- read_sheet(metadata, sheet = "Markers")
+granular_annotations <- read_sheet(metadata, sheet = "Cell type annotations, all transcripts")
+granular_annotations_immune <- read_sheet(metadata, sheet = "Cell type annotations, all transcripts, immune")
+
+```
+
+### Import data
+
+```{r, message = F, warning = F, fig.width = 6, fig.height = 6}
+
+seurat_data <- readRDS("/tgen_labs/banovich/PIPAC/Seurat/cell_merged_spatial_filtered_splitsamples_clustered_NN30_PC50_Seurat_denoIST_annotated.rds")
+
+```
+
+### Plotting annotations
+
+```{r, message = F, warning = F, fig.width = 6, fig.height = 6}
+
+
+```
+
+### Checking L4
+
+```{r, message = F, warning = F, fig.width = 4, fig.height = 4, eval = F}
+
+L4 <- subset(seurat_data, subset = Celltype == "L4")
+L4 <- recluster_seurat(L4, umap_pcs = 20)
+
+DimPlot(L4,
+        group.by = "SCTsnn_res.0.8",
+        reduction = "umap",
+        label = T) +
+  coord_fixed(ratio = 1) +
+  theme_bw() +
+  NoLegend()
+
+ncol(L4)
+table(L4$SCTsnn_res.0.8)
+
+```
+
+```{r, message = F, warning = F, fig.width = 10, fig.height = 20, eval = F}
+
+DefaultAssay(L4) <- "denoist_RNA"
+L4 <- NormalizeData(L4)
+
+VlnPlot(L4,
+        group.by = "SCTsnn_res.0.8",
+        features = main_plot_features,
+        ncol = 5,
+        pt.size = 0)
+
+VlnPlot(L4,
+        group.by = "SCTsnn_res.0.8",
+        features = c("CD68", "CD163", "COL1A2", "DCN", "FN1", "EPCAM",
+                     "CD3E", "CD4", "CD8A", "CD74", "CD14", "SPP1"),
+        ncol = 5,
+        pt.size = 0)
+  
+```
+
+```{r, message = F, warning = F, fig.width = 9, fig.height = 6, eval = T}
+
+FeaturePlot(L4,
+            features = c("CD68", "CD163", "COL1A2", "DCN", "FN1", "EPCAM",
+                         "CD3E", "CD4", "CD8A"),
+            cols = c("gray89", "tomato3"),
+            reduction = "umap",
+            order = T,
+            ncol = 3) &
+  coord_fixed(ratio = 1) &
+  theme_bw() &
+  NoLegend()
+
+```
+
+### Pericytes
+
+```{r, message = F, warning = F, fig.width = 4, fig.height = 4, eval = F}
+
+Peri <- subset(seurat_data, subset = Celltype == "Peri")
+Peri <- recluster_seurat(Peri, umap_pcs = 20)
+
+DimPlot(Peri,
+        group.by = "SCTsnn_res.0.8",
+        reduction = "umap",
+        label = T) +
+  coord_fixed(ratio = 1) +
+  theme_bw() +
+  NoLegend()
+
+table(Peri$SCTsnn_res.0.8)
+
+```
+
+```{r, message = F, warning = F, fig.width = 9, fig.height = 6, eval = F}
+
+FeaturePlot(Peri,
+            features = c("CD68", "CD163", "COL1A2", "DCN", "FN1", "EPCAM"),
+            cols = c("gray89", "tomato3"),
+            reduction = "umap",
+            order = T,
+            raster = T,
+            ncol = 3) &
+  coord_fixed(ratio = 1) &
+  theme_bw() &
+  NoLegend()
+
+```
+
+```{r, message = F, warning = F, fig.width = 22, fig.height = 36, eval = F}
+
+FeaturePlot(Peri,
+            features = main_plot_features,
+            cols = c("gray98", "tomato3"),
+            reduction = "umap",
+            raster = T,
+            ncol = 5) &
+  coord_fixed(ratio = 1) &
+  theme_bw() &
+  NoLegend()
+
+```

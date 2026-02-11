@@ -1,0 +1,229 @@
+---
+title: "Processing 10x data"
+author: "heinin"
+date: "2026-01-30"
+output:
+  workflowr::wflow_html:
+    code_folding: hide
+  html_notebook: default
+editor_options:
+  chunk_output_type: console
+---
+
+## Processing 10x data
+
+### Libraries and environment variables
+
+```{r, message = F, warning = F}
+
+library(workflowr)
+library(Seurat)
+library(googlesheets4)
+library(tidyverse)
+library(plyr)
+library(SoupX)
+library(pheatbuilder)
+
+setwd("/home/hnatri/PIPAC_spatial/")
+set.seed(1234)
+options(future.globals.maxSize = 30000 * 1024^2)
+reduction <- "umap"
+
+source("/home/hnatri/SingleCellBestPractices/scripts/preprocessing_qc_module.R")
+
+```
+
+### Sample info
+
+```{r, message = F, warning = F, eval = T}
+
+gs4_deauth()
+sample_info <- gs4_get("https://docs.google.com/spreadsheets/d/1sXXwOreLxjMSUoPt79c6jmaQpluWkaxA5P5HfDsed3I/edit?usp=sharing")
+sample_info <- as.data.frame(read_sheet(sample_info, sheet = "PDX CAF scRNAseq"))
+
+path_list <- list("CT26" = unique(sample_info[which(sample_info$Sample_Name=="CT26"),]$CellRanger_Path),
+                  "CT26_CAF" = unique(sample_info[which(sample_info$Sample_Name=="CT26_CAF"),]$CellRanger_Path))
+
+```
+
+### Import 10x data, demultiplexing
+
+Two runs, no multiplexing
+
+```{r, message = F, warning = F, eval = T}
+
+# Demultiplexing
+seurat_list <- prep_seurat_list(metadata = sample_info,
+                                batch_ID = "Sample_Name",
+                                cellRanger_path = "CellRanger_Path",
+                                cell_ID_prefix = "Sample_Name",
+                                run_soupX = F)
+```
+
+### DoubletFinder
+
+```{r, message = F, warning = F, eval = T}
+
+seurat_list <- run_doubletfinder(seurat_list, norm_method = "SCT", manual_dbr = 0.05)
+
+lapply(seurat_list, function(xx){
+  table(xx$doublet_finder)
+})
+
+seurat_list_singlets <- lapply(seurat_list, function(xx){
+  subset(xx, subset = doublet_finder == "Singlet")
+})
+
+lapply(seurat_list_singlets, function(xx){
+  table(xx$doublet_finder)
+})
+
+```
+
+### SoupX for ambient RNA
+
+```{r, message = F, warning = F, eval = F}
+
+# Saving singlet data in 10x format
+for (i in 1:length(seurat_list_singlets)){
+  print(paste0("Converting sample ", names(seurat_list_singlets[i])))
+  obj.sub <- seurat_list_singlets[[i]] 
+  
+  counts <- LayerData(obj.sub, assay = "RNA", layer = "counts")
+  DropletUtils::write10xCounts(path = paste0("/scratch/hnatri/PIPAC/SoupX/singlet_", names(seurat_list_singlets[i])), 
+                               x = counts, 
+                               barcodes = colnames(counts), # cell names
+                               gene.id = rownames(counts), # Gene identifiers, one per row of X
+                               type = "sparse", version="3", overwrite = T)
+}
+
+# Running SoupX
+seurat_soupx_list <- sapply(names(seurat_list_singlets), function(xx){
+  print(xx)
+
+  # Read in count and droplet data
+  # Converted demultiplexed counts
+  message("Reading converted demultiplexed counts")
+  d10x_toc <- Read10X(paste0("/scratch/hnatri/PIPAC/SoupX/singlet_", xx))
+  
+  #batch_id <- seurat_list_singlets[[xx]]$Run
+  
+  # Need to read in batch specific empty droplet file
+  message("Reading empty droplet data")
+  d10x_tod <- Read10X(paste0(path_list[[xx]], "/outs/raw_feature_bc_matrix/"))
+  
+  if(length(names(d10x_tod))>1){
+    d10x_tod_gex <- d10x_tod[[1]]
+  } else {
+    d10x_tod_gex <- d10x_tod
+  }
+  
+  colnames(d10x_tod_gex) <- paste0(xx, "_", colnames(d10x_tod_gex))
+  
+  # Some batches only have features that are expressed in at least one cell;
+  # need to fix feature order
+  #rownames(d10x_toc) <- gsub("_", "-", rownames(d10x_toc))
+  #rownames(d10x_tod_gex) <- gsub("_", "-", rownames(d10x_tod_gex))
+  d10x_tod_gex <- d10x_tod_gex[rownames(d10x_toc),]
+  
+  # Run SoupX
+  sc <- SoupChannel(d10x_tod_gex, d10x_toc, calcSoupProfile = FALSE) 
+  
+  sc <- estimateSoup(sc)
+  toc_seu <- CreateSeuratObject(d10x_toc)
+  toc_seu <- SCTransform(toc_seu, vst.flavor = "v2")
+  if(ncol(toc_seu)<50){
+    toc_seu <- RunPCA(toc_seu, npcs = ncol(toc_seu)-1)
+  } else{
+    toc_seu <- RunPCA(toc_seu)
+  }
+  toc_seu <- RunUMAP(toc_seu, dims = 1:15)
+  toc_seu <- FindNeighbors(toc_seu, dims = 1:15)
+  toc_seu <- FindClusters(toc_seu, resolution = 1)
+
+  # Add meta data to soupX object
+  sc <- setClusters(sc, setNames(toc_seu$seurat_clusters, rownames(toc_seu@meta.data)))
+  # Estimate contamination (automated method)
+  message(paste0("Getting autoEstCont for: ", i))
+  sc <- autoEstCont(sc, tfidfMin = 0.6, soupQuantile = 0.7, forceAccept = TRUE, doPlot = F) 
+  out <- adjustCounts(sc)
+  
+  # Create Seurat object using corrected data
+  d10x_seu <- CreateSeuratObject(out, assay = "SoupX_RNA")
+  d10x_seu[["RNA"]] <- toc_seu@assays[["RNA"]]
+  d10x_seu <- PercentageFeatureSet(d10x_seu, pattern = "^MT-", col.name = "percent.mt_RNA", assay = "RNA")
+  d10x_seu <- PercentageFeatureSet(d10x_seu, pattern = "^RP[SL]|^MRP[SL]", col.name = "percent.ribo_RNA", assay = "RNA")
+  d10x_seu <- PercentageFeatureSet(d10x_seu, pattern = "^MT-", col.name = "percent.mt_SoupX_RNA", assay = "SoupX_RNA")
+  d10x_seu <- PercentageFeatureSet(d10x_seu, pattern = "^RP[SL]|^MRP[SL]", col.name = "percent.ribo_SoupX_RNA", assay = "SoupX_RNA")
+  
+  # Add sample metadata
+  d10x_seu$cellname <- colnames(d10x_seu)
+  d10x_seu$Sample <- xx
+  
+  d10x_seu <- RenameCells(d10x_seu,
+                          new.names = paste0(xx,"_", colnames(d10x_seu)))
+  
+  d10x_seu
+})
+
+# Merge
+seurat_merged <- merge(x = seurat_soupx_list[[1]], y = seurat_soupx_list[[2]])
+
+#saveRDS(seurat_merged, "/scratch/hnatri/PIPAC/seurat_merged.rds")
+
+```
+
+### QC and filtering
+
+```{r, message = F, warning = F}
+
+seurat_merged <- readRDS("/scratch/hnatri/PIPAC/seurat_merged.rds")
+
+# No MT expression?
+grep("^MT-", rownames(seurat_merged), value = T)
+seurat_merged <- PercentageFeatureSet(seurat_merged, pattern = "^MT-", col.name = "percent.mt_RNA", assay = "RNA")
+hist(seurat_merged$percent.mt_RNA, breaks = 100)
+hist(seurat_merged$nCount_RNA, breaks = 100)
+hist(seurat_merged$nFeature_RNA, breaks = 100)
+
+par(mfrow=c(2,4))
+
+# PLOTS 1 & 2: nCount vs. nFeature
+smoothScatter(log2(seurat_merged$nCount_SoupX_RNA), log2(seurat_merged$nFeature_SoupX_RNA),
+              xlab = "log2(nCount_SoupX_RNA)", ylab = "log2(nFeature_SoupX_RNA)")
+
+smoothScatter(seurat_merged$nCount_SoupX_RNA, seurat_merged$nFeature_SoupX_RNA,
+              xlab = "nCount_SoupX_RNA", ylab = "nFeature_SoupX_RNA")
+
+smoothScatter(log2(seurat_merged$nCount_RNA), log2(seurat_merged$nFeature_RNA),
+              xlab = "log2(nCount_RNA)", ylab = "log2(nFeature_RNA)")
+
+smoothScatter(seurat_merged$nCount_RNA, seurat_merged$nFeature_RNA,
+              xlab = "nCount_RNA", ylab = "nFeature_RNA")
+
+# PLOTS 3 & 4: nCount vs. percent.mt_RNA
+smoothScatter(seurat_merged$percent.mt_SoupX_RNA, log2(seurat_merged$nCount_SoupX_RNA),
+              xlab = "% MT", ylab = "log2(nCount_SoupX_RNA)")
+
+smoothScatter(seurat_merged$percent.mt_SoupX_RNA, seurat_merged$nCount_SoupX_RNA,
+              xlab = "% MT", ylab = "nCount_SoupX_RNA")
+abline(v = 10, h = 1000, 
+       lty = "dashed", lwd = 1.25, col = "red")
+
+# PLOTS 5 & 6: nFeature vs. percent.mt_RNA
+smoothScatter(seurat_merged$percent.mt_SoupX_RNA, log2(seurat_merged$nFeature_SoupX_RNA),
+              xlab = "% MT", ylab = "log2(nFeature_RNA)")
+
+smoothScatter(seurat_merged$percent.mt_SoupX_RNA, seurat_merged$nFeature_SoupX_RNA,
+              xlab = "% MT", ylab = "nFeature_RNA")
+abline(v = 10, h = 500, 
+       lty = "dashed", lwd = 1.25, col = "red")
+
+seurat_filtered <- subset(seurat_merged, subset = percent.mt_SoupX_RNA < 10 &
+                            nFeature_SoupX_RNA > 500 & nCount_SoupX_RNA > 1000)
+
+#saveRDS(seurat_filtered, "/scratch/hnatri/PIPAC/PDX_CAF_Seurat_filtered.rds")
+
+```
+
+

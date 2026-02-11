@@ -1,0 +1,680 @@
+---
+title: "Updating annotations and plotting"
+author: "heinin"
+date: "2025-12-04"
+output:
+  workflowr::wflow_html:
+    code_folding: hide
+  html_notebook: default
+editor_options:
+  chunk_output_type: console
+---
+
+## Packages and environment variables
+
+```{r, warning=F, message=F}
+
+suppressPackageStartupMessages({
+  library(workflowr)
+  library(arrow)
+  library(dplyr)
+  library(plyr)
+  library(Seurat)
+  library(SeuratObject)
+  library(SeuratDisk)
+  library(tidyverse)
+  library(tibble)
+  library(ggplot2)
+  library(ggpubr)
+  library(ggrepel)
+  library(googlesheets4)
+  library(workflowr)
+  library(RColorBrewer)})
+
+```
+
+## Environment variables and helper functions
+
+```{r, message = F, warning = F}
+
+setwd("/home/hnatri/PIPAC_spatial/")
+set.seed(9999)
+options(scipen = 99999)
+options(ggrepel.max.overlaps = Inf)
+
+source("/home/hnatri/PIPAC_spatial/code/PIPAC_colors_themes.R")
+source("/home/hnatri/PIPAC_spatial/code/plot_functions.R")
+
+recluster_seurat <- function(seurat_subset, umap_pcs = 10){
+    seurat_subset <- SCTransform(seurat_subset,
+                                 vars.to.regress = c("nCount_RNA", "nFeature_RNA"),
+                                 verbose = F)
+      
+    seurat_subset <- RunPCA(seurat_subset,
+                            npcs = 50,
+                            assay = "SCT",
+                            #features = features,
+                            approx = F,
+                            verbose = F)
+    
+    integrated_data <- RunUMAP(seurat_subset,
+                               reduction = "pca",
+                               reduction.name = "umap",
+                               dims = 1:umap_pcs,
+                               return.model = TRUE,
+                            verbose = F)
+
+    integrated_data <- FindNeighbors(integrated_data,
+                                     reduction = "pca",
+                                     dims = 1:umap_pcs,
+                                     graph.name = c("SCTnn",
+                                                    "SCTsnn"),
+                            verbose = F)
+
+    integrated_data <- FindClusters(integrated_data,
+                                    resolution = c(0.1,0.2,0.3,0.5,0.8,1),
+                                    graph.name = "SCTsnn",
+                            verbose = F)
+    
+    return(integrated_data)
+}
+
+# Markers
+main_plot_features <- c("PTPRC", "CD3D", "CD3E", "CD4", "CD8A", "JAK1", "JAK2", "STAT4", "STAT3", "TIGIT", "GZMB", "SELL", "CD19", "CD68", "CD44", "MARCO", "APOE", "C1QB", "C1QBP", "CD163", "SPP1", "VCAN", "MUC5AC", "NOTCH3", "RGS5", "MS4A1", "PGA5", "PLVAP", "CCL21", "LYVE", "SPARCL1", "FN1", "DCN", "LUM", "COL1A2", "PDPN", "ACTA2", "LMNA", "EGR3", "TP53", "JUN", "FOS", "BRAF", "KIT", "SOX9", "RNF43", "EPCAM", "PECAM", "CEACAM", "TGFB1", "JUNB", "TCF7", "GZMA", "GZMK", "CD47", "CD74", "LYZ", "TREM2", "CD247", "COL5A1", "SPARC", "CD36", "CTLA4", "RGS1", "CCL2", "SELENOP", "LYVE1", "CTSD", "MMP9", "CDK1", "FLT1", "RAMP2", "CCL14", "MCAM", "NRP1", "CEACAM6", "IL32", "TGFBI", "VEGFA", "LAMP1", "IGFBP7", "POSTN", "C1S", "C1R", "CSF1", "NOTCH1", "FOXP3", "IL2RB", "TUBA1B", "S100A9", "C3", "CXCR2", "SDC1", "CD38", "IGHG1", "PRDX4", "ICAM1", "GATA2", "CXCL3", "CD79")
+
+mycafs <- c("TGFB1", "ACTA2", "TAGLN") #"HOPX", "MYL9"
+icafs <- c("IL6", "CXCL12", "CXCL14") #"CXCL13", 
+abcafs <- c("CD74", "HLA-DPB1", "HLA-DPB2", "HLA-DQA1", "HLA-DRA", "HLA-DRB1")
+ficafs <- c("SFRP2", "SFRP4", "COMP", "CXCL14", "PLA2G2A", "ASPN")
+
+main_plot_features <- c(main_plot_features, mycafs, icafs, abcafs, ficafs)
+main_plot_features <- unique(main_plot_features)
+
+```
+
+## Marker information and metadata
+
+```{r, message = F, warning = F, fig.width = 6, fig.height = 4}
+
+# Cell type markers by group
+gs4_deauth()
+markers_by_group  <- gs4_get("https://docs.google.com/spreadsheets/d/1w0wrL-5KwNEWi_VpmriN7YmfwpBPlEYX0MKlwI2ZQu8/edit?usp=sharing")
+markers_by_group <- read_sheet(markers_by_group, sheet = "Markers by group")
+
+metadata  <- gs4_get("https://docs.google.com/spreadsheets/d/1sXXwOreLxjMSUoPt79c6jmaQpluWkaxA5P5HfDsed3I/edit?usp=sharing")
+markers <- read_sheet(metadata, sheet = "Markers")
+final_annotations <- read_sheet(metadata, sheet = "CT update prev")
+
+```
+
+## Import data
+
+```{r, message = F, warning = F, fig.width = 6, fig.height = 6, eval = F}
+
+seurat_data <- readRDS("/tgen_labs/banovich/PIPAC/Seurat/cell_merged_spatial_filtered_splitsamples_clustered_NN30_PC50_Seurat_denoIST_annotated.rds")
+
+#setdiff(seurat_data$Celltype, final_annotations$CelltypeFinal)
+sort(unique(seurat_data$Celltype))
+#sort(unique(seurat_data$Celltype_Final))
+
+```
+
+## Updating annotations
+
+```{r, message = F, warning = F, fig.width = 8, fig.height = 10, eval = F}
+
+#seurat_data$CelltypePrelim <- seurat_data$Celltype
+#seurat_data$Celltype <- mapvalues(seurat_data$CelltypePrelim,
+#                                  from = final_annotations$CelltypePrelim,
+#                                  to = final_annotations$Celltype1)
+#
+#saveRDS(seurat_data, "/tgen_labs/banovich/PIPAC/Seurat/cell_merged_spatial_filtered_splitsamples_clustered_NN30_PC50_Seurat_denoIST_annotated_updated.rds")
+
+```
+
+## Plotting annotations
+
+```{r, message = F, warning = F, fig.width = 8, fig.height = 10}
+
+seurat_data <- readRDS("/tgen_labs/banovich/PIPAC/Seurat/cell_merged_spatial_filtered_splitsamples_clustered_NN30_PC50_Seurat_denoIST_annotated.rds")
+
+seurat_data <- NormalizeData(seurat_data)
+seurat_data <- ScaleData(seurat_data)
+
+celltype_final <- as.factor(sort(unique(seurat_data$Celltype)))
+celltype_final_col <- colorRampPalette(brewer.pal(10, "Paired"))(nb.cols <- length(celltype_final))
+names(celltype_final_col) <- levels(celltype_final)
+
+DimPlot(seurat_data,
+        group.by = "Celltype",
+        cols = celltype_final_col,
+        reduction = "umap",
+        raster = T,
+        label = T,
+        label.box = T) +
+  coord_fixed(ratio = 1) +
+  theme_classic() +
+  NoLegend()
+
+```
+
+## Plotting top markers and canonical markers
+
+```{r, message = F, warning = F, fig.width = 18, fig.height = 35, eval = F}
+
+DefaultAssay(seurat_data) <- "denoist_RNA"
+seurat_data <- NormalizeData(seurat_data)
+seurat_data <- ScaleData(seurat_data)
+
+Idents(seurat_data) <- seurat_data$Celltype
+cluster_markers <- FindAllMarkers(seurat_data,
+                                  return.thresh = 0.01,
+                                  logfc.threshold = 0.5,
+                                  min.pct = 0.20,
+                                  verbose = F)
+
+top_cluster_markers <- cluster_markers %>%
+  arrange(dplyr::desc(avg_log2FC)) %>%
+  group_by(cluster) %>%
+  dplyr::slice(1:50)
+
+write.table(top_cluster_markers, "/home/hnatri/PIPAC_spatial/cell_annotation_final_topmarkers.tsv",
+            sep = "\t", quote = F, row.names = T)
+
+hp <- create_dotplot_heatmap(seurat_object = seurat_data,
+                             plot_features = unique(c(top_cluster_markers$gene, main_plot_features)),
+                             group_var = "Celltype",
+                             group_colors = celltype_final_col,
+                             column_title = "",
+                             row_km = 12,
+                             col_km = 12,
+                             row.order = NULL,
+                             col.order = NULL)
+
+```
+
+## Annotation groups
+
+```{r, message = F, warning = F, fig.width = 16, fig.height = 12, eval = T}
+
+DotPlot(seurat_data,
+        group.by = "Celltype",
+        features = unique(markers_by_group[which(markers_by_group$annotation1 == "Cell-cell crosstalk"),]$feature),
+        cols = c("gray89", "tomato3")) +
+  RotatedAxis() +
+  ggtitle("Cell-cell crosstalk")
+
+```
+
+```{r, message = F, warning = F, fig.width = 6, fig.height = 12, eval = T}
+
+DotPlot(seurat_data,
+        group.by = "Celltype",
+        features = unique(markers_by_group[which(markers_by_group$annotation1 == "Macrophage signaling"),]$feature),
+        cols = c("gray89", "tomato3")) +
+  RotatedAxis() +
+  ggtitle("Macrophage signaling")
+
+```
+
+```{r, message = F, warning = F, fig.width = 6, fig.height = 12, eval = T}
+
+DotPlot(seurat_data,
+        group.by = "Celltype",
+        features = unique(markers_by_group[which(markers_by_group$annotation1 == "DNA damage and cell faith"),]$feature),
+        cols = c("gray89", "tomato3")) +
+  RotatedAxis() +
+  ggtitle("DNA damage and cell faith")
+
+```
+
+```{r, message = F, warning = F, fig.width = 10, fig.height = 12, eval = T}
+
+DotPlot(seurat_data,
+        group.by = "Celltype",
+        features = unique(markers_by_group[which(markers_by_group$annotation1 == "Functional markers"),]$feature),
+        cols = c("gray89", "tomato3")) +
+  RotatedAxis() +
+  ggtitle("Functional markers")
+
+```
+
+```{r, message = F, warning = F, fig.width = 6, fig.height = 12, eval = T}
+
+DotPlot(seurat_data,
+        group.by = "Celltype",
+        features = unique(markers_by_group[which(markers_by_group$annotation1 == "Mesothelial"),]$feature),
+        cols = c("gray89", "tomato3")) +
+  RotatedAxis() +
+  ggtitle("Mesothelial")
+
+```
+
+```{r, message = F, warning = F, fig.width = 10, fig.height = 12, eval = T}
+
+DotPlot(seurat_data,
+        group.by = "Celltype",
+        features = unique(markers_by_group[which(markers_by_group$annotation1 == "Macrophages"),]$feature),
+        cols = c("gray89", "tomato3")) +
+  RotatedAxis() +
+  ggtitle("Macrophages")
+
+```
+
+```{r, message = F, warning = F, fig.width = 10, fig.height = 12, eval = T}
+
+DotPlot(seurat_data,
+        group.by = "Celltype",
+        features = unique(markers_by_group[which(markers_by_group$annotation1 == "CAFs"),]$feature),
+        cols = c("gray89", "tomato3")) +
+  RotatedAxis() +
+  ggtitle("CAFs")
+
+```
+
+```{r, message = F, warning = F, fig.width = 6, fig.height = 12, eval = T}
+
+DotPlot(seurat_data,
+        group.by = "Celltype",
+        features = grep("COL", rownames(seurat_data), value = T),
+        cols = c("gray89", "tomato3")) +
+  RotatedAxis() +
+  ggtitle("Collagen")
+
+```
+
+### Cell cycle markers
+
+```{r, message = F, warning = F, fig.width = 6, fig.height = 12, eval = T}
+
+s.genes <- cc.genes.updated.2019$s.genes
+g2m.genes <- cc.genes.updated.2019$g2m.genes
+
+DotPlot(seurat_data,
+        group.by = "Celltype",
+        features = c(s.genes, g2m.genes),
+        cols = c("gray89", "tomato3")) +
+  RotatedAxis() +
+  ggtitle("S/G2M genes")
+
+```
+
+## Plotting selected informative markers
+
+```{r, message = F, warning = F, fig.width = 12, fig.height = 17}
+
+selected_markers <- c("CCL21", "SPP1", "CD3E", "IL7R", "CD47", "JCHAIN",
+                      "IGHG1", "CXCL10", "CXCL9", "ENTPD1", "NOTCH3", "PTEN",
+                      "LYVE1", "S100A8", "LYZ", "VSIR", "ACTB", "CD28", "CD274",
+                      "C1QC", "C1QB", "CD163", "LGMN", "EPCAM",
+                      "CEACAM6", "VIM", "PDPN", "COL1A2", "COL5A1", "ACTA2",
+                      "CCL21", "RGS5", "SELL", "CD8A", "CD4", "FN1",
+                      "FOXP3", "TIGIT", "STAT3", "MSLN", "LRRN4", "MARCO",
+                      "FAP", "POSTN", "MKI67", "CD248", "UBE2C", "HSPH1",
+                      "SELENOP", "S100A9", "SLC40A1", "TGFBI", "APOE", "CD9",
+                      "DDR1", "HAVCR2", "CTLA4", "TSPAN1", "CDKN1A", "CCNE2",
+                      "SIRPA", "PTPN6", "SIGLEC10", "TNFRSF14", "ITGAV",
+                      "VEGFA", "NRP1", "CD36", "C1R", "CD14", "CD27", "IGKC",
+                      "BANK1", "NOTCH2", "JAK2", "FLT1", "IL7R", "DGKA",
+                      "CXCR4", "KLRK1", "XBP1")
+
+selected_markers <- c(selected_markers, mycafs, icafs, abcafs, ficafs)
+selected_markers <- unique(selected_markers)
+
+selected_markers <- setdiff(selected_markers, c("IL6"))
+
+DefaultAssay(seurat_data) <- "RNA"
+hp <- create_dotplot_heatmap(seurat_object = seurat_data,
+                             plot_features = selected_markers,
+                             group_var = "Celltype",
+                             group_colors = celltype_final_col,
+                             column_title = "",
+                             row_km = 10,
+                             col_km = 6,
+                             row.order = NULL,
+                             col.order = NULL)
+
+DefaultAssay(seurat_data) <- "denoist_RNA"
+hp <- create_dotplot_heatmap(seurat_object = seurat_data,
+                             plot_features = selected_markers,
+                             group_var = "Celltype",
+                             group_colors = celltype_final_col,
+                             column_title = "",
+                             row_km = 10,
+                             col_km = 6,
+                             row.order = NULL,
+                             col.order = NULL)
+
+```
+
+## QC metrics by cell type
+
+```{r, message = F, warning = F, fig.width = 20, fig.height = 30, eval = T}
+
+VlnPlot(seurat_data,
+        features = c("nCount_RNA", "nCount_cell_RNA", "nFeature_RNA",
+                     "nFeature_cell_RNA", "transcript_counts", "cell_area",
+                     "nucleus_area", "nucleus_count"),
+        group.by = "Celltype",
+        pt.size = 0,
+        ncol = 1,
+        cols = celltype_final_col) &
+  theme_minimal() &
+  RotatedAxis() &
+  NoLegend()
+
+```
+
+## Numbers of cells per celltype
+
+```{r, message = F, warning = F, fig.width = 14, fig.height = 3}
+
+ct_table <- as.data.frame(table(seurat_data$Celltype))
+colnames(ct_table) <- c("Celltype", "Freq")
+
+min(ct_table$Freq)
+
+ggplot(ct_table, aes(x = reorder(Celltype, -Freq), y = Freq, fill = Celltype)) +
+       geom_bar(stat="identity", position='stack', width = 0.8) +
+       scale_fill_manual(name = "Celltype", values = celltype_final_col) +
+       xlab("") +
+       ylab("Cell count") +
+       theme_classic() +
+       theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1)) +
+       NoLegend()
+
+```
+
+## Reclustering F7
+
+```{r, message = F, warning = F, fig.width = 4, fig.height = 4, eval = T}
+
+#F7 <- subset(seurat_data, subset = Celltype == "F7")
+#F7 <- recluster_seurat(F7, umap_pcs = 20)
+F7 <- readRDS("/tgen_labs/banovich/PIPAC/Seurat/F7.rds")
+
+DimPlot(F7,
+        group.by = "SCTsnn_res.0.5",
+        reduction = "umap",
+        label = T) +
+  coord_fixed(ratio = 1) +
+  theme_bw() +
+  NoLegend()
+
+table(F7$SCTsnn_res.0.8)
+
+```
+
+```{r, message = F, warning = F, fig.width = 8, fig.height = 15, eval = T}
+
+DotPlot(F7,
+        group.by = "SCTsnn_res.0.5",
+        features = selected_markers,
+        cols = c("gray98", "tomato3")) +
+  coord_flip()
+  
+```
+
+```{r, message = F, warning = F, fig.width = 9, fig.height = 6, eval = T}
+
+FeaturePlot(F7,
+            features = c("CD68", "CD163", "COL1A2", "DCN", "FN1", "EPCAM"),
+            cols = c("gray89", "tomato3"),
+            reduction = "umap",
+            order = T,
+            raster = T,
+            ncol = 3) &
+  coord_fixed(ratio = 1) &
+  theme_bw() &
+  NoLegend()
+
+```
+
+```{r, message = F, warning = F, fig.width = 22, fig.height = 30, eval = T}
+
+FeaturePlot(F7,
+            features = selected_markers,
+            cols = c("gray98", "tomato3"),
+            reduction = "umap",
+            raster = T,
+            ncol = 8) &
+  coord_fixed(ratio = 1) &
+  theme_bw() &
+  NoLegend()
+
+# Renaming subclusters
+new_f7 <- data.frame("cluster" = c(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12,
+                                    13, 14, 15),
+                          "new_annot" = c("fibro1_f7", "fibro2_f7", "fibro3_f7",
+                                        "fibro4_f7", "epi1_f7", "endo1_f7",
+                                        "fibro4_f7", "fibro5_f7", "fibro6_f7",
+                                        "fibro8_f7", "fibro9_f7", "fibro10_f7",
+                                        "myel1_f7", "fibro11_f7", "myel2_f7",
+                                        "epi2_f7"))
+
+F7$Celltype_F7 <- mapvalues(F7$SCTsnn_res.0.5,
+                            from = new_f7$cluster,
+                            to = new_f7$new_annot)
+
+#saveRDS(F7, "/tgen_labs/banovich/PIPAC/Seurat/F7.rds")
+
+```
+
+## Reclustering Pericytes
+
+```{r, message = F, warning = F, fig.width = 4, fig.height = 4, eval = T}
+
+#Peri <- subset(seurat_data, subset = Celltype == "Peri")
+#Peri <- recluster_seurat(Peri, umap_pcs = 20)
+Peri <- readRDS("/tgen_labs/banovich/PIPAC/Seurat/Peri.rds")
+
+DimPlot(Peri,
+        group.by = "SCTsnn_res.0.5",
+        reduction = "umap",
+        label = T) +
+  coord_fixed(ratio = 1) +
+  theme_bw() +
+  NoLegend()
+
+table(Peri$SCTsnn_res.0.8)
+
+```
+
+```{r, message = F, warning = F, fig.width = 8, fig.height = 14, eval = T}
+
+DotPlot(Peri,
+        group.by = "SCTsnn_res.0.5",
+        features = selected_markers,
+        cols = c("gray98", "tomato3")) +
+  coord_flip()
+  
+```
+
+```{r, message = F, warning = F, fig.width = 9, fig.height = 6, eval = T}
+
+FeaturePlot(Peri,
+            features = c("CD68", "CD163", "COL1A2", "DCN", "FN1", "EPCAM"),
+            cols = c("gray89", "tomato3"),
+            reduction = "umap",
+            order = T,
+            raster = T,
+            ncol = 3) &
+  coord_fixed(ratio = 1) &
+  theme_bw() &
+  NoLegend()
+
+```
+
+```{r, message = F, warning = F, fig.width = 22, fig.height = 30, eval = T}
+
+FeaturePlot(Peri,
+            features = selected_markers,
+            cols = c("gray98", "tomato3"),
+            reduction = "umap",
+            raster = T,
+            ncol = 8) &
+  coord_fixed(ratio = 1) &
+  theme_bw() &
+  NoLegend()
+
+# Renaming subclusters
+new_peri <- data.frame(cluster = c(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12,
+                                      13, 14, 15, 16),
+                          new_annot = c("fibro1", "peri1", "peri2", "fibro3",
+                                      "fibro4", "myel1", "endo1", "SPP11",
+                                      "myel2", "fibro5", "endo2", "CCL21_1",
+                                      "CellCycle_1", "myel3", "fibro6", "epi1",
+                                      "fibro"))
+
+Peri$Celltype_Peri <- mapvalues(Peri$SCTsnn_res.0.5,
+                            from = new_peri$cluster,
+                            to = new_peri$new_annot)
+
+#saveRDS(Peri, "/tgen_labs/banovich/PIPAC/Seurat/Peri.rds")
+
+```
+
+## Reclustering Plasma2
+
+```{r, message = F, warning = F, fig.width = 4, fig.height = 4, eval = T}
+
+#Plasma2 <- subset(seurat_data, subset = Celltype == "Plasma2")
+#Plasma2 <- recluster_seurat(Plasma2, umap_pcs = 20)
+Plasma2 <- readRDS("/tgen_labs/banovich/PIPAC/Seurat/Plasma2.rds")
+
+DimPlot(Plasma2,
+        group.by = "SCTsnn_res.0.5",
+        reduction = "umap",
+        label = T) +
+  coord_fixed(ratio = 1) +
+  theme_bw() +
+  NoLegend()
+
+table(Plasma2$SCTsnn_res.0.8)
+
+```
+
+```{r, message = F, warning = F, fig.width = 8, fig.height = 14, eval = T}
+
+DotPlot(Plasma2,
+        group.by = "SCTsnn_res.0.5",
+        features = selected_markers,
+        cols = c("gray98", "tomato3")) +
+  coord_flip()
+  
+```
+
+```{r, message = F, warning = F, fig.width = 9, fig.height = 6, eval = T}
+
+FeaturePlot(Plasma2,
+            features = c("CD68", "CD163", "COL1A2", "DCN", "FN1", "EPCAM"),
+            cols = c("gray89", "tomato3"),
+            reduction = "umap",
+            order = T,
+            raster = T,
+            ncol = 3) &
+  coord_fixed(ratio = 1) &
+  theme_bw() &
+  NoLegend()
+
+```
+
+```{r, message = F, warning = F, fig.width = 22, fig.height = 30, eval = T}
+
+FeaturePlot(Plasma2,
+            features = selected_markers,
+            cols = c("gray98", "tomato3"),
+            reduction = "umap",
+            raster = T,
+            ncol = 8) &
+  coord_fixed(ratio = 1) &
+  theme_bw() &
+  NoLegend()
+
+# Renaming subclusters
+new_plasma2 <- data.frame(cluster = c(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12,
+                                      13, 14, 15, 16, 17, 18),
+                          new_annot = c("plasma2_1", "plasma2_f1", "plasma2_m1",
+                                        "plasma2_unclassified", "plasma2_peri",
+                                        "plasma2_endo", "plasma2_b", "plasma2_2",
+                                        "plasma2_T_cd8", "plasma2_3",
+                                        "plasma2_spp1hi", "plasma2_neutrophil",
+                                        "plasma2_unclassified1", "plasma2_f2",
+                                        "plasma2_unclassified2", "plasma2_epi",
+                                        "plasma2_unclassified3",
+                                        "plasma2_immune_unclassified1",
+                                        "plasma2_immune_unclassified2"))
+
+Plasma2$Celltype_Plasma2 <- mapvalues(Plasma2$SCTsnn_res.0.5,
+                            from = new_plasma2$cluster,
+                            to = new_plasma2$new_annot)
+
+#saveRDS(Plasma2, "/tgen_labs/banovich/PIPAC/Seurat/Plasma2.rds")
+
+```
+
+## Combining again and plotting
+
+```{r, message = F, warning = F, fig.width = 20, fig.height = 20, eval = T}
+
+F7 <- readRDS("/tgen_labs/banovich/PIPAC/Seurat/F7.rds")
+Peri <- readRDS("/tgen_labs/banovich/PIPAC/Seurat/Peri.rds")
+Plasma2 <- readRDS("/tgen_labs/banovich/PIPAC/Seurat/Plasma2.rds")
+
+seurat_data$Celltype_Peri <- mapvalues(colnames(seurat_data),
+                                       from = colnames(Peri),
+                                       to = as.character(Peri$Celltype_Peri))
+
+seurat_data@meta.data$Celltype_Peri[-which(rownames(seurat_data@meta.data) %in% colnames(Peri))] <- NA
+
+seurat_data$Celltype_F7 <- mapvalues(colnames(seurat_data),
+                                     from = colnames(F7),
+                                     to = as.character(F7$Celltype_F7))
+
+seurat_data@meta.data$Celltype_F7[-which(rownames(seurat_data@meta.data) %in% colnames(F7))] <- NA
+
+seurat_data$Celltype_Plasma2 <- mapvalues(colnames(seurat_data),
+                                     from = colnames(Plasma2),
+                                     to = as.character(Plasma2$Celltype_Plasma2))
+
+length(intersect(rownames(seurat_data@meta.data), colnames(F7)))
+
+seurat_data@meta.data$Celltype_Plasma2[-which(rownames(seurat_data@meta.data) %in% colnames(Plasma2))] <- NA
+
+seurat_data$Celltype_Updated <- ifelse(!is.na(seurat_data$Celltype_Peri), seurat_data$Celltype_Peri,
+                                       ifelse(!is.na(seurat_data$Celltype_F7), seurat_data$Celltype_F7,
+                                              ifelse(!is.na(seurat_data$Celltype_Plasma2), seurat_data$Celltype_Plasma2,
+                                                     seurat_data$Celltype)))
+
+seurat_data$Celltype_Final <- mapvalues(seurat_data$Celltype_Updated,
+                                        from = final_annotations$Celltype_Updated,
+                                        to = final_annotations$Celltype_Final)
+
+# "MFambiguous46"     "MFambiguous47"
+seurat_data$Celltype_Final <- gsub("MFambiguous46", "Unclassified14", seurat_data$Celltype_Final)
+seurat_data$Celltype_Final <- gsub("MFambiguous47", "Unclassified15", seurat_data$Celltype_Final)
+
+unique(seurat_data$Celltype_Updated)
+unique(seurat_data$Celltype_Final)
+
+table(seurat_data$Celltype_Final)
+
+DotPlot(seurat_data,
+        group.by = "Celltype_Final",
+        features = selected_markers,
+        cols = c("gray98", "tomato3")) &
+  RotatedAxis()
+
+saveRDS(seurat_data, "/tgen_labs/banovich/PIPAC/Seurat/cell_merged_spatial_filtered_splitsamples_clustered_NN30_PC50_Seurat_denoIST_annotated_updated.rds")
+
+sort(unique(seurat_data$Celltype_Final))
+seurat_data@meta.data %>% dplyr::select(c("Celltype_Final", "Celltype_Updated", "Celltype", "Celltype_Plasma2")) %>%
+  distinct()
+
+#seurat_data <- readRDS("/tgen_labs/banovich/PIPAC/Seurat/cell_merged_spatial_filtered_splitsamples_clustered_NN30_PC50_Seurat_denoIST_annotated_updated.rds")
+
+# Rscript -e "rmarkdown::render('updating_annotations.Rmd')"
+
+```
+
+

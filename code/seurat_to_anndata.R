@@ -27,7 +27,7 @@ options(ggrepel.max.overlaps = Inf)
 # Import data and convert
 #==============================================================================
 
-cell_seurat_data <- readRDS("/scratch/hnatri/PIPAC/myeloid_seurat_data.rds")
+cell_seurat_data <- readRDS("/scratch/hnatri/PIPAC/fibro_seurat_data.rds")
 #cell_seurat_immune <- readRDS("/scratch/hnatri/PIPAC/cell_immune_subset.rds")
 #cell_seurat_nonimmune <- readRDS("/scratch/hnatri/PIPAC/cell_nonimmune_subset.rds")
 
@@ -50,6 +50,6 @@ cell_seurat_data@reductions$sp <- NULL
 # NAs in metadata cause a problem
 cell_seurat_data@meta.data <- cell_seurat_data@meta.data[,c("cell_id", "Sample")] #, "Annotation"
 
-SaveH5Seurat(cell_seurat_data, filename = "/scratch/hnatri/PIPAC/RSC_latest_EDM_2025-08-06/myeloid.h5Seurat", overwrite = TRUE)
-Convert("/scratch/hnatri/PIPAC/RSC_latest_EDM_2025-08-06/myeloid.h5Seurat", dest = "h5ad", overwrite = TRUE)
+SaveH5Seurat(cell_seurat_data, filename = "/scratch/hnatri/PIPAC/RSC_latest_EDM_2025-08-06/fibro.h5Seurat", overwrite = TRUE)
+Convert("/scratch/hnatri/PIPAC/RSC_latest_EDM_2025-08-06/fibro.h5Seurat", dest = "h5ad", overwrite = TRUE)
 
