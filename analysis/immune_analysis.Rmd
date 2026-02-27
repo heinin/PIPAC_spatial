@@ -1,0 +1,592 @@
+---
+title: "Immune fraction analysis"
+author: "heinin"
+date: "2026-02-12"
+output:
+  workflowr::wflow_html:
+    code_folding: hide
+  html_notebook: default
+editor_options:
+  chunk_output_type: console
+---
+
+## Load packages
+
+```{r, warning=F, message=F}
+
+suppressPackageStartupMessages({
+  library(workflowr)
+  library(Seurat)
+  library(SeuratObject)
+  library(SeuratDisk)
+  library(tidyverse)
+  library(tibble)
+  library(ggplot2)
+  library(ggpubr)
+  library(ggrepel)
+  library(googlesheets4)
+  library(workflowr)
+  library(patchwork)
+  library(ggpmisc)
+  library(scProportionTest)})
+
+```
+
+## Environment variables and helper functions
+
+```{r, message = F, warning = F}
+
+setwd("/home/hnatri/PIPAC_spatial/")
+set.seed(9999)
+options(scipen = 99999)
+options(ggrepel.max.overlaps = Inf)
+
+source("/home/hnatri/PIPAC_spatial/code/PIPAC_colors_themes.R")
+source("/home/hnatri/PIPAC_spatial/code/plot_functions.R")
+
+```
+
+## Marker information
+
+```{r, message = F, warning = F, fig.width = 6, fig.height = 4}
+
+# Markers
+main_plot_features <- c("PTPRC", "CD3D", "CD3E", "CD4", "CD8A", "JAK1", "JAK2", "STAT4", "STAT3", "TIGIT", "GZMB", "SELL", "CD19", "CD68", "CD44", "MARCO", "APOE", "C1QB", "C1QBP", "CD163", "SPP1", "VCAN", "MUC5AC", "NOTCH3", "RGS5", "MS4A1", "PGA5", "PLVAP", "CCL21", "LYVE", "SPARCL1", "FN1", "DCN", "LUM", "COL1A2", "PDPN", "ACTA2", "LMNA", "EGR3", "TP53", "JUN", "FOS", "BRAF", "KIT", "SOX9", "RNF43", "EPCAM", "PECAM", "CEACAM", "TGFB1", "JUNB", "TCF7", "GZMA", "GZMK", "CD47", "CD74", "LYZ", "TREM2", "CD247", "COL5A1", "SPARC", "CD36", "CTLA4", "RGS1", "CCL2", "SELENOP", "LYVE1", "CTSD", "MMP9", "CDK1", "FLT1", "RAMP2", "CCL14", "MCAM", "NRP1", "CEACAM6", "IL32", "TGFBI", "VEGFA", "LAMP1", "IGFBP7", "POSTN", "C1S", "C1R", "CSF1", "NOTCH1", "FOXP3", "IL2RB", "TUBA1B", "S100A9", "C3", "CXCR2", "SDC1", "CD38", "IGHG1", "PRDX4", "ICAM1", "GATA2", "CXCL3")
+
+mycafs <- c("TGFB1", "ACTA2", "TAGLN") #"HOPX", "MYL9"
+icafs <- c("IL6", "CXCL12", "CXCL14") #"CXCL13", 
+abcafs <- c("CD74", "HLA-DPB1", "HLA-DPB2", "HLA-DQA1", "HLA-DRA", "HLA-DRB1")
+ficafs <- c("SFRP2", "SFRP4", "COMP", "CXCL14", "PLA2G2A", "ASPN")
+
+main_plot_features <- c(main_plot_features, mycafs, icafs, abcafs, ficafs)
+main_plot_features <- unique(main_plot_features)
+
+gs4_deauth()
+metadata  <- gs4_get("https://docs.google.com/spreadsheets/d/1sXXwOreLxjMSUoPt79c6jmaQpluWkaxA5P5HfDsed3I/edit?usp=sharing")
+markers <- read_sheet(metadata, sheet = "Markers")
+final_annotations <- read_sheet(metadata, sheet = "CT update clean")
+
+# Cell type markers by group
+gs4_deauth()
+markers_by_group  <- gs4_get("https://docs.google.com/spreadsheets/d/1w0wrL-5KwNEWi_VpmriN7YmfwpBPlEYX0MKlwI2ZQu8/edit?usp=sharing")
+markers_by_group <- read_sheet(markers_by_group, sheet = "Markers by group")
+
+```
+
+## Import and subset data
+
+```{r, message = F, warning = F, fig.width = 8, fig.height = 4, eval = T}
+
+seurat_data <- readRDS("/tgen_labs/banovich/PIPAC/Seurat/Freeze/cell_merged_spatial_filtered_splitsamples_clustered_NN30_PC50_Seurat_denoIST_annotated_updated.rds")
+
+```
+
+```{r, message = F, warning = F, fig.width = 8, fig.height = 4, eval = F}
+
+#DefaultAssay(seurat_data) <- "RNA"
+#seurat_data <- seurat_data %>%
+#  NormalizeData() %>%
+#  ScaleData()
+
+sort(unique(seurat_data$Celltype_Final))
+
+immune_cts <- ""
+
+immune <- subset(seurat_data, subset = Celltype_Final %in% immune_cts)
+immune <- fibro %>%
+  NormalizeData() %>%
+  ScaleData()
+
+#saveRDS(fibro, "/scratch/hnatri/PIPAC/fibro_seurat_data.rds")
+
+#as.data.frame(table(seurat_data$Celltype_Final))
+#
+#write.table(as.data.frame(table(seurat_data$Celltype_Final)),
+#            "/home/hnatri/PIPAC_spatial/ncells.tsv",
+#            quote = F, row.names = F, sep = "\t")
+
+```
+
+## Marker expression
+
+```{r, message = F, warning = F, fig.width = 4, fig.height = 4}
+
+fibro <- readRDS("/tgen_labs/banovich/PIPAC/Seurat/fibro_clustered_NN20_PC20_Seurat.rds")
+
+DefaultAssay(fibro) <- "RNA"
+fibro <- fibro %>%
+  NormalizeData() %>%
+  ScaleData()
+
+fibro$Celltype_Final <- mapvalues(colnames(fibro),
+                                  from = colnames(seurat_data),
+                                  to = seurat_data$Celltype_Final)
+
+celltype_final <- as.factor(sort(unique(fibro$Celltype_Final)))
+celltype_final_col <- colorRampPalette(brewer.pal(10, "Paired"))(nb.cols <- length(celltype_final))
+names(celltype_final_col) <- levels(celltype_final)
+
+DimPlot(fibro,
+        group.by = "Celltype_Final",
+        cols = celltype_final_col,
+        reduction = "umap",
+        raster = T,
+        label = T,
+        label.box = T) +
+  coord_fixed(ratio = 1) +
+  theme_classic() +
+  NoLegend()
+
+```
+
+```{r, message = F, warning = F, fig.width = 12, fig.height = 8}
+
+FeaturePlot(fibro,
+            features = c(mycafs, icafs, abcafs, ficafs),
+            cols = c("gray98", "tomato3"),
+            reduction = "umap",
+            raster = T,
+            ncol = 3) &
+  coord_fixed(ratio = 1) &
+  theme_bw() &
+  NoLegend()
+
+```
+
+```{r, message = F, warning = F, fig.width = 13, fig.height = 8}
+
+FeaturePlot(fibro,
+            features = c("nCount_RNA", "nFeature_RNA", "total_counts",
+                         "cell_area", "nucleus_area", "nucleus_count"),
+            cols = c("gray98", "tomato3"),
+            reduction = "umap",
+            raster = T,
+            ncol = 3) &
+  coord_fixed(ratio = 1) &
+  theme_bw()
+
+```
+
+```{r, message = F, warning = F, fig.width = 13, fig.height = 6}
+
+create_dotplot_heatmap(seurat_object = fibro,
+                       plot_features = unique(c(mycafs, icafs, abcafs, ficafs)),
+                       group_var = "Celltype_Final",
+                       group_colors = celltype_final_col,
+                       column_title = "",
+                       row_km = 1,
+                       col_km = 6,
+                       row.order = NULL,
+                       col.order = NULL)
+
+```
+
+
+```{r, message = F, warning = F, fig.width = 13, fig.height = 26}
+
+create_dotplot_heatmap(seurat_object = fibro,
+                       plot_features = main_plot_features,
+                       group_var = "Celltype_Final",
+                       group_colors = celltype_final_col,
+                       column_title = "",
+                       row_km = 12,
+                       col_km = 5,
+                       row.order = NULL,
+                       col.order = NULL)
+
+```
+
+### Plotting cell type markers by group
+
+```{r, message = F, warning = F, fig.width = 16, fig.height = 8, eval = T}
+
+DotPlot(fibro,
+        group.by = "Celltype_Final",
+        features = unique(markers_by_group[which(markers_by_group$annotation1 == "Cell-cell crosstalk"),]$feature),
+        cols = c("azure", "tomato3")) +
+  RotatedAxis() +
+  ggtitle("Cell-cell crosstalk")
+
+```
+
+```{r, message = F, warning = F, fig.width = 6, fig.height = 8, eval = T}
+
+DotPlot(fibro,
+        group.by = "Celltype_Final",
+        features = unique(markers_by_group[which(markers_by_group$annotation1 == "DNA damage and cell faith"),]$feature),
+        cols = c("azure", "tomato3")) +
+  RotatedAxis() +
+  ggtitle("DNA damage and cell faith")
+
+```
+
+```{r, message = F, warning = F, fig.width = 10, fig.height = 8, eval = T}
+
+DotPlot(fibro,
+        group.by = "Celltype_Final",
+        features = unique(markers_by_group[which(markers_by_group$annotation1 == "Functional markers"),]$feature),
+        cols = c("azure", "tomato3")) +
+  RotatedAxis() +
+  ggtitle("Functional markers")
+
+```
+
+```{r, message = F, warning = F, fig.width = 6, fig.height = 8, eval = T}
+
+DotPlot(fibro,
+        group.by = "Celltype_Final",
+        features = unique(markers_by_group[which(markers_by_group$annotation1 == "Mesothelial"),]$feature),
+        cols = c("azure", "tomato3")) +
+  RotatedAxis() +
+  ggtitle("Mesothelial")
+
+```
+
+```{r, message = F, warning = F, fig.width = 10, fig.height = 8, eval = T}
+
+DotPlot(fibro,
+        group.by = "Celltype_Final",
+        features = unique(markers_by_group[which(markers_by_group$annotation1 == "CAFs"),]$feature),
+        cols = c("azure", "tomato3")) +
+  RotatedAxis() +
+  ggtitle("CAFs")
+
+```
+
+```{r, message = F, warning = F, fig.width = 6, fig.height = 8, eval = T}
+
+DotPlot(fibro,
+        group.by = "Celltype_Final",
+        features = grep("COL", rownames(fibro), value = T),
+        cols = c("azure", "tomato3")) +
+  RotatedAxis() +
+  ggtitle("Collagen")
+
+```
+
+### Cell cycle markers
+
+```{r, message = F, warning = F, fig.width = 6, fig.height = 8, eval = T}
+
+s.genes <- cc.genes.updated.2019$s.genes
+g2m.genes <- cc.genes.updated.2019$g2m.genes
+
+DotPlot(fibro,
+        group.by = "Celltype_Final",
+        features = c(s.genes, g2m.genes),
+        cols = c("azure", "tomato3")) +
+  RotatedAxis() +
+  ggtitle("S/G2M genes")
+
+```
+
+## Arm 3 analysis
+
+```{r, message = F, warning = F, fig.width = 13, fig.height = 26}
+
+seurat_arm3 <- subset(fibro, subset = Arm == "Arm3")
+seurat_arm3 <- seurat_arm3 %>%
+  NormalizeData() %>%
+  ScaleData()
+
+ncol(seurat_arm3)
+table(seurat_arm3$Celltype_Final)
+
+```
+
+Keeping cell types with >500 cells in arm 3
+
+```{r, message = F, warning = F, fig.width = 24, fig.height = 6}
+
+keeps <- table(seurat_arm3$Celltype_Final) %>%
+  as.data.frame() %>%
+  filter(Freq> 500)
+
+seurat_arm3_subset <- subset(seurat_arm3, subset = Celltype_Final %in% keeps$Var1)
+
+table(seurat_arm3_subset$Celltype_Final)
+table(seurat_arm3_subset$Celltype_Final, seurat_arm3_subset$Tissue)
+
+```
+
+## Cell type proportions by sample
+
+```{r, message = F, warning = F, fig.width = 24, fig.height = 6}
+
+create_barplot(seurat_arm3_subset,
+               group_var = "Sample",
+               plot_var = "Celltype_Final",
+               plot_levels = sort((unique(seurat_arm3_subset$Celltype_Final))),
+               group_levels = sort(unique(seurat_arm3_subset$Sample)),
+               plot_colors = celltype_final_col,
+               var_names =  c("Frequency (%)", ""),
+               legend_title = "Celltype")
+
+```
+
+## Cell type proportions by timepoint and sample type
+
+```{r, message = F, warning = F, fig.width = 7, fig.height = 5}
+
+seurat_arm3_subset$Tissue_Timepoint <- paste0(seurat_arm3_subset$Tissue, "_",
+                                              seurat_arm3_subset$Timepoint)
+
+create_barplot(seurat_arm3_subset,
+               group_var = "Tissue_Timepoint",
+               plot_var = "Celltype_Final",
+               plot_levels = sort((unique(seurat_arm3_subset$"Celltype_Final"))),
+               group_levels = sort(unique(seurat_arm3_subset$Tissue_Timepoint)),
+               plot_colors = celltype_final_col,
+               var_names =  c("Frequency (%)", ""),
+               legend_title = "Celltype")
+
+```
+
+## Cell type proportions by timepoint in tumors
+
+```{r, message = F, warning = F, fig.width = 5, fig.height = 5}
+
+create_barplot(subset(seurat_arm3_subset, subset = Tissue == "Tumor"),
+               group_var = "Timepoint",
+               plot_var = "Celltype_Final",
+               plot_levels = sort((unique(seurat_arm3_subset$"Celltype_Final"))),
+               group_levels = sort(unique(seurat_arm3_subset$Timepoint)),
+               plot_colors = celltype_final_col,
+               var_names =  c("Frequency (%)", ""),
+               legend_title = "Celltype")
+
+```
+
+```{r, message = F, warning = F, fig.width = 6, fig.height = 6, eval = T}
+
+prop_test <- sc_utils(subset(seurat_arm3_subset, subset = Tissue == "Tumor"))
+prop_test <- permutation_test(
+	prop_test, cluster_identity = "Celltype_Final",
+	sample_1 = "0", sample_2 = "6",
+	sample_identity = "Timepoint")
+
+permutation_plot(prop_test)
+
+```
+
+## Cell type proportions by timepoint in tumor-adjacent samples
+
+```{r, message = F, warning = F, fig.width = 5, fig.height = 5}
+
+create_barplot(subset(seurat_arm3_subset, subset = Tissue == "Normal"),
+               group_var = "Timepoint",
+               plot_var = "Celltype_Final",
+               plot_levels = sort((unique(seurat_arm3$"Celltype_Final"))),
+               group_levels = sort(unique(seurat_arm3$Timepoint)),
+               plot_colors = celltype_final_col,
+               var_names =  c("Frequency (%)", ""),
+               legend_title = "Celltype")
+
+```
+
+```{r, message = F, warning = F, fig.width = 6, fig.height = 6, eval = T}
+
+prop_test <- sc_utils(subset(seurat_arm3_subset, subset = Tissue == "Normal"))
+prop_test <- permutation_test(
+	prop_test, cluster_identity = "Celltype_Final",
+	sample_1 = "0", sample_2 = "6",
+	sample_identity = "Timepoint")
+
+permutation_plot(prop_test)
+
+```
+
+## Cell type proportions by sample type, baseline
+
+```{r, message = F, warning = F, fig.width = 5, fig.height = 5}
+
+create_barplot(subset(seurat_arm3_subset, subset = Timepoint == "0"),
+               group_var = "Tissue",
+               plot_var = "Celltype_Final",
+               plot_levels = sort((unique(seurat_arm3$"Celltype_Final"))),
+               group_levels = sort(unique(seurat_arm3$Tissue)),
+               plot_colors = celltype_final_col,
+               var_names =  c("Frequency (%)", ""),
+               legend_title = "Celltype")
+
+```
+
+```{r, message = F, warning = F, fig.width = 6, fig.height = 6, eval = T}
+
+prop_test <- sc_utils(subset(seurat_arm3_subset, subset = Timepoint == "0"))
+prop_test <- permutation_test(
+	prop_test, cluster_identity = "Celltype_Final",
+	sample_1 = "Normal", sample_2 = "Tumor",
+	sample_identity = "Tissue")
+
+permutation_plot(prop_test)
+
+```
+
+## Cell type proportions by sample type, post-treatment
+
+```{r, message = F, warning = F, fig.width = 5, fig.height = 5}
+
+create_barplot(subset(seurat_arm3_subset, subset = Timepoint == "6"),
+               group_var = "Tissue",
+               plot_var = "Celltype_Final",
+               plot_levels = sort((unique(seurat_arm3_subset$"Celltype_Final"))),
+               group_levels = sort(unique(seurat_arm3_subset$Tissue)),
+               plot_colors = celltype_final_col,
+               var_names =  c("Frequency (%)", ""),
+               legend_title = "Celltype")
+
+```
+
+```{r, message = F, warning = F, fig.width = 6, fig.height = 6, eval = T}
+
+prop_test <- sc_utils(subset(seurat_arm3_subset, subset = Timepoint == "6"))
+prop_test <- permutation_test(
+	prop_test, cluster_identity = "Celltype_Final",
+	sample_1 = "Normal", sample_2 = "Tumor",
+	sample_identity = "Tissue")
+
+permutation_plot(prop_test)
+
+```
+
+## DEGs between pre- and post-treatment, tumor
+
+```{r, message = F, warning = F, fig.width = 8, fig.height = 5}
+
+Idents(seurat_arm3) <- seurat_arm3$Timepoint
+deg_res <- FindMarkers(subset(seurat_arm3, subset = Tissue == "Tumor"),
+                       ident.1 = "0",
+                       ident.2 = "6",
+                       assay = "RNA",
+                       verbose = F)
+deg_res$feature <- rownames(deg_res)
+
+deg_res_sig <- deg_res %>%
+  mutate_if(is.numeric, ~round(., 2)) %>%
+  filter(abs(avg_log2FC) > 1 & p_val_adj < 0.05)
+
+deg_res_sig
+
+which(deg_res_sig$feature %in% unique(c(mycafs, icafs, abcafs, ficafs)))
+
+deg_res %>% mutate_if(is.numeric, ~round(., 2)) %>%
+  filter(feature %in% unique(c(mycafs, icafs, abcafs, ficafs)))
+
+```
+
+```{r, message = F, warning = F, fig.width = 8, fig.height = 10}
+
+VlnPlot(subset(seurat_arm3, subset = Tissue == "Tumor"),
+        group.by = "Timepoint",
+        features = deg_res_sig$feature,
+        pt.size = 0,
+        ncol = 5) &
+  theme_bw() &
+  NoLegend() &
+  xlab("")
+
+```
+
+```{r, message = F, warning = F, fig.width = 8, fig.height = 6}
+
+VlnPlot(subset(seurat_arm3, subset = Tissue == "Tumor"),
+        group.by = "Timepoint",
+        features = unique(c(mycafs, icafs, abcafs, ficafs)),
+        pt.size = 0,
+        ncol = 3) &
+  theme_bw() &
+  NoLegend() &
+  xlab("")
+
+```
+
+## DEGs between pre- and post-treatment, tumor-adjacent
+
+```{r, message = F, warning = F, fig.width = 8, fig.height = 5}
+
+deg_res <- FindMarkers(subset(seurat_arm3, subset = Tissue == "Normal"),
+                       ident.1 = "0",
+                       ident.2 = "6",
+                       assay = "RNA",
+                       verbose = F)
+deg_res$feature <- rownames(deg_res)
+
+deg_res_sig <- deg_res %>%
+  mutate_if(is.numeric, ~round(., 2)) %>%
+  filter(abs(avg_log2FC) > 1 & p_val_adj < 0.05)
+
+deg_res_sig
+
+which(deg_res_sig$feature %in% unique(c(mycafs, icafs, abcafs, ficafs)))
+
+deg_res %>% mutate_if(is.numeric, ~round(., 2)) %>%
+  filter(feature %in% unique(c(mycafs, icafs, abcafs, ficafs)))
+
+```
+
+```{r, message = F, warning = F, fig.width = 8, fig.height = 10}
+
+VlnPlot(subset(seurat_arm3, subset = Tissue == "Normal"),
+        group.by = "Timepoint",
+        features = deg_res_sig$feature,
+        pt.size = 0,
+        ncol = 5) &
+  theme_bw() &
+  NoLegend() &
+  xlab("")
+
+```
+
+```{r, message = F, warning = F, fig.width = 8, fig.height = 6}
+
+VlnPlot(subset(seurat_arm3, subset = Tissue == "Normal"),
+        group.by = "Timepoint",
+        features = unique(c(mycafs, icafs, abcafs, ficafs)),
+        pt.size = 0,
+        ncol = 3) &
+  theme_bw() &
+  NoLegend() &
+  xlab("")
+
+```
+
+## QC metrics by cell type
+
+```{r, message = F, warning = F, fig.width = 22, fig.height = 30, eval = T}
+
+VlnPlot(fibro,
+        features = c("nCount_RNA", "nCount_cell_RNA", "nFeature_RNA",
+                     "nFeature_cell_RNA", "transcript_counts", "cell_area",
+                     "nucleus_area", "nucleus_count"),
+        group.by = "Celltype_Final",
+        pt.size = 0,
+        ncol = 1,
+        cols = celltype_final_col) &
+  theme_minimal() &
+  RotatedAxis() &
+  NoLegend()
+
+```
+
+## Numbers of cells per celltype
+
+```{r, message = F, warning = F, fig.width = 16, fig.height = 3}
+
+ct_table <- as.data.frame(table(fibro$Celltype_Final))
+colnames(ct_table) <- c("Celltype_Final", "Freq")
+
+min(ct_table$Freq)
+
+ggplot(ct_table, aes(x = reorder(Celltype_Final, -Freq), y = Freq, fill = Celltype_Final)) +
+       geom_bar(stat="identity", position='stack', width = 0.8) +
+       scale_fill_manual(name = "Celltype_Final", values = celltype_final_col) +
+       xlab("") +
+       ylab("Cell count") +
+       theme_classic() +
+       theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1)) +
+       NoLegend()
+
+```
+
+

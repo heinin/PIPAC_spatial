@@ -22,8 +22,9 @@ library(plyr)
 library(org.Hs.eg.db)
 library(org.Mm.eg.db)
 library(biomaRt)
-library(Biobase) # if input is ExpressionSet
+library(Biobase) # for CMScaller, if input is ExpressionSet
 library(CMScaller)
+library(gprofiler2)
 
 setwd("/home/hnatri/PIPAC_spatial/")
 set.seed(1234)
@@ -39,7 +40,7 @@ source("/home/hnatri/PIPAC_spatial/code/plot_functions.R")
 
 ```{r, message = F, warning = F, eval = T}
 
-seurat_data <- readRDS("/scratch/hnatri/PIPAC/PDX_CAF_Seurat_integrated.rds")
+seurat_data <- readRDS("/tgen_labs/banovich/PIPAC/CAF_scRNAseq/PDX_CAF_Seurat_integrated.rds")
 
 table(seurat_data$Sample)
 
@@ -100,18 +101,24 @@ head(res, n=3)
 
 load("/home/hnatri/PIPAC_spatial/templates.CMS.rda")
 
+genenames <- gorth(templates.CMS$symbol, source_organism = "hsapiens", target_organism = "mmusculus")
+
+templates.CMS$gene <- mapvalues(templates.CMS$symbol,
+                                from = genenames$input,
+                                to = genenames$ortholog_name)
+
 features_list <- split(templates.CMS, templates.CMS$class)
 features_list <- lapply(features_list, function(xx){
-  xx$symbol
+  xx$gene
 })
 
 ```
 
 ```{r, message = F, warning = F, fig.width = 5, fig.height = 4, eval = F}
 
-seurat_data <- AddModuleScore(seurat_data,
-                              features = features_list,
-                              name = "CMSmodule")
+tumor_only <- AddModuleScore(tumor_only,
+                             features = features_list,
+                             name = "CMSmodule")
 
 VlnPlot(tumor_only,
         features = c("CMSmodule1", "CMSmodule2", "CMSmodule3", "CMSmodule4"),
@@ -162,24 +169,24 @@ summary(g1$CMS4)
 summary(g2$CMS4)
 t.test(g1$CMS4, g2$CMS4)
 
-filename <- "/home/hnatri/PIPAC_spatial/CT26_CAF_CMS4signature.pdf"
-
-pdf(file=filename,
-    width = 4,
-    height = 4)
-
-VlnPlot(tumor_only,
-        features = c("CMS4"),
-        group.by = "Sample",
-        pt.size = 0,
-        ncol = 1) &
-  #geom_boxplot(width=0.6, fill="white") &
-  NoLegend() &
-  xlab("") &
-  ylab("CMS4 signature") &
-  ggtitle("")
-
-dev.off()
+#filename <- "/home/hnatri/PIPAC_spatial/CT26_CAF_CMS4signature.pdf"
+#
+#pdf(file=filename,
+#    width = 4,
+#    height = 4)
+#
+#VlnPlot(tumor_only,
+#        features = c("CMS4"),
+#        group.by = "Sample",
+#        pt.size = 0,
+#        ncol = 1) &
+#  #geom_boxplot(width=0.6, fill="white") &
+#  NoLegend() &
+#  xlab("") &
+#  ylab("CMS4 signature") &
+#  ggtitle("")
+#
+#dev.off()
 
 VlnPlot(tumor_only,
         features = c("CMS1", "CMS2", "CMS3", "CMS4"),
@@ -192,7 +199,76 @@ VlnPlot(tumor_only,
   #ylab("CMS4 signature") &
   #ggtitle("")
 
-
 #plot(tumor_only$CMSmodule1, tumor_only$CMS1)
 
 ```
+
+## Individual genes
+
+### CMS1
+
+```{r, message = F, warning = F, fig.width = 15, fig.height = 50}
+
+DefaultAssay(tumor_only) <- "RNA"
+tumor_only <- JoinLayers(tumor_only)
+
+VlnPlot(tumor_only,
+        features = sort(features_list$CMS1),
+        group.by = "Sample",
+        pt.size = 0,
+        ncol = 6) &
+  geom_boxplot(width=0.6, fill="white") &
+  theme_classic() &
+  NoLegend() &
+  xlab("")
+
+```
+
+### CMS2
+
+```{r, message = F, warning = F, fig.width = 15, fig.height = 37}
+
+VlnPlot(tumor_only,
+        features = sort(features_list$CMS2),
+        group.by = "Sample",
+        pt.size = 0,
+        ncol = 6) &
+  geom_boxplot(width=0.6, fill="white") &
+  theme_classic() &
+  NoLegend() &
+  xlab("")
+
+```
+
+### CMS3
+
+```{r, message = F, warning = F, fig.width = 15, fig.height = 37}
+
+VlnPlot(tumor_only,
+        features = sort(features_list$CMS3),
+        group.by = "Sample",
+        pt.size = 0,
+        ncol = 6) &
+  geom_boxplot(width=0.6, fill="white") &
+  theme_classic() &
+  NoLegend() &
+  xlab("")
+
+```
+
+### CMS4
+
+```{r, message = F, warning = F, fig.width = 15, fig.height = 70}
+
+VlnPlot(tumor_only,
+        features = sort(features_list$CMS4),
+        group.by = "Sample",
+        pt.size = 0,
+        ncol = 6) &
+  geom_boxplot(width=0.6, fill="white") &
+  theme_classic() &
+  NoLegend() &
+  xlab("")
+
+```
+

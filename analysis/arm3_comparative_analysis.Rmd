@@ -64,7 +64,7 @@ markers_by_group <- read_sheet(markers_by_group, sheet = "Markers by group")
 
 ```
 
-## Import and subset data
+## Import and subset data, keeping cell types with >500 cells
 
 ```{r, message = F, warning = F, fig.width = 8, fig.height = 4}
 
@@ -93,7 +93,7 @@ seurat_arm3 <- seurat_arm3 %>%
 
 keeps <- table(seurat_arm3$Celltype_Final) %>%
   as.data.frame() %>%
-  filter(Freq> 500)
+  filter(Freq > 500)
 
 seurat_arm3_subset <- subset(seurat_arm3, subset = Celltype_Final %in% keeps$Var1)
 
@@ -121,7 +121,7 @@ create_barplot(seurat_arm3_subset,
 
 ### Cell type proportions by timepoint in tumors
 
-```{r, message = F, warning = F, fig.width = 5, fig.height = 5}
+```{r, message = F, warning = F, fig.width = 8, fig.height = 5}
 
 create_barplot(subset(seurat_arm3_subset, subset = Tissue == "Tumor"),
                group_var = "Timepoint",
@@ -136,7 +136,7 @@ create_barplot(subset(seurat_arm3_subset, subset = Tissue == "Tumor"),
 
 ### Cell type proportions by timepoint in tumor-adjacent samples
 
-```{r, message = F, warning = F, fig.width = 5, fig.height = 5}
+```{r, message = F, warning = F, fig.width = 8, fig.height = 5}
 
 create_barplot(subset(seurat_arm3_subset, subset = Tissue == "Normal"),
                group_var = "Timepoint",
@@ -151,7 +151,7 @@ create_barplot(subset(seurat_arm3_subset, subset = Tissue == "Normal"),
 
 ### Cell numbers in tumor and normal across all samples
 
-```{r, message = F, warning = F, fig.width = 5, fig.height = 5}
+```{r, message = F, warning = F, fig.width = 10, fig.height = 5}
 
 ct_table <- as.data.frame(table(seurat_arm3_subset$"Celltype_Final", seurat_arm3_subset$Tissue))
 colnames(ct_table) <- c("Celltype", "Tissue", "Freq")
@@ -172,19 +172,38 @@ ggplot(ct_table, aes(x = Tissue, y = Freq, fill = Celltype)) +
 
 ```
 
-### Subsetting arm 3 tumor and tumor adjacent
+## Subsetting arm 3 tumor and tumor adjacent, keeping cell types with >300 cells
 
 ```{r, message = F, warning = F, fig.width = 4, fig.height = 5, eval = T}
 
 arm3_tumor <- subset(seurat_arm3_subset, subset = Tissue == "Tumor")
+
+keeps <- table(arm3_tumor$Celltype_Final) %>%
+  as.data.frame() %>%
+  filter(Freq > 500)
+
+arm3_tumor <- subset(arm3_tumor, subset = Celltype_Final %in% keeps$Var1)
 arm3_tumor <- arm3_tumor %>%
   NormalizeData() %>%
   ScaleData()
 
 arm3_normal <- subset(seurat_arm3_subset, subset = Tissue == "Normal")
+
+keeps <- table(arm3_normal$Celltype_Final) %>%
+  as.data.frame() %>%
+  filter(Freq > 500)
+
+arm3_normal <- subset(arm3_normal, subset = Celltype_Final %in% keeps$Var1)
 arm3_normal <- arm3_normal %>%
   NormalizeData() %>%
   ScaleData()
+
+table(arm3_tumor$Celltype_Final)
+table(arm3_tumor$Celltype_Final, arm3_tumor$Tissue)
+
+table(arm3_normal$Celltype_Final)
+table(arm3_normal$Celltype_Final, arm3_normal$Tissue)
+
 
 ```
 
@@ -314,28 +333,13 @@ names(plot_list) <- sort(unique(seurat_arm3_subset$"Celltype_Final"))
 
 ```
 
-### Fibroblast marker expression
-
-```{r, message = F, warning = F, fig.width = 6, fig.height = 5, eval = F}
-
-DotPlot(subset(seurat_arm3_subset, subset = Celltype_Final %in% grep("^F", seurat_arm3_subset$Celltype_Final, value = T),
-        group.by = "Celltype_Final",
-        features = unique(markers_by_group[which(markers_by_group$annotation1 == "CAFs"),]$feature),
-        cols = c("azure", "tomato3")) +
-  coord_flip() +
-  ggtitle("CAFs, all timepoints")
-
-```
-
 ## Baseline tumors
 
 ### Cell type proportions by sample
 
 ```{r, message = F, warning = F, fig.width = 8, fig.height = 5}
 
-unique(seurat_arm3_subset$Timepoint)
-baseline_tumor <- subset(seurat_arm3_subset, subset = Tissue == "Tumor" &
-                           Timepoint == 0)
+baseline_tumor <- subset(arm3_tumor, subset = Timepoint == 0)
 baseline_tumor <- baseline_tumor %>%
   NormalizeData() %>%
   ScaleData()
@@ -346,8 +350,6 @@ table(as.character(baseline_tumor$Sample))
 baseline_tumor@meta.data %>%
   dplyr::select(c("Patient_ID", "Sample")) %>%
   distinct()
-
-table(baseline_tumor$BestResponse)
 
 create_barplot(baseline_tumor,
                group_var = "Sample",
@@ -394,8 +396,7 @@ permutation_plot(prop_test) +
 
 ```{r, message = F, warning = F, fig.width = 4, fig.height = 5, eval = F}
 
-baseline_normal <- subset(seurat_arm3_subset, subset = Tissue == "Normal" &
-                           Timepoint == 0)
+baseline_normal <- subset(arm3_normal, subset = Timepoint == 0)
 baseline_normal <- baseline_normal %>%
   NormalizeData() %>%
   ScaleData()
@@ -488,9 +489,7 @@ wrap_plots(plot_list, ncol = 3)
 
 ```{r, message = F, warning = F, fig.width = 12, fig.height = 5}
 
-unique(seurat_arm3_subset$Timepoint)
-post_treatment_tumor <- subset(seurat_arm3_subset, subset = Tissue == "Tumor" &
-                                 Timepoint %in% c(6, 12))
+post_treatment_tumor <- subset(arm3_tumor, subset = Timepoint %in% c(6, 12))
 post_treatment_tumor <- post_treatment_tumor %>%
   NormalizeData() %>%
   ScaleData()
@@ -501,8 +500,6 @@ table(as.character(post_treatment_tumor$Sample))
 post_treatment_tumor@meta.data %>%
   dplyr::select(c("Patient_ID", "Sample")) %>%
   distinct()
-
-table(post_treatment_tumor$BestResponse)
 
 create_barplot(post_treatment_tumor,
                group_var = "Sample",
@@ -550,8 +547,7 @@ permutation_plot(prop_test) +
 ```{r, message = F, warning = F, fig.width = 4, fig.height = 5, eval = F}
 
 unique(seurat_arm3$Timepoint)
-treated_normal <- subset(seurat_arm3, subset = Tissue == "Normal" &
-                           Timepoint == c(6, 12))
+treated_normal <- subset(arm3_normal, subset = Timepoint == c(6, 12))
 treated_normal <- treated_normal %>%
   NormalizeData() %>%
   ScaleData()
@@ -701,43 +697,15 @@ p1
 
 ```
 
-### Inspecting F5
-
-#### Fibroblast marker expression
-
-```{r, message = F, warning = F, fig.width = 6, fig.height = 6, eval = F}
-
-DotPlot(subset(post_treatment_tumor, subset = Celltype_Final %in% paste0("F", seq(1,5))),
-        group.by = "Celltype_Final",
-        features = c(unique(markers_by_group[which(markers_by_group$annotation1 == "CAFs"),]$feature), "DCN", "LUM", "EPCAM"),
-        cols = c("gray88", "tomato3")) +
-  coord_flip() +
-  ggtitle("CAFs, post-treatment (D6/12)")
-
-#Idents(seurat_data) <- seurat_data$"Celltype_Final"
-#celltype_markers <- FindAllMarkers(seurat_data,
-#                                   return.thresh = 0.01,
-#                                   logfc.threshold = 0.5,
-#                                   min.pct = 0.20,
-#                                   only.pos = T,
-#                                   verbose = F)
-#
-#table(celltype_markers$cluster)
-#
-#output_celltype_markers <- celltype_markers %>%
-#  arrange(dplyr::desc(abs(avg_log2FC))) %>%
-#  group_by(cluster) %>%
-#  dplyr::slice(1:30)
-#
-#output_celltype_markers <- merge(output_celltype_markers, markers, by.x = "gene", by.y = "Gene")
-
-```
+### Inspecting a single cell type
 
 ## Tumor cell type proportion differences between timepoints (before and after treatment)
 
-```{r, message = F, warning = F, fig.width = 4, fig.height = 5}
+```{r, message = F, warning = F, fig.width = 6, fig.height = 5}
 
 arm3_tumor$PrePost <- ifelse(arm3_tumor$Timepoint == 0, "Baseline", "Treated")
+
+table(arm3_tumor$Celltype_Final, arm3_tumor$PrePost)
 
 create_barplot(arm3_tumor,
                group_var = "PrePost",
@@ -750,7 +718,7 @@ create_barplot(arm3_tumor,
 
 ```
 
-```{r, message = F, warning = F, fig.width = 6, fig.height = 6}
+```{r, message = F, warning = F, fig.width = 6, fig.height = 8}
 
 prop_test <- sc_utils(arm3_tumor)
 prop_test <- permutation_test(
@@ -765,9 +733,11 @@ permutation_plot(prop_test) +
 
 ## Tumor-adjacent cell type proportion differences between timepoints (before and after treatment)
 
-```{r, message = F, warning = F, fig.width = 4, fig.height = 5}
+```{r, message = F, warning = F, fig.width = 6, fig.height = 5}
 
 arm3_normal$PrePost <- ifelse(arm3_normal$Timepoint == 0, "Baseline", "Treated")
+
+table(arm3_normal$Celltype_Final, arm3_normal$PrePost)
 
 create_barplot(arm3_normal,
                group_var = "PrePost",
@@ -780,8 +750,7 @@ create_barplot(arm3_normal,
 
 ```
 
-```{r, message = F, warning = F, fig.width = 6, fig.height = 6}
-
+```{r, message = F, warning = F, fig.width = 6, fig.height = 8}
 
 prop_test <- sc_utils(arm3_normal)
 prop_test <- permutation_test(
@@ -795,3 +764,16 @@ permutation_plot(prop_test) +
 # Rscript -e "rmarkdown::render('arm3_comparative_analysis.Rmd')"
 
 ```
+
+## CAF and immune marker expression before and after treatment
+
+Mesothelial: MSLN, KRT5I, KRT6, UPK3B, CALB2, LRRN4, PDPN, THBD, KRT18,
+KRT19
+
+### Tumor-adjacent tissue
+
+Fibroblast subset
+
+Myeloid subset
+
+
