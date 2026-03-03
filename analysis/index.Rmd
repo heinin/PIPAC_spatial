@@ -32,15 +32,16 @@ Visualization\
 
 Niche and proximity analysis\
 13. [Niche construction](niche_construction.html)\
+14. [Proximity](proximity.html)\
 
 Arm 3 analysis\
-14. [Arm 3 first-pass comparative analysis](arm3_comparative_analysis.html)\
+15. [Arm 3 first-pass comparative analysis](arm3_comparative_analysis.html)\
 
 CAFs\
-15. [CAF bulk-RNAseq with and without Mitomycin C](CAF_bulkRNAseq.html)\
-16. [CT26 + CAF scRNAseq processing](PDX_CAF_scRNAseq_processing.html)\
-17. [CT26 + CAF scRNAseq analysis](PDX_CAF_scRNAseq_analysis.html)\
-18. [CT26 + CAF scRNAseq CMS scoring](PDX_CAF_scRNAseq_CMS.html)\
+16. [CAF bulk-RNAseq with and without Mitomycin C](CAF_bulkRNAseq.html)\
+17. [CT26 + CAF scRNAseq processing](PDX_CAF_scRNAseq_processing.html)\
+18. [CT26 + CAF scRNAseq analysis](PDX_CAF_scRNAseq_analysis.html)\
+19. [CT26 + CAF scRNAseq CMS scoring](PDX_CAF_scRNAseq_CMS.html)\
 
 
 Contact: Heini M Natri, hnatri@tgen.org

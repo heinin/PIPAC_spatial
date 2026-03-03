@@ -424,9 +424,9 @@ prop_test <- permutation_test(
 	sample_1 = "CT26", sample_2 = "CT26_CAF",
 	sample_identity = "Sample")
 
-#permutation_plot(prop_test) +
-#  ggtitle("CT26 vs. CT26+CAF")
-#
+permutation_plot(prop_test) +
+  ggtitle("CT26 vs. CT26+CAF")
+
 #filename <- "/home/hnatri/PIPAC_spatial/CT26_CAF_celltypeprops.pdf"
 #
 #pdf(file=filename,
@@ -461,10 +461,14 @@ caf_only <- c("CAF1", "CAF2", "CAF3", "CAF4", "CAF5", "CAF6", "CAF7")
 
 caf_only <- subset(seurat_integrated, subset = Updated_Annotation %in% caf_only)
 
+DefaultAssay(caf_only) <- "RNA"
+caf_only <- JoinLayers(caf_only)
+caf_only <- NormalizeData(caf_only)
+
 Idents(caf_only) <- caf_only$Sample
 caf_DEGs <- FindMarkers(caf_only,
-                          ident.1 = "CT26",
-                          ident.2 = "CT26_CAF")
+                          ident.1 = "CT26_CAF",
+                          ident.2 = "CT26")
 
 # Distribution of p-values and log2FC
 hist(caf_DEGs$p_val)
@@ -483,16 +487,14 @@ caf_DEGs$gene_id <- mapvalues(rownames(caf_DEGs),
 
 caf_DEGs_sig <- caf_DEGs %>%
   filter(p_val_adj < 0.01,
-         abs(avg_log2FC) < 1,
+         abs(avg_log2FC) > 1,
          (pct.1 > 0.2 | pct.2 > 0.2))
 
-rownames(caf_DEGs_sig)
+caf_DEGs_sig %>%
+  filter(avg_log2FC>0) %>% rownames() %>% length()
 
 caf_DEGs_sig %>%
-  filter(avg_log2FC>0) %>% rownames()
-
-caf_DEGs_sig %>%
-  filter(avg_log2FC<0) %>% rownames()
+  filter(avg_log2FC<0) %>% rownames() %>% length()
 
 ```
 
@@ -501,12 +503,12 @@ caf_DEGs_sig %>%
 ```{r, message = F, warning = F, fig.width = 8, fig.height = 10, eval = T}
 
 caf_DEGs_sig %>%
-  filter(avg_log2FC<0) %>% 
+  filter(avg_log2FC>0) %>% 
   arrange(desc(avg_log2FC)) %>%
   head(20)
 
 upreg <- caf_DEGs_sig %>%
-  filter(avg_log2FC<0) %>% 
+  filter(avg_log2FC>0) %>% 
   arrange(desc(avg_log2FC)) %>%
   rownames()
 
@@ -527,18 +529,18 @@ VlnPlot(caf_only,
 ```{r, message = F, warning = F, fig.width = 8, fig.height = 10, eval = T}
 
 caf_DEGs_sig %>%
-  filter(avg_log2FC>0) %>% 
+  filter(avg_log2FC<0) %>% 
   arrange(desc(avg_log2FC)) %>%
-  head(20)
+  tail(20)
 
 downreg <- caf_DEGs_sig %>%
-  filter(avg_log2FC>0) %>% 
+  filter(avg_log2FC<0) %>% 
   arrange(desc(avg_log2FC)) %>%
   rownames()
 
 VlnPlot(caf_only,
         group.by = "Sample",
-        features = head(downreg, n = 12),
+        features = tail(downreg, n = 12),
         pt.size = 0,
         ncol = 4) &
   theme_bw() &
@@ -553,7 +555,7 @@ VlnPlot(caf_only,
 ```{r, message = F, warning = F, fig.width = 5, fig.height = 8, eval = T}
 
 caf_DEGs_up <- caf_DEGs_sig %>%
-  filter(avg_log2FC<0)
+  filter(avg_log2FC>0)
 
 gse_res <- enrichGO(rownames(caf_DEGs_up),
                     ont ="BP", 
@@ -593,7 +595,7 @@ ddp
 ```{r, message = F, warning = F, fig.width = 5, fig.height = 8, eval = T}
 
 caf_DEGs_down <- caf_DEGs_sig %>%
-  filter(avg_log2FC>0)
+  filter(avg_log2FC<0)
 
 gse_res <- enrichGO(rownames(caf_DEGs_down),
                     ont ="BP", 
@@ -667,29 +669,6 @@ DimPlot(seurat_integrated,
   NoLegend()
 
 dev.off()
-
-```
-
-## Marker features, CAFs only
-
-CMS4
-
-```{r, message = F, warning = F, fig.width = 8, fig.height = 10, eval = T}
-
-# CSM4
-csm4_genes <- c("TGFB1", "TGFB2", "TGFB3", "VIM", "CDH2", "FN1", "ACTA2", "MMP2", "MMP3", "MMP9", "SOX10", "FOXC2", "S100A11", "COL1A1", "DSC", "EPCAM", "KRT7", "KRT14", "TJP1")
-  
-genenames <- gorth(csm4_genes, source_organism = "hsapiens", target_organism = "mmusculus")
-
-VlnPlot(caf_only,
-        group.by = "Sample",
-        features = unique(genenames$ortholog_name),
-        pt.size = 0,
-        ncol = 4) &
-  theme_bw() &
-  NoLegend() &
-  RotatedAxis() &
-  xlab("")
 
 ```
 
@@ -825,13 +804,13 @@ VlnPlot(seurat_integrated,
 
 ```
 
-## Marker expression across myeloid celltypes in each group
+## Myeloid marker expression in each group
 
-```{r, message = F, warning = F, fig.width = 12, fig.height = 20, eval = T}
+```{r, message = F, warning = F, fig.width = 12, fig.height = 12, eval = T}
 
 VlnPlot(subset(seurat_integrated, subset = Updated_Annotation %in% c("Myeloid1", "Myeloid2", "Myeloid3", "Myeloid4")),
         group.by = "Sample",
-        features = unique(c(m1, m2, mdsc)),
+        features = m1,
         pt.size = 0,
         ncol = 4) &
   theme_bw() &
@@ -841,3 +820,112 @@ VlnPlot(subset(seurat_integrated, subset = Updated_Annotation %in% c("Myeloid1",
 
 ```
 
+```{r, message = F, warning = F, fig.width = 12, fig.height = 7, eval = T}
+
+VlnPlot(subset(seurat_integrated, subset = Updated_Annotation %in% c("Myeloid1", "Myeloid2", "Myeloid3", "Myeloid4")),
+        group.by = "Sample",
+        features = m2,
+        pt.size = 0,
+        ncol = 4) &
+  theme_bw() &
+  NoLegend() &
+  RotatedAxis() &
+  xlab("")
+
+```
+
+```{r, message = F, warning = F, fig.width = 12, fig.height = 7, eval = T}
+
+VlnPlot(subset(seurat_integrated, subset = Updated_Annotation %in% c("Myeloid1", "Myeloid2", "Myeloid3", "Myeloid4")),
+        group.by = "Sample",
+        features =  mdsc,
+        pt.size = 0,
+        ncol = 4) &
+  theme_bw() &
+  NoLegend() &
+  RotatedAxis() &
+  xlab("")
+
+```
+
+```{r, message = F, warning = F, fig.width = 12, fig.height = 10, eval = T}
+
+VlnPlot(subset(seurat_integrated, subset = Updated_Annotation %in% c("Myeloid1", "Myeloid2", "Myeloid3", "Myeloid4")),
+        group.by = "Sample",
+        features =  c("Spp1", "C1qa", "C1qb", "C1qc", "Gas6", "Mfge8",
+                      "Proser1", "Calr", "Cd47", "Cd24a"),
+        pt.size = 0,
+        ncol = 4) &
+  theme_bw() &
+  NoLegend() &
+  RotatedAxis() &
+  xlab("")
+
+```
+
+## T cell marker expression in each group
+                  
+```{r, message = F, warning = F, fig.width = 12, fig.height = 14, eval = T}
+
+lymphoid <- c("Cd3e", "Cd3g", "Cd247", "Cd4", "Cd8a", "Cd8b1", 
+              "Foxp3", "Cd25", "Il2ra", "Ctla4",
+              "Ncr1", "NKp46", "Klrb1c", "Cd226",
+              "Sell", "Ccr7", "Cd44", "Il7r",
+              "Pdcd1", "Cd274", "Havcr2")
+
+VlnPlot(subset(seurat_integrated, subset = Updated_Annotation %in% paste0("Lymphoid", seq(1,6))),
+        group.by = "Sample",
+        features =  lymphoid,
+        pt.size = 0,
+        ncol = 4) &
+  theme_bw() &
+  NoLegend() &
+  RotatedAxis() &
+  xlab("")
+
+```
+
+## CAF marker expression in each group
+
+CMS4
+
+```{r, message = F, warning = F, fig.width = 8, fig.height = 12, eval = T}
+
+# CSM4
+csm4_genes <- c("TGFB1", "TGFB2", "TGFB3", "VIM", "CDH2", "FN1", "ACTA2", "MMP2", "MMP3", "MMP9", "SOX10", "FOXC2", "S100A11", "COL1A1", "DSC", "EPCAM", "KRT7", "KRT14", "TJP1")
+  
+genenames <- gorth(csm4_genes, source_organism = "hsapiens", target_organism = "mmusculus")
+
+VlnPlot(caf_only,
+        group.by = "Sample",
+        features = unique(genenames$ortholog_name),
+        pt.size = 0,
+        ncol = 4) &
+  theme_bw() &
+  NoLegend() &
+  RotatedAxis() &
+  xlab("")
+
+```
+
+Acta2 = alpha-SMA
+S100a4 = FAP
+
+```{r, message = F, warning = F, fig.width = 8, fig.height = 7, eval = T}
+
+#grep("Cd24", rownames(seurat_integrated), value = T)
+
+stromal_markers <- c("Acta2", "Pdgfra", "Pdgfrb", "Fap", "S100a4", "Tnc",
+                     "Postn", "Cd248", "Pdpn")
+
+VlnPlot(caf_only,
+        group.by = "Sample",
+        features = stromal_markers,
+        pt.size = 0,
+        ncol = 4) &
+  theme_bw() &
+  NoLegend() &
+  RotatedAxis() &
+  xlab("")
+
+```
