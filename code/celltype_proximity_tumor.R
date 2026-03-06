@@ -31,6 +31,8 @@ colnames(cells)[2] <- "sample"
 colnames(cells)[3] <- "final_CT"
 samples <- unique(cells$sample)
 
+table(cells$sample, cells$final_CT)
+
 rm(seurat_data)
 
 proximity_compiled <- c()
