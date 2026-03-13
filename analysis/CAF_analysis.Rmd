@@ -139,7 +139,7 @@ DimPlot(fibro,
 
 ```
 
-```{r, message = F, warning = F, fig.width = 12, fig.height = 8}
+```{r, message = F, warning = F, fig.width = 12, fig.height = 6}
 
 FeaturePlot(fibro,
             features = c(mycafs, icafs, abcafs, ficafs),

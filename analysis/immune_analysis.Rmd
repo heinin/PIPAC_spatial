@@ -111,14 +111,14 @@ immune <- fibro %>%
 
 ```{r, message = F, warning = F, fig.width = 4, fig.height = 4}
 
-fibro <- readRDS("/tgen_labs/banovich/PIPAC/Seurat/fibro_clustered_NN20_PC20_Seurat.rds")
+immune <- readRDS("/tgen_labs/banovich/PIPAC/Seurat/immune_clustered_NN20_PC20_Seurat.rds")
 
-DefaultAssay(fibro) <- "RNA"
-fibro <- fibro %>%
+DefaultAssay(immune) <- "RNA"
+immune <- immune %>%
   NormalizeData() %>%
   ScaleData()
 
-fibro$Celltype_Final <- mapvalues(colnames(fibro),
+immune$Celltype_Final <- mapvalues(colnames(immune),
                                   from = colnames(seurat_data),
                                   to = seurat_data$Celltype_Final)
 
@@ -126,7 +126,7 @@ celltype_final <- as.factor(sort(unique(fibro$Celltype_Final)))
 celltype_final_col <- colorRampPalette(brewer.pal(10, "Paired"))(nb.cols <- length(celltype_final))
 names(celltype_final_col) <- levels(celltype_final)
 
-DimPlot(fibro,
+DimPlot(immune,
         group.by = "Celltype_Final",
         cols = celltype_final_col,
         reduction = "umap",
@@ -141,7 +141,7 @@ DimPlot(fibro,
 
 ```{r, message = F, warning = F, fig.width = 12, fig.height = 8}
 
-FeaturePlot(fibro,
+FeaturePlot(immune,
             features = c(mycafs, icafs, abcafs, ficafs),
             cols = c("gray98", "tomato3"),
             reduction = "umap",
@@ -155,7 +155,7 @@ FeaturePlot(fibro,
 
 ```{r, message = F, warning = F, fig.width = 13, fig.height = 8}
 
-FeaturePlot(fibro,
+FeaturePlot(immune,
             features = c("nCount_RNA", "nFeature_RNA", "total_counts",
                          "cell_area", "nucleus_area", "nucleus_count"),
             cols = c("gray98", "tomato3"),
@@ -169,7 +169,7 @@ FeaturePlot(fibro,
 
 ```{r, message = F, warning = F, fig.width = 13, fig.height = 6}
 
-create_dotplot_heatmap(seurat_object = fibro,
+create_dotplot_heatmap(seurat_object = immune,
                        plot_features = unique(c(mycafs, icafs, abcafs, ficafs)),
                        group_var = "Celltype_Final",
                        group_colors = celltype_final_col,
@@ -184,7 +184,7 @@ create_dotplot_heatmap(seurat_object = fibro,
 
 ```{r, message = F, warning = F, fig.width = 13, fig.height = 26}
 
-create_dotplot_heatmap(seurat_object = fibro,
+create_dotplot_heatmap(seurat_object = immune,
                        plot_features = main_plot_features,
                        group_var = "Celltype_Final",
                        group_colors = celltype_final_col,
@@ -200,7 +200,7 @@ create_dotplot_heatmap(seurat_object = fibro,
 
 ```{r, message = F, warning = F, fig.width = 16, fig.height = 8, eval = T}
 
-DotPlot(fibro,
+DotPlot(immune,
         group.by = "Celltype_Final",
         features = unique(markers_by_group[which(markers_by_group$annotation1 == "Cell-cell crosstalk"),]$feature),
         cols = c("azure", "tomato3")) +
@@ -211,7 +211,7 @@ DotPlot(fibro,
 
 ```{r, message = F, warning = F, fig.width = 6, fig.height = 8, eval = T}
 
-DotPlot(fibro,
+DotPlot(immune,
         group.by = "Celltype_Final",
         features = unique(markers_by_group[which(markers_by_group$annotation1 == "DNA damage and cell faith"),]$feature),
         cols = c("azure", "tomato3")) +
@@ -222,7 +222,7 @@ DotPlot(fibro,
 
 ```{r, message = F, warning = F, fig.width = 10, fig.height = 8, eval = T}
 
-DotPlot(fibro,
+DotPlot(immune,
         group.by = "Celltype_Final",
         features = unique(markers_by_group[which(markers_by_group$annotation1 == "Functional markers"),]$feature),
         cols = c("azure", "tomato3")) +
@@ -233,7 +233,7 @@ DotPlot(fibro,
 
 ```{r, message = F, warning = F, fig.width = 6, fig.height = 8, eval = T}
 
-DotPlot(fibro,
+DotPlot(immune,
         group.by = "Celltype_Final",
         features = unique(markers_by_group[which(markers_by_group$annotation1 == "Mesothelial"),]$feature),
         cols = c("azure", "tomato3")) +
@@ -244,7 +244,7 @@ DotPlot(fibro,
 
 ```{r, message = F, warning = F, fig.width = 10, fig.height = 8, eval = T}
 
-DotPlot(fibro,
+DotPlot(immune,
         group.by = "Celltype_Final",
         features = unique(markers_by_group[which(markers_by_group$annotation1 == "CAFs"),]$feature),
         cols = c("azure", "tomato3")) +
@@ -255,7 +255,7 @@ DotPlot(fibro,
 
 ```{r, message = F, warning = F, fig.width = 6, fig.height = 8, eval = T}
 
-DotPlot(fibro,
+DotPlot(immune,
         group.by = "Celltype_Final",
         features = grep("COL", rownames(fibro), value = T),
         cols = c("azure", "tomato3")) +
@@ -271,7 +271,7 @@ DotPlot(fibro,
 s.genes <- cc.genes.updated.2019$s.genes
 g2m.genes <- cc.genes.updated.2019$g2m.genes
 
-DotPlot(fibro,
+DotPlot(immune,
         group.by = "Celltype_Final",
         features = c(s.genes, g2m.genes),
         cols = c("azure", "tomato3")) +
@@ -284,7 +284,7 @@ DotPlot(fibro,
 
 ```{r, message = F, warning = F, fig.width = 13, fig.height = 26}
 
-seurat_arm3 <- subset(fibro, subset = Arm == "Arm3")
+seurat_arm3 <- subset(immune, subset = Arm == "Arm3")
 seurat_arm3 <- seurat_arm3 %>%
   NormalizeData() %>%
   ScaleData()

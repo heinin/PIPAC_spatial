@@ -35,7 +35,8 @@ suppressPackageStartupMessages({
   library(clusterProfiler)
   library(org.Hs.eg.db)
   library(org.Mm.eg.db)
-  library(biomaRt)})
+  library(biomaRt)
+  library(ggVennDiagram)})
 
 ```
 
@@ -109,7 +110,6 @@ d0 <- DGEList(all_counts_df, genes = gene_info)
 
 # Calculate normalization factors
 d0 <- calcNormFactors(d0)
-d0
 
 # Filter low-expressed genes
 cutoff <- 1
@@ -180,9 +180,9 @@ keep <- filterByExpr(d, mm)
 d1 <- d[keep,]
 
 # Replotting MDS and library sizes
-plotMDS(d1, top = 500, col = cols, pch = shps)
-legend('bottomright', col=cols, legend=unique(sample_info), pch = 16, cex = 0.7)
-legend('topright', legend=unique(group_info), pch = shps, cex = 0.7)
+#plotMDS(d1, top = 500, col = cols, pch = shps, cex = 1, labels = colnames(all_counts_df))
+#legend('bottomright', col=cols, legend=unique(sample_info), pch = 16, cex = 0.7)
+#legend('topright', legend=unique(group_info), pch = shps, cex = 0.7)
 
 ```
 
@@ -224,13 +224,16 @@ top.table$gene_name <- mapvalues(x = rownames(top.table),
                                  from = gene_info$gene_id,
                                  to = gene_info$gene_name)
 
+# TODO: flip the direction
+top.table$logFC <- -1*top.table$logFC
+
 # Saving all results
 write.table(top.table, "/home/hnatri/PIPAC_spatial/human_MMC_V_res.tsv",
             sep = "\t", quote = F, row.names = T)
 
 # Plotting
 top_sig <- top.table %>%
-  filter(adj.P.Val < 0.05 & logFC > 1)
+  filter(adj.P.Val < 0.05 & abs(logFC) > 1)
   #dplyr::select(gene_name)
 
 p0 <- EnhancedVolcano(top.table,
@@ -390,6 +393,19 @@ long_df %>% filter(Hh_gene %in% ficafs) %>%
   theme(legend.position = "none") +
   theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1))
 
+long_df %>% filter(Hh_gene %in% all_caf_markers) %>%
+  ggplot(aes(x = Treatment, y = exp, color = Treatment, label = Sample)) +
+  geom_violin(alpha = 0.5) +
+  geom_point() +
+  geom_text(hjust=0, vjust=0) +
+  #geom_line(aes(group = Sample), color = "gray20") +
+  facet_wrap(~Hh_gene, scales = "free") +
+  ylab("CAF marker expression (FPKM)") +
+  xlab("") +
+  theme_classic() +
+  theme(legend.position = "none") +
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1))
+
 ```
 
 ## Mouse
@@ -422,7 +438,6 @@ d0 <- DGEList(all_counts_df, genes = gene_info)
 
 # Calculate normalization factors
 d0 <- calcNormFactors(d0)
-d0
 
 # Filter low-expressed genes
 cutoff <- 1
@@ -447,7 +462,7 @@ shps <- c(15, 16, 17, 18, 15, 16, 17, 18)
 names(cols) <- unique(sample_info)
 names(shps) <- unique(group_info)
 
-plotMDS(d, top = 500, pch = shps, col = cols, cex = 1)
+plotMDS(d, top = 500, col = cols, pch = shps, cex = 1, labels = colnames(all_counts_df))
 #legend('bottomright', col=cols, legend=unique(sample_info), pch = 16, cex = 0.7)
 #legend('topright', legend=unique(group_info), pch = shps, cex = 0.7)
 
@@ -493,9 +508,9 @@ keep <- filterByExpr(d, mm)
 d1 <- d[keep,]
 
 # Replotting MDS and library sizes
-plotMDS(d1, top = 500, col = cols, pch = shps)
-legend('bottomright', col=cols, legend=unique(sample_info), pch = 16, cex = 0.7)
-legend('topright', legend=unique(group_info), pch = shps, cex = 0.7)
+#plotMDS(d1, top = 500, col = cols, pch = shps, cex = 1, labels = colnames(all_counts_df))
+#legend('bottomright', col=cols, legend=unique(sample_info), pch = 16, cex = 0.7)
+#legend('topright', legend=unique(group_info), pch = shps, cex = 0.7)
 
 ```
 
@@ -541,10 +556,26 @@ top.table.mouse$gene_name <- mapvalues(x = rownames(top.table.mouse),
 write.table(top.table.mouse, "/home/hnatri/PIPAC_spatial/mouse_MMC_V_res.tsv",
             sep = "\t", quote = F, row.names = T)
 
+top.table.mouse$human_gene_name <- mapvalues(top.table.mouse$gene_name,
+                                           from = mh_data$Symbol.x,
+                                           to = mh_data$Symbol.y)
+
+# TODO: change direction
+top.table.mouse$logFC <- -1*(top.table.mouse$logFC)
+
 # Plotting
-top_sig <- top.table.mouse %>%
-  filter(adj.P.Val < 0.05 & logFC > 1)
+top_sig_mouse <- top.table.mouse %>%
+  filter(adj.P.Val < 0.05 & abs(logFC) > 1)
   #dplyr::select(gene_name)
+
+#mouse_human_genes <- read.table("http://www.informatics.jax.org/downloads/reports/HOM_MouseHumanSequence.rpt",
+#                                sep="\t", header = T)
+#
+#mouse <- split.data.frame(mouse_human_genes,mouse_human_genes$Common.Organism.Name)[[2]]
+#human <- split.data.frame(mouse_human_genes,mouse_human_genes$Common.Organism.Name)[[1]]
+#mouse <- mouse[,c(1,4)]
+#human <- human[,c(1,4)]
+#mh_data <- merge.data.frame(mouse, human, by = "DB.Class.Key",all.y = TRUE)
 
 p0 <- EnhancedVolcano(top.table.mouse,
                       lab = top.table.mouse$gene_name,
@@ -564,6 +595,58 @@ p0 <- EnhancedVolcano(top.table.mouse,
                       labSize = 4)
 
 p0
+
+```
+
+## Shared DEGs between mouse and human
+
+```{r, message = F, warning = F, fig.width = 5, fig.height = 5}
+
+top.table.mouse$mouse_gene_name <- top.table.mouse$gene_name
+top.table.mouse$gene_name <- top.table.mouse$human_gene_name
+
+all_des <- merge(top.table.mouse, top.table, by = "gene_name")
+
+all_des %>%
+  ggplot(aes(x = logFC.x, y = logFC.y)) +
+  geom_point() +
+  theme_classic() +
+  xlab("Mouse log(FC)") +
+  ylab("Human log(FC)")
+
+all_des %>%
+  ggplot(aes(x = P.Value.x, y = P.Value.y)) +
+  geom_point() +
+  theme_classic() +
+  xlab("Mouse p-value") +
+  ylab("Human p-value")
+
+```
+
+DEGs overlapping with a relaxed threshold
+
+```{r, message = F, warning = F, fig.width = 5, fig.height = 5}
+
+top_sig_mouse_relaxed <- top.table.mouse %>%
+  filter(adj.P.Val < 0.05)
+top_sig_relaxed <- top.table.mouse %>%
+  filter(adj.P.Val < 0.05)
+
+intersect(top_sig_mouse_relaxed$gene_name, top_sig_relaxed$gene_name)
+
+```
+
+Same effect direction
+
+```{r, message = F, warning = F, fig.width = 5, fig.height = 5}
+
+all_des %>% filter(adj.P.Val.x < 0.05 & adj.P.Val.y < 0.05 &
+                     logFC.x > 0 & logFC.y > 0) %>%
+  dplyr::select(gene_name, gene_id.y, gene_description.y, logFC.x, logFC.y, adj.P.Val.x, adj.P.Val.y)
+
+all_des %>% filter(adj.P.Val.x < 0.05 & adj.P.Val.y < 0.05 &
+                     logFC.x < 0 & logFC.y < 0) %>%
+  dplyr::select(gene_name, gene_id.y, gene_description.y, logFC.x, logFC.y, adj.P.Val.x, adj.P.Val.y)
 
 ```
 
@@ -601,14 +684,14 @@ p1
 
 # Mouse to human gene names
 # Converting human gene names to mouse
-mouse_human_genes <- read.table("http://www.informatics.jax.org/downloads/reports/HOM_MouseHumanSequence.rpt",
-                                sep="\t", header = T)
+#ouse_human_genes <- read.table("http://www.informatics.jax.org/downloads/reports/HOM_MouseHumanSequence.rpt",
+#                               sep="\t", header = T)
 
-mouse <- split.data.frame(mouse_human_genes,mouse_human_genes$Common.Organism.Name)[[2]]
-human <- split.data.frame(mouse_human_genes,mouse_human_genes$Common.Organism.Name)[[1]]
-mouse <- mouse[,c(1,4)]
-human <- human[,c(1,4)]
-mh_data <- merge.data.frame(mouse, human, by = "DB.Class.Key",all.y = TRUE)
+#ouse <- split.data.frame(mouse_human_genes,mouse_human_genes$Common.Organism.Name)[[2]]
+#uman <- split.data.frame(mouse_human_genes,mouse_human_genes$Common.Organism.Name)[[1]]
+#ouse <- mouse[,c(1,4)]
+#uman <- human[,c(1,4)]
+#h_data <- merge.data.frame(mouse, human, by = "DB.Class.Key",all.y = TRUE)
 
 # Markers to plot
 mycafs <- c("TGFB1", "ACTA2", "TAGLN", "HOPX", "MYL9")
@@ -711,9 +794,58 @@ long_df %>% filter(Hh_gene %in% ficafs) %>%
 
 ```{r, message = F, warning = F, fig.width = 6, fig.height = 15, eval = T}
 
-# Ordering genes
+# Subsetting genes
 gse_input <- top.table %>%
   filter(adj.P.Val < 0.1)
+
+#gse <- enrichGO(gse_input$gene_id, 
+#                ont ="BP", 
+#                keyType = "ENSEMBL", 
+#                minGSSize = 3, 
+#                maxGSSize = 800, 
+#                pvalueCutoff = 0.05, 
+#                universe = top.table$gene_id,
+#                OrgDb = org.Hs.eg.db, 
+#                pAdjustMethod = "BH")
+#
+#dotplot(gse, showCategory=30, font.size=10, color="qvalue") +
+#  theme(legend.text=element_text(size=5),
+#        legend.position = "top",
+#        legend.box = "vertical",
+#        text = element_text(size=6))
+#
+#dim(gse)
+
+#gse_input_005 <- top.table %>%
+#  filter(adj.P.Val < 0.05)
+#
+#gse_005 <- enrichGO(gse_input_005$gene_id, 
+#                    ont ="BP", 
+#                    keyType = "ENSEMBL", 
+#                    minGSSize = 3, 
+#                    maxGSSize = 800, 
+#                    pvalueCutoff = 0.05, 
+#                    universe = top.table$gene_id,
+#                    OrgDb = org.Hs.eg.db, 
+#                    pAdjustMethod = "BH")
+#
+#dotplot(gse_005, showCategory=30, font.size=10, color="qvalue") +
+#  theme(legend.text=element_text(size=5),
+#        legend.position = "top",
+#        legend.box = "vertical",
+#        text = element_text(size=6))
+#
+#dim(gse_005)
+
+```
+
+Upregulated genes
+
+```{r, message = F, warning = F, fig.width = 6, fig.height = 15, eval = T}
+
+# Subsetting genes
+gse_input <- top.table %>%
+  filter(adj.P.Val < 0.1 & logFC > 0)
 
 gse <- enrichGO(gse_input$gene_id, 
                 ont ="BP", 
@@ -733,26 +865,33 @@ dotplot(gse, showCategory=30, font.size=10, color="qvalue") +
 
 dim(gse)
 
-gse_input_005 <- top.table %>%
-  filter(adj.P.Val < 0.05)
+```
 
-gse_005 <- enrichGO(gse_input_005$gene_id, 
-                    ont ="BP", 
-                    keyType = "ENSEMBL", 
-                    minGSSize = 3, 
-                    maxGSSize = 800, 
-                    pvalueCutoff = 0.05, 
-                    universe = top.table$gene_id,
-                    OrgDb = org.Hs.eg.db, 
-                    pAdjustMethod = "BH")
+Downregulated genes
 
-dotplot(gse_005, showCategory=30, font.size=10, color="qvalue") +
+```{r, message = F, warning = F, fig.width = 6, fig.height = 15, eval = T}
+
+# Subsetting genes
+gse_input <- top.table %>%
+  filter(adj.P.Val < 0.1 & logFC < 0)
+
+gse <- enrichGO(gse_input$gene_id, 
+                ont ="BP", 
+                keyType = "ENSEMBL", 
+                minGSSize = 3, 
+                maxGSSize = 800, 
+                pvalueCutoff = 0.05, 
+                universe = top.table$gene_id,
+                OrgDb = org.Hs.eg.db, 
+                pAdjustMethod = "BH")
+
+dotplot(gse, showCategory=30, font.size=10, color="qvalue") +
   theme(legend.text=element_text(size=5),
         legend.position = "top",
         legend.box = "vertical",
         text = element_text(size=6))
 
-dim(gse_005)
+dim(gse)
 
 ```
 
@@ -760,7 +899,7 @@ dim(gse_005)
 
 ```{r, message = F, warning = F, fig.width = 6, fig.height = 15, eval = T}
 
-# Ordering genes
+# Selecting genes
 gse_input <- top.table.mouse %>%
   filter(adj.P.Val < 0.1)
 
@@ -782,26 +921,26 @@ dotplot(gse_mouse, showCategory=30, font.size=10, color="qvalue") +
 
 dim(gse_mouse)
 
-gse_input_005 <- top.table.mouse %>%
-  filter(adj.P.Val < 0.05)
-
-gse_mouse_005 <- enrichGO(gse_input_005$gene_id, 
-                      ont ="BP", 
-                      keyType = "ENSEMBL", 
-                      minGSSize = 3, 
-                      maxGSSize = 800, 
-                      pvalueCutoff = 0.05, 
-                      universe = top.table.mouse$gene_id,
-                      OrgDb = org.Mm.eg.db, 
-                      pAdjustMethod = "BH")
-
-dotplot(gse_mouse_005, showCategory=30, font.size=10, color="qvalue") +
-  theme(legend.text=element_text(size=5),
-        legend.position = "top",
-        legend.box = "vertical",
-        text = element_text(size=6))
-
-dim(gse_mouse_005)
+#gse_input_005 <- top.table.mouse %>%
+#  filter(adj.P.Val < 0.05)
+#
+#gse_mouse_005 <- enrichGO(gse_input_005$gene_id, 
+#                      ont ="BP", 
+#                      keyType = "ENSEMBL", 
+#                      minGSSize = 3, 
+#                      maxGSSize = 800, 
+#                      pvalueCutoff = 0.05, 
+#                      universe = top.table.mouse$gene_id,
+#                      OrgDb = org.Mm.eg.db, 
+#                      pAdjustMethod = "BH")
+#
+#dotplot(gse_mouse_005, showCategory=30, font.size=10, color="qvalue") +
+#  theme(legend.text=element_text(size=5),
+#        legend.position = "top",
+#        legend.box = "vertical",
+#        text = element_text(size=6))
+#
+#dim(gse_mouse_005)
 
 ```
 
@@ -842,6 +981,8 @@ setdiff(gse_001$Description, gse_mouse_001$Description)
 
 ### Human
 
+Upregulated
+
 ```{r, message = F, warning = F, fig.width = 6, fig.height = 8, eval = T}
 
 # Entrez IDs
@@ -855,11 +996,14 @@ top.table$entrez <- mapvalues(top.table$gene_id,
                               from = ensembl_ids$ensembl_gene_id,
                               to = ensembl_ids$entrezgene_id)
 
-# Ordering genes
-gse_input <- top.table %>%
-  filter(adj.P.Val < 0.1)
+# Selecting genes
+gse_input_up <- top.table %>%
+  filter(logFC > 0)
 
-gse_kegg <- enrichKEGG(setdiff(gse_input$entrez, c(NA)),
+gse_input_down <- top.table %>%
+  filter(logFC < 0)
+
+gse_kegg <- enrichKEGG(setdiff(gse_input_up$entrez, c(NA)),
                        keyType = "kegg",
                        #minGSSize = 3, 
                        #maxGSSize = 800, 
@@ -875,24 +1019,57 @@ dotplot(gse_kegg, showCategory=30, font.size=10, color="qvalue") +
 
 dim(gse_kegg)
 
-gse_kegg_input_005 <- top.table %>%
-  filter(adj.P.Val < 0.05)
+#gse_kegg_input_005 <- top.table %>%
+#  filter(adj.P.Val < 0.05)
+#
+#gse_kegg_005 <- enrichKEGG(gse_kegg_input_005$entrez,
+#                           keyType = "kegg",
+#                           #minGSSize = 3, 
+#                           #maxGSSize = 800, 
+#                           pvalueCutoff = 0.1, 
+#                           universe = top.table$entrez,
+#                           pAdjustMethod = "BH")
+#
+#dotplot(gse_kegg_005, showCategory=30, font.size=10, color="qvalue") +
+#  theme(legend.text=element_text(size=5),
+#        legend.position = "top",
+#        legend.box = "vertical",
+#        text = element_text(size=6))
+#
+#dim(gse_kegg_005)
 
-gse_kegg_005 <- enrichKEGG(gse_kegg_input_005$entrez,
-                           keyType = "kegg",
-                           #minGSSize = 3, 
-                           #maxGSSize = 800, 
-                           pvalueCutoff = 0.1, 
-                           universe = top.table$entrez,
-                           pAdjustMethod = "BH")
+```
 
-dotplot(gse_kegg_005, showCategory=30, font.size=10, color="qvalue") +
+Downregulated
+
+```{r, message = F, warning = F, fig.width = 6, fig.height = 8, eval = T}
+
+# Entrez IDs
+ensembl <- useEnsembl(biomart = "genes", dataset = "hsapiens_gene_ensembl")
+
+ensembl_ids <- getBM(attributes = c("ensembl_gene_id", "entrezgene_id"),
+  values = top.table$gene_id,
+  mart = ensembl)
+
+top.table$entrez <- mapvalues(top.table$gene_id,
+                              from = ensembl_ids$ensembl_gene_id,
+                              to = ensembl_ids$entrezgene_id)
+
+gse_kegg <- enrichKEGG(setdiff(gse_input_down$entrez, c(NA)),
+                       keyType = "kegg",
+                       #minGSSize = 3, 
+                       #maxGSSize = 800, 
+                       pvalueCutoff = 0.1, 
+                       universe = setdiff(top.table$entrez, c(NA)),
+                       pAdjustMethod = "BH")
+
+dotplot(gse_kegg, showCategory=30, font.size=10, color="qvalue") +
   theme(legend.text=element_text(size=5),
         legend.position = "top",
         legend.box = "vertical",
         text = element_text(size=6))
 
-dim(gse_005)
+dim(gse_kegg)
 
 ```
 
@@ -932,25 +1109,25 @@ dotplot(gse_kegg, showCategory=30, font.size=10, color="qvalue") +
 
 dim(gse_kegg)
 
-gse_kegg_input_005 <- top.table.mouse %>%
-  filter(adj.P.Val < 0.05)
-
-gse_kegg_005 <- enrichKEGG(gse_kegg_input_005$entrez,
-                           organism = "mmu",
-                           keyType = "kegg",
-                           #minGSSize = 3, 
-                           #maxGSSize = 800, 
-                           pvalueCutoff = 0.1, 
-                           universe = top.table.mouse$entrez,
-                           pAdjustMethod = "BH")
-
-dotplot(gse_kegg_005, showCategory=30, font.size=10, color="qvalue") +
-  theme(legend.text=element_text(size=5),
-        legend.position = "top",
-        legend.box = "vertical",
-        text = element_text(size=6))
-
-dim(gse_005)
+#gse_kegg_input_005 <- top.table.mouse %>%
+#  filter(adj.P.Val < 0.05)
+#
+#gse_kegg_005 <- enrichKEGG(gse_kegg_input_005$entrez,
+#                           organism = "mmu",
+#                           keyType = "kegg",
+#                           #minGSSize = 3, 
+#                           #maxGSSize = 800, 
+#                           pvalueCutoff = 0.1, 
+#                           universe = top.table.mouse$entrez,
+#                           pAdjustMethod = "BH")
+#
+#dotplot(gse_kegg_005, showCategory=30, font.size=10, color="qvalue") +
+#  theme(legend.text=element_text(size=5),
+#        legend.position = "top",
+#        legend.box = "vertical",
+#        text = element_text(size=6))
+#
+#dim(gse_005)
 
 ```
 
@@ -968,7 +1145,7 @@ top.table <- top.table[complete.cases(top.table),]
 
 # Plotting
 top_sig <- top.table %>%
-  filter(adj.P.Val < 0.05 & logFC > 1)
+  filter(adj.P.Val < 0.05 & abs(logFC) > 1)
   #dplyr::select(gene_name)
 
 # Sectetory
@@ -979,25 +1156,46 @@ secretory_markers <- secretory %>%
 surface_markers <- secretory %>%
   filter(Surfaceome == "Yes")
 
+# Signaling
+signaling_markers <- secretory %>%
+  filter(SignalP == "Yes")
+
 dim(top_sig)
 
 intersect(top_sig$gene_name, secretory_markers$Gene.name)
 intersect(top_sig$gene_name, surface_markers$Gene.name)
+intersect(top_sig$gene_name, signaling_markers$Gene.name)
+
+venn_list <- list("SecretomeP" = secretory_markers$Gene.name,
+                  "Surfactome" = surface_markers$Gene.name,
+                  "SignalP" = signaling_markers$Gene.name)
+
+ggVennDiagram(venn_list,
+              label = "count",
+              set_size = 4) +
+  NoLegend()
+  #theme(plot.margin = margin(2, 2, 2, 2, "cm"))
 
 secr_sig <- top_sig %>% filter(gene_name %in% secretory_markers$Gene.name)
 surf_sig <- top_sig %>% filter(gene_name %in% surface_markers$Gene.name)
+sign_sig <- top_sig %>% filter(gene_name %in% signaling_markers$Gene.name)
 
 secr_sig
 
 surf_sig
 
+sign_sig
+
 top.table$group <- ifelse(top.table$gene_name %in% secretory_markers$Gene.name, "Secretory",
-                          ifelse(top.table$gene_name %in% surface_markers$Gene.name, "Surface", "Other"))
+                          ifelse(top.table$gene_name %in% surface_markers$Gene.name, "Surface",
+                                 ifelse(top.table$gene_name %in% signaling_markers$Gene.name, "Signaling", "Other")))
 
 top.table_secr <- top.table %>%
   filter(gene_name %in% secretory_markers$Gene.name)
 top.table_surf <- top.table %>%
   filter(gene_name %in% surface_markers$Gene.name)
+top.table_sign <- top.table %>%
+  filter(gene_name %in% signaling_markers$Gene.name)
 
 EnhancedVolcano(top.table_secr,
                 lab = top.table_secr$gene_name,
@@ -1016,16 +1214,16 @@ EnhancedVolcano(top.table_secr,
                 legendIconSize = 3,
                 labSize = 4)
 
-#top.table_secr %>% filter(gene_name == "TP53I3")
+#top.table %>% filter(gene_name == "GINS3")
 
 metadata_expression$Treatment <- factor(metadata_expression$Treatment,
                                         levels = c("V", "MMC"))
 
 metadata_expression %>%
-  ggplot(aes(x = Treatment, y = ENSG00000175063, fill = Treatment)) +
+  ggplot(aes(x = Treatment, y = ENSG00000196562, fill = Treatment)) +
   geom_violin(alpha = 0.5) +
   geom_point(position = position_jitter(seed = 1, width = 0.2)) +
-  ylab("UBE2C expression (FPKM)") +
+  ylab("SULF2 expression (FPKM)") +
   xlab("Treatment") +
   theme_classic() +
   theme(legend.position = "none") +
@@ -1036,6 +1234,57 @@ metadata_expression %>%
   geom_violin(alpha = 0.5) +
   geom_point(position = position_jitter(seed = 1, width = 0.2)) +
   ylab("TP53I3 expression (FPKM)") +
+  xlab("Treatment") +
+  theme_classic() +
+  theme(legend.position = "none") +
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1))
+
+metadata_expression %>%
+  ggplot(aes(x = Treatment, y = ENSG00000170962, fill = Treatment)) +
+  geom_violin(alpha = 0.5) +
+  geom_point(position = position_jitter(seed = 1, width = 0.2)) +
+  ylab("PDGFD expression (FPKM)") +
+  xlab("Treatment") +
+  theme_classic() +
+  theme(legend.position = "none") +
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1))
+
+
+metadata_expression %>%
+  ggplot(aes(x = Treatment, y = ENSG00000179242, fill = Treatment)) +
+  geom_violin(alpha = 0.5) +
+  geom_point(position = position_jitter(seed = 1, width = 0.2)) +
+  ylab("CDH4 expression (FPKM)") +
+  xlab("Treatment") +
+  theme_classic() +
+  theme(legend.position = "none") +
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1))
+
+metadata_expression %>%
+  ggplot(aes(x = Treatment, y = ENSG00000157168, fill = Treatment)) +
+  geom_violin(alpha = 0.5) +
+  geom_point(position = position_jitter(seed = 1, width = 0.2)) +
+  ylab("NRG1 expression (FPKM)") +
+  xlab("Treatment") +
+  theme_classic() +
+  theme(legend.position = "none") +
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1))
+
+metadata_expression %>%
+  ggplot(aes(x = Treatment, y = ENSG00000157168, fill = Treatment)) +
+  geom_violin(alpha = 0.5) +
+  geom_point(position = position_jitter(seed = 1, width = 0.2)) +
+  ylab("NRG1 expression (FPKM)") +
+  xlab("Treatment") +
+  theme_classic() +
+  theme(legend.position = "none") +
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1))
+
+metadata_expression %>%
+  ggplot(aes(x = Treatment, y = ENSG00000181938, fill = Treatment)) +
+  geom_violin(alpha = 0.5) +
+  geom_point(position = position_jitter(seed = 1, width = 0.2)) +
+  ylab("GINS3 expression (FPKM)") +
   xlab("Treatment") +
   theme_classic() +
   theme(legend.position = "none") +
@@ -1058,6 +1307,248 @@ EnhancedVolcano(top.table_surf,
                 legendIconSize = 3,
                 labSize = 4)
 
+EnhancedVolcano(top.table_sign,
+                lab = top.table_sign$gene_name,
+                x = 'logFC',
+                y = 'adj.P.Val',
+                title = "",
+                subtitle = "",
+                pCutoff = 0.05,
+                FCcutoff = 1,
+                #ylim = c(0, max(-log10(top.table[["adj.P.Val"]]), na.rm = TRUE) + 0.5),
+                caption = "",
+                titleLabSize = 12,
+                subtitleLabSize = 2,
+                legendLabSize = 10,
+                axisLabSize = 10,
+                legendIconSize = 3,
+                labSize = 4)
+
+
+```
+
+## Human and mouse together
+
+```{r, message = F, warning = F, fig.width = 8, fig.height = 6}
+
+#mouse_human_genes <- read.table("http://www.informatics.jax.org/downloads/reports/HOM_MouseHumanSequence.rpt",
+#                                sep="\t", header = T)
+#
+#mouse <- split.data.frame(mouse_human_genes,mouse_human_genes$Common.Organism.Name)[[2]]
+#human <- split.data.frame(mouse_human_genes,mouse_human_genes$Common.Organism.Name)[[1]]
+#mouse <- mouse[,c(1,4)]
+#human <- human[,c(1,4)]
+#mh_data <- merge.data.frame(mouse, human, by = "DB.Class.Key",all.y = TRUE)
+
+mouse_counts$mouse_gene_name <- mouse_counts$gene_name
+mouse_counts$gene_name <- mapvalues(mouse_counts$mouse_gene_name,
+                                    from = mh_data$Symbol.x,
+                                    to = mh_data$Symbol.y)
+
+all_counts_df <- merge(mouse_counts, human_counts, by = "gene_name")
+all_counts_df <- all_counts_df[,-grep(".x", colnames(all_counts_df))]
+all_counts_df <- all_counts_df[,-grep("mouse_gene", colnames(all_counts_df))]
+all_counts_df <- distinct(all_counts_df)
+
+gene_info <- all_counts_df[,grep("gene", colnames(all_counts_df))]
+
+keeps <- table(all_counts_df$gene_id.y) %>% as.data.frame() %>%
+  filter(Freq==1) %>% dplyr::select(Var1)
+
+all_counts_df <- all_counts_df %>% filter(gene_id.y %in% unlist(keeps))
+
+rownames(all_counts_df) <- all_counts_df$gene_id.y
+all_counts_df <- all_counts_df[,c(grep("COL", colnames(all_counts_df)), grep("CAF", colnames(all_counts_df)))]
+
+# Excluding ribosomal genes
+ribo <- gene_info[grep("^RP", gene_info$gene_name),]
+all_counts_df <- all_counts_df[!(row.names(all_counts_df) %in% ribo$gene_id), ]
+
+colnames(gene_info) <- gsub(".y", "", colnames(gene_info))
+
+# Arranging gene info to match the count matrix
+gene_info <- gene_info %>%
+  filter(gene_id %in% rownames(all_counts_df)) %>%
+  dplyr::arrange(factor(gene_id, levels = rownames(all_counts_df)))
+
+#identical(gene_info$gene_id, rownames(all_counts_df))
+
+# Calculating gene length
+#gene_info$length <- abs(gene_info$stop - gene_info$start)
+
+# Create DGEList object
+d0 <- DGEList(all_counts_df, genes = gene_info)
+
+# Calculate normalization factors
+d0 <- calcNormFactors(d0)
+d0
+
+# Filter low-expressed genes
+cutoff <- 1
+drop <- which(apply(rpkm(d0, gene.length = "gene_length"), 1, max) < cutoff)
+d <- d0[-drop,] 
+dim(d) # number of genes left
+
+# Matching sample names with patient metadata
+#appendiceal_metadata <- merge(appendiceal_metadata, sample_key, by = "Patient.ID")
+#appendiceal_metadata <- appendiceal_metadata %>%
+#  filter(X2025.HonestBroker.specimen.number %in% colnames(all_counts_df)) %>%
+#  dplyr::arrange(match(X2025.HonestBroker.specimen.number, colnames(all_counts_df)))
+
+# Dimensionality reduction colored with various metadata
+group_info <- sapply(strsplit(colnames(all_counts_df), "_"), `[`, 2)
+sample_info <-  sapply(strsplit(colnames(all_counts_df), "_"), `[`, 1)
+
+# Set colors and shapes
+cols <- c("deeppink3", "cyan4", "yellow3", "slateblue4", "tomato3")
+#shps <- c(15, 16, 17, 18, 15, 16, 17, 18)
+shps <- c(15, 15, 15, 16, 16, 16, 15, 15, 16, 16, 15, 15, 16, 16)
+names(cols) <- unique(sample_info)
+names(shps) <- group_info
+
+plotMDS(d, top = 500, col = cols, pch = shps, cex = 1, labels = colnames(all_counts_df), dim.plot = c(1, 2))
+#legend('bottomleft', col=cols, legend=unique(sample_info), pch = 16, cex = 0.7)
+#legend('topleft', legend=unique(group_info), pch = shps, cex = 0.7)
+
+plotMDS(d, top = 500, col = cols, pch = shps, cex = 1, labels = colnames(all_counts_df), dim.plot = c(1, 3))
+
+plotMDS(d, top = 500, col = cols, pch = shps, cex = 1, labels = colnames(all_counts_df), dim.plot = c(2, 3))
+
+plotMDS(d, top = 500, col = cols, pch = shps, cex = 1, labels = colnames(all_counts_df), dim.plot = c(1, 4))
+
+plotMDS(d, top = 500, col = cols, pch = shps, cex = 1, labels = colnames(all_counts_df), dim.plot = c(2, 4))
+
+plotMDS(d, top = 500, col = cols, pch = shps, cex = 1, labels = colnames(all_counts_df), dim.plot = c(3, 4))
+
+#legend('bottomright', col=cols, legend=unique(sample_info), pch = 16, cex = 0.7)
+#legend('topright', legend=unique(group_info), pch = shps, cex = 0.7)
+
+```
+
+### DE analysis
+
+```{r, message = F, warning = F, fig.width = 5, fig.height = 4, eval = T}
+
+#group_info <- sapply(strsplit(metadata_expression$Sample_Treatment, "_"), `[`, 1)
+#sample_info <- c("COL4", "COL5", "COL7", "COL4", "COL5", "COL7")
+
+# Voom transformation and calculation of variance weights.
+group_info2 <- gsub("1", "", group_info)
+group_info2 <- gsub("2", "", group_info2)
+
+groups <- data.frame(sample_info = sample_info, group_info = group_info2)
+
+#group_info2 <- c("V", "V", "MMC", "MMC", "V", "V", "MMC", "MMC")
+
+mm <- model.matrix(~0 + sample_info + group_info2)
+# Renaming columns
+#colnames(mm) <- c("MMC", "V")
+
+# Filtering based on the design matrix
+# Defaults: min.count = 10, min.total.count = 15, large.n = 10, min.prop = 0.7
+keep <- filterByExpr(d, mm)
+d1 <- d[keep,]
+
+```
+
+```{r, message = F, warning = F, fig.width = 8, fig.height = 6}
+
+# The above specifies a model where each coefficient corresponds to a group mean
+# Voom
+y1 <- voom(d1, mm, plot = T)
+
+# Fitting linear models in limma
+# lmFit fits a linear model using weighted least squares for each gene:
+fit1 <- lmFit(y1, mm)
+
+# Specify comparisons
+contr1 <- makeContrasts(colnames(coef(fit1)), levels = colnames(coef(fit1)))
+
+tmp <- contrasts.fit(fit1, contr1)
+tmp <- eBayes(tmp)
+
+top.table.human.mouse <- topTable(tmp, sort.by = "P", n = Inf)
+top.table.human.mouse$gene_name <- mapvalues(x = rownames(top.table.human.mouse),
+                                 from = gene_info$gene_id,
+                                 to = gene_info$gene_name)
+
+head(top.table.human.mouse)
+
+# Saving all results
+write.table(top.table.human.mouse, "/home/hnatri/PIPAC_spatial/human_mouse_MMC_V_res.tsv",
+            sep = "\t", quote = F, row.names = T)
+
+# Plotting
+top_sig <- top.table.human.mouse %>%
+  filter(adj.P.Val < 0.05 & abs(logFC) > 1)
+  #dplyr::select(gene_name)
+
+p0 <- EnhancedVolcano(top.table.human.mouse,
+                      lab = top.table.human.mouse$gene_name,
+                      x = 'logFC',
+                      y = 'adj.P.Val',
+                      title = "",
+                      subtitle = "",
+                      pCutoff = 0.05,
+                      FCcutoff = 1,
+                      ylim = c(0, max(-log10(top.table.human.mouse[["adj.P.Val"]]), na.rm = TRUE) + 0.5),
+                      caption = "",
+                      titleLabSize = 12,
+                      subtitleLabSize = 2,
+                      legendLabSize = 10,
+                      axisLabSize = 10,
+                      legendIconSize = 3,
+                      labSize = 4)
+
+p0
+
+```
+
+
+```{r, message = F, warning = F, fig.width = 5, fig.height = 4, eval = T}
+
+# Calculating FPKM for each gene
+metadata_expression <- rpkm(d0, gene.length = "gene_length") %>% t() %>% as.data.frame() %>%
+  rownames_to_column(var = "Sample_Treatment")
+
+metadata_expression$Sample <- sapply(strsplit(metadata_expression$Sample_Treatment, "_"), `[`, 1)
+metadata_expression$Treatment <- sapply(strsplit(metadata_expression$Sample_Treatment, "_"), `[`, 2)
+
+metadata_expression$Treatment <- factor(metadata_expression$Treatment,
+                                        levels = c("V", "MMC", "V1", "MMC1", "V2", "MMC2"))
+
+# Expression by group
+p1 <- metadata_expression %>%
+  ggplot(aes(x = Treatment, y = ENSG00000165029, fill = Treatment)) +
+  geom_boxplot(alpha = 0.5) +
+  geom_point(position = position_jitter(seed = 1, width = 0.2)) +
+  ylab("ABCA1 expression (FPKM)") +
+  xlab("Treatment") +
+  theme_classic() +
+  theme(legend.position = "none") +
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1))
+
+p1
+
+metadata_expression %>%
+  ggplot(aes(x = Treatment, y = ENSG00000143382, fill = Treatment)) +
+  geom_boxplot(alpha = 0.5) +
+  geom_point(position = position_jitter(seed = 1, width = 0.2)) +
+  ylab("ADAMTSL4 expression (FPKM)") +
+  xlab("Treatment") +
+  theme_classic() +
+  theme(legend.position = "none") +
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1))
+
+metadata_expression %>%
+  ggplot(aes(x = Treatment, y = ENSG00000108691, fill = Treatment)) +
+  geom_boxplot(alpha = 0.5) +
+  geom_point(position = position_jitter(seed = 1, width = 0.2)) +
+  ylab("CCL2 expression (FPKM)") +
+  xlab("Treatment") +
+  theme_classic() +
+  theme(legend.position = "none") +
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1))
 
 ```
 

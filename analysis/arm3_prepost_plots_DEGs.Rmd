@@ -97,7 +97,13 @@ markers_by_group <- read_sheet(markers_by_group, sheet = "Markers by group")
 
 ```{r, message = F, warning = F, fig.width = 8, fig.height = 4}
 
-seurat_data <- readRDS("/tgen_labs/banovich/PIPAC/Seurat/PIPAC_NC50_NN20_PC20_Seurat_annotated_metadata_niches.rds")
+seurat_data <- readRDS("/tgen_labs/banovich/PIPAC/Seurat/Freeze/cell_merged_spatial_filtered_splitsamples_clustered_NN30_PC50_Seurat_denoIST_annotated_updated.rds")
+
+# Colors
+celltype_final <- as.factor(sort(unique(seurat_data$Celltype_Final)))
+celltype_final_col <- colorRampPalette(brewer.pal(10, "Paired"))(nb.cols <- length(celltype_final))
+names(celltype_final_col) <- levels(celltype_final)
+
 DefaultAssay(seurat_data) <- "RNA"
 VariableFeatures(seurat_data) <- rownames(seurat_data)
 
@@ -137,67 +143,6 @@ table(as.character(arm3_normal$Sample))
 arm3_normal@meta.data %>%
   dplyr::select(c("Patient_ID", "Sample")) %>%
   distinct()
-
-
-```
-
-## Tumor cell type proportion differences between timepoints (before and after treatment)
-
-```{r, message = F, warning = F, fig.width = 4, fig.height = 5}
-
-arm3_tumor$PrePost <- ifelse(arm3_tumor$Timepoint == 0, "Baseline", "Treated")
-
-create_barplot(arm3_tumor,
-               group_var = "PrePost",
-               plot_var = "Annotation",
-               plot_levels = sort((unique(arm3_tumor$Annotation))),
-               group_levels = sort(unique(arm3_tumor$PrePost)),
-               plot_colors = pipac_celltype_col,
-               var_names =  c("Frequency (%)", ""),
-               legend_title = "Celltype")
-
-```
-
-```{r, message = F, warning = F, fig.width = 6, fig.height = 6}
-
-prop_test <- sc_utils(arm3_tumor)
-prop_test <- permutation_test(
-	prop_test, cluster_identity = "Annotation",
-	sample_1 = "Baseline", sample_2 = "Treated",
-	sample_identity = "PrePost")
-
-permutation_plot(prop_test) +
-  ggtitle("Baseline vs. treated")
-
-```
-
-## Tumor-adjacent cell type proportion differences between timepoints (before and after treatment)
-
-```{r, message = F, warning = F, fig.width = 4, fig.height = 5}
-
-arm3_normal$PrePost <- ifelse(arm3_normal$Timepoint == 0, "Baseline", "Treated")
-
-create_barplot(arm3_normal,
-               group_var = "PrePost",
-               plot_var = "Annotation",
-               plot_levels = sort((unique(arm3_normal$Annotation))),
-               group_levels = sort(unique(arm3_normal$PrePost)),
-               plot_colors = pipac_celltype_col,
-               var_names =  c("Frequency (%)", ""),
-               legend_title = "Celltype")
-
-```
-
-```{r, message = F, warning = F, fig.width = 6, fig.height = 6}
-
-prop_test <- sc_utils(arm3_normal)
-prop_test <- permutation_test(
-	prop_test, cluster_identity = "Annotation",
-	sample_1 = "Baseline", sample_2 = "Treated",
-	sample_identity = "PrePost")
-
-permutation_plot(prop_test) +
-  ggtitle("Baseline vs. treated")
 
 ```
 
