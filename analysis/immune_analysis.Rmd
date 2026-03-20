@@ -90,20 +90,18 @@ seurat_data <- readRDS("/tgen_labs/banovich/PIPAC/Seurat/Freeze/cell_merged_spat
 
 sort(unique(seurat_data$Celltype_Final))
 
-immune_cts <- ""
+lymph <- grep("^L", sort(unique(seurat_data$Celltype_Final)), value = T)
+plasma <- grep("^Plasma", sort(unique(seurat_data$Celltype_Final)), value = T)
+lymph <- c(lymph, plasma, c("B1", "Treg1"))
+myel <- grep("^M", sort(unique(seurat_data$Celltype_Final)), value = T)
+immune_cts <- c(lymph, myel)
 
 immune <- subset(seurat_data, subset = Celltype_Final %in% immune_cts)
-immune <- fibro %>%
+immune <- immune %>%
   NormalizeData() %>%
   ScaleData()
 
-#saveRDS(fibro, "/scratch/hnatri/PIPAC/fibro_seurat_data.rds")
-
-#as.data.frame(table(seurat_data$Celltype_Final))
-#
-#write.table(as.data.frame(table(seurat_data$Celltype_Final)),
-#            "/home/hnatri/PIPAC_spatial/ncells.tsv",
-#            quote = F, row.names = F, sep = "\t")
+#saveRDS(immune, "/scratch/hnatri/PIPAC/immune_seurat_data.rds")
 
 ```
 
@@ -122,7 +120,7 @@ immune$Celltype_Final <- mapvalues(colnames(immune),
                                   from = colnames(seurat_data),
                                   to = seurat_data$Celltype_Final)
 
-celltype_final <- as.factor(sort(unique(fibro$Celltype_Final)))
+celltype_final <- as.factor(sort(unique(immune$Celltype_Final)))
 celltype_final_col <- colorRampPalette(brewer.pal(10, "Paired"))(nb.cols <- length(celltype_final))
 names(celltype_final_col) <- levels(celltype_final)
 
@@ -250,17 +248,6 @@ DotPlot(immune,
         cols = c("azure", "tomato3")) +
   RotatedAxis() +
   ggtitle("CAFs")
-
-```
-
-```{r, message = F, warning = F, fig.width = 6, fig.height = 8, eval = T}
-
-DotPlot(immune,
-        group.by = "Celltype_Final",
-        features = grep("COL", rownames(fibro), value = T),
-        cols = c("azure", "tomato3")) +
-  RotatedAxis() +
-  ggtitle("Collagen")
 
 ```
 
@@ -555,7 +542,7 @@ VlnPlot(subset(seurat_arm3, subset = Tissue == "Normal"),
 
 ```{r, message = F, warning = F, fig.width = 22, fig.height = 30, eval = T}
 
-VlnPlot(fibro,
+VlnPlot(immune,
         features = c("nCount_RNA", "nCount_cell_RNA", "nFeature_RNA",
                      "nFeature_cell_RNA", "transcript_counts", "cell_area",
                      "nucleus_area", "nucleus_count"),
@@ -573,7 +560,7 @@ VlnPlot(fibro,
 
 ```{r, message = F, warning = F, fig.width = 16, fig.height = 3}
 
-ct_table <- as.data.frame(table(fibro$Celltype_Final))
+ct_table <- as.data.frame(table(immune$Celltype_Final))
 colnames(ct_table) <- c("Celltype_Final", "Freq")
 
 min(ct_table$Freq)
