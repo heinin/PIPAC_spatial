@@ -50,7 +50,7 @@ path_list <- list("CT26" = unique(sample_info[which(sample_info$Sample_Name=="CT
 
 Two runs, no multiplexing
 
-```{r, message = F, warning = F, eval = T}
+```{r, message = F, warning = F, eval = F}
 
 # Demultiplexing
 seurat_list <- prep_seurat_list(metadata = sample_info,
@@ -78,11 +78,18 @@ lapply(seurat_list_singlets, function(xx){
   table(xx$doublet_finder)
 })
 
+
+saveRDS(seurat_list_singlets, "/scratch/hnatri/PIPAC/seurat_list_singlets.rds")
+# seurat_list_singlets <- readRDS("/scratch/hnatri/PIPAC/seurat_list_singlets.rds")
+
 ```
 
 ### SoupX for ambient RNA
 
-```{r, message = F, warning = F, eval = F}
+```{r, message = F, warning = F, eval = T}
+
+seurat_list_singlets <- readRDS("/scratch/hnatri/PIPAC/seurat_list_singlets.rds")
+singlets_merged <- merge(x = seurat_list_singlets[[1]], y = seurat_list_singlets[[2]])
 
 # Saving singlet data in 10x format
 for (i in 1:length(seurat_list_singlets)){
@@ -151,9 +158,9 @@ seurat_soupx_list <- sapply(names(seurat_list_singlets), function(xx){
   # Create Seurat object using corrected data
   d10x_seu <- CreateSeuratObject(out, assay = "SoupX_RNA")
   d10x_seu[["RNA"]] <- toc_seu@assays[["RNA"]]
-  d10x_seu <- PercentageFeatureSet(d10x_seu, pattern = "^MT-", col.name = "percent.mt_RNA", assay = "RNA")
+  d10x_seu <- PercentageFeatureSet(d10x_seu, pattern = "^mt-", col.name = "percent.mt_RNA", assay = "RNA")
   d10x_seu <- PercentageFeatureSet(d10x_seu, pattern = "^RP[SL]|^MRP[SL]", col.name = "percent.ribo_RNA", assay = "RNA")
-  d10x_seu <- PercentageFeatureSet(d10x_seu, pattern = "^MT-", col.name = "percent.mt_SoupX_RNA", assay = "SoupX_RNA")
+  d10x_seu <- PercentageFeatureSet(d10x_seu, pattern = "^mt-", col.name = "percent.mt_SoupX_RNA", assay = "SoupX_RNA")
   d10x_seu <- PercentageFeatureSet(d10x_seu, pattern = "^RP[SL]|^MRP[SL]", col.name = "percent.ribo_SoupX_RNA", assay = "SoupX_RNA")
   
   # Add sample metadata
@@ -169,19 +176,22 @@ seurat_soupx_list <- sapply(names(seurat_list_singlets), function(xx){
 # Merge
 seurat_merged <- merge(x = seurat_soupx_list[[1]], y = seurat_soupx_list[[2]])
 
-#saveRDS(seurat_merged, "/scratch/hnatri/PIPAC/seurat_merged.rds")
+saveRDS(seurat_soupx_list, "/scratch/hnatri/PIPAC/seurat_soupx_list.rds")
+saveRDS(seurat_merged, "/scratch/hnatri/PIPAC/seurat_merged.rds")
 
 ```
 
 ### QC and filtering
 
-```{r, message = F, warning = F}
+```{r, message = F, warning = F, eval = T}
 
+#seurat_soupx_list <- readRDS("/scratch/hnatri/PIPAC/seurat_soupx_list.rds")
+#seurat_merged <- merge(x = seurat_list_singlets[[1]], y = seurat_list_singlets[[2]])
 seurat_merged <- readRDS("/scratch/hnatri/PIPAC/seurat_merged.rds")
 
 # No MT expression?
-grep("^MT-", rownames(seurat_merged), value = T)
-seurat_merged <- PercentageFeatureSet(seurat_merged, pattern = "^MT-", col.name = "percent.mt_RNA", assay = "RNA")
+grep("^mt-", rownames(seurat_merged), value = T)
+seurat_merged <- PercentageFeatureSet(seurat_merged, pattern = "^mt-", col.name = "percent.mt_RNA", assay = "RNA")
 hist(seurat_merged$percent.mt_RNA, breaks = 100)
 hist(seurat_merged$nCount_RNA, breaks = 100)
 hist(seurat_merged$nFeature_RNA, breaks = 100)
@@ -189,12 +199,6 @@ hist(seurat_merged$nFeature_RNA, breaks = 100)
 par(mfrow=c(2,4))
 
 # PLOTS 1 & 2: nCount vs. nFeature
-smoothScatter(log2(seurat_merged$nCount_SoupX_RNA), log2(seurat_merged$nFeature_SoupX_RNA),
-              xlab = "log2(nCount_SoupX_RNA)", ylab = "log2(nFeature_SoupX_RNA)")
-
-smoothScatter(seurat_merged$nCount_SoupX_RNA, seurat_merged$nFeature_SoupX_RNA,
-              xlab = "nCount_SoupX_RNA", ylab = "nFeature_SoupX_RNA")
-
 smoothScatter(log2(seurat_merged$nCount_RNA), log2(seurat_merged$nFeature_RNA),
               xlab = "log2(nCount_RNA)", ylab = "log2(nFeature_RNA)")
 
@@ -202,27 +206,31 @@ smoothScatter(seurat_merged$nCount_RNA, seurat_merged$nFeature_RNA,
               xlab = "nCount_RNA", ylab = "nFeature_RNA")
 
 # PLOTS 3 & 4: nCount vs. percent.mt_RNA
-smoothScatter(seurat_merged$percent.mt_SoupX_RNA, log2(seurat_merged$nCount_SoupX_RNA),
+smoothScatter(seurat_merged$percent.mt_RNA, log2(seurat_merged$nCount_RNA),
               xlab = "% MT", ylab = "log2(nCount_SoupX_RNA)")
 
-smoothScatter(seurat_merged$percent.mt_SoupX_RNA, seurat_merged$nCount_SoupX_RNA,
+smoothScatter(seurat_merged$percent.mt_RNA, seurat_merged$nCount_RNA,
               xlab = "% MT", ylab = "nCount_SoupX_RNA")
 abline(v = 10, h = 1000, 
        lty = "dashed", lwd = 1.25, col = "red")
 
 # PLOTS 5 & 6: nFeature vs. percent.mt_RNA
-smoothScatter(seurat_merged$percent.mt_SoupX_RNA, log2(seurat_merged$nFeature_SoupX_RNA),
+smoothScatter(seurat_merged$percent.mt_RNA, log2(seurat_merged$nFeature_RNA),
               xlab = "% MT", ylab = "log2(nFeature_RNA)")
 
-smoothScatter(seurat_merged$percent.mt_SoupX_RNA, seurat_merged$nFeature_SoupX_RNA,
+smoothScatter(seurat_merged$percent.mt_RNA, seurat_merged$nFeature_RNA,
               xlab = "% MT", ylab = "nFeature_RNA")
 abline(v = 10, h = 500, 
        lty = "dashed", lwd = 1.25, col = "red")
 
-seurat_filtered <- subset(seurat_merged, subset = percent.mt_SoupX_RNA < 10 &
-                            nFeature_SoupX_RNA > 500 & nCount_SoupX_RNA > 1000)
+seurat_filtered <- subset(seurat_merged, subset = percent.mt_RNA < 10 &
+                            nFeature_RNA > 500 & nCount_RNA > 1000)
 
-#saveRDS(seurat_filtered, "/scratch/hnatri/PIPAC/PDX_CAF_Seurat_filtered.rds")
+saveRDS(seurat_filtered, "/scratch/hnatri/PIPAC/PDX_CAF_Seurat_filtered.rds")
+
+#seurat_filtered <- readRDS("/scratch/hnatri/PIPAC/PDX_CAF_Seurat_filtered.rds")
+
+#Rscript -e "rmarkdown::render('PDX_CAF_scRNAseq_processing.Rmd')"
 
 ```
 

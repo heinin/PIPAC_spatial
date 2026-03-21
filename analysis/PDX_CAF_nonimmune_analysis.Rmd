@@ -93,10 +93,10 @@ table(seurat_data$Sample)
 table(seurat_data$Annotation)
 
 # Fixing mt and rb scores
-seurat_data <- PercentageFeatureSet(seurat_data, pattern = "^mt-", col.name = "percent.mt_RNA", assay = "RNA")
-seurat_data <- PercentageFeatureSet(seurat_data, pattern = "^Rp[SL]|^MRp[SL]", col.name = "percent.ribo_RNA", assay = "RNA")
-seurat_data <- PercentageFeatureSet(seurat_data, pattern = "mt-", col.name = "percent.mt_SoupX_RNA", assay = "SoupX_RNA")
-seurat_data <- PercentageFeatureSet(seurat_data, pattern = "^Rp[SL]|^MRp[SL]", col.name = "percent.ribo_SoupX_RNA", assay = "SoupX_RNA")
+#seurat_data <- PercentageFeatureSet(seurat_data, pattern = "^mt-", col.name = "percent.mt_RNA", assay = "RNA")
+#seurat_data <- PercentageFeatureSet(seurat_data, pattern = "^Rp[SL]|^MRp[SL]", col.name = "percent.ribo_RNA", assay = "RNA")
+#seurat_data <- PercentageFeatureSet(seurat_data, pattern = "mt-", col.name = "percent.mt_SoupX_RNA", assay = "SoupX_RNA")
+#seurat_data <- PercentageFeatureSet(seurat_data, pattern = "^Rp[SL]|^MRp[SL]", col.name = "percent.ribo_SoupX_RNA", assay = "SoupX_RNA")
 
 # saveRDS(seurat_data, "/tgen_labs/banovich/PIPAC/CAF_scRNAseq/PDX_CAF_Seurat_integrated_annotated.rds")
 
@@ -356,7 +356,7 @@ FeaturePlot(seurat_integrated,
             ncol = 8) &
   coord_fixed(ratio = 1) &
   theme_bw() &
-  NoLegend()
+  NoLegend()ß
 
 ```
 
