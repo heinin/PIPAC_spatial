@@ -164,7 +164,7 @@ SoupX RNA
 
 ```{r, message = F, warning = F, fig.width = 22, fig.height = 56, eval = F}
 
-#seurat_integrated <- readRDS("/tgen_labs/banovich/PIPAC/CAF_scRNAseq/PDX_CAF_Seurat_integrated.rds")
+#seurat_integrated <- readRDS("/scratch/hnatri/PIPAC/PDX_CAF_Seurat_integrated.rds")
 
 DefaultAssay(seurat_integrated) <- "SoupX_RNA"
 seurat_integrated <- JoinLayers(seurat_integrated)
@@ -187,7 +187,9 @@ RNA
 
 ```{r, message = F, warning = F, fig.width = 4, fig.height = 4}
 
-seurat_integrated <- readRDS("/tgen_labs/banovich/PIPAC/CAF_scRNAseq/PDX_CAF_Seurat_integrated.rds")
+seurat_integrated <- readRDS("/scratch/hnatri/PIPAC/PDX_CAF_Seurat_integrated.rds")
+
+seurat_integrated <- PercentageFeatureSet(seurat_integrated, pattern = "^mt-", col.name = "percent.mt_RNA", assay = "RNA")
 
 DefaultAssay(seurat_integrated) <- "RNA"
 seurat_integrated <- JoinLayers(seurat_integrated)
@@ -307,26 +309,26 @@ annotations <- data.frame("cluster" = c(0, seq(1, 24)),
                                            "Tumor2",
                                            "Tumor9", # 3
                                            "Tumor5", # 4
-                                           "Tumor6",
+                                           "CAF7",
                                            "CAF3",
                                            "Tumor3",
                                            "CAF4", #8
-                                           "Tumor4",
-                                           "Myeloid1",
-                                           "Myeloid2",
-                                           "Lymphoid2_CD8", # 12 
-                                           "Lymphoid4_CD247", # updated from Myeloid4
-                                           "CAF7",
-                                           "Unclassified1", # 15
-                                           "CAF5",
-                                           "Lymphoid1", # 17
-                                           "Tumor7",
                                            "CAF2",
-                                           "Lymphoid3_B", # 20
+                                           "Myeloid1",
+                                           "Tumor4",
+                                           "Myeloid2", # 12 
+                                           "Myeloid5", #
+                                           "Lymphoid1_CD8_TIGIT",
+                                           "Lymphoid2", # 15
+                                           "CAF5",
+                                           "Lymphoid3_GZMB", # 17
+                                           "Tumor7",
+                                           "Lymphoid3_B", #
+                                           "Tumor6", # 20
                                            "CAF6",
                                            "Myeloid3",
                                            "CAF1", # 23
-                                           "Myeloid4")) # updated from Myeloid5
+                                           "Myeloid4"))
 
 seurat_integrated$Annotation <- mapvalues(seurat_integrated$harmony_snn_res.0.8,
                                 from = annotations$cluster,
