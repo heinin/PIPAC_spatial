@@ -1756,10 +1756,10 @@ changes </a>
 </div>
 <div id="strongRMarkdownfilestronguncommittedchanges" class="panel-collapse collapse">
 <div class="panel-body">
-<p>The R Markdown is untracked by Git. To know which version of the R
-Markdown file created these results, you’ll want to first commit it to
-the Git repo. If you’re still working on the analysis, you can ignore
-this warning. When you’re finished, you can run
+<p>The R Markdown file has unstaged changes. To know which version of
+the R Markdown file created these results, you’ll want to first commit
+it to the Git repo. If you’re still working on the analysis, you can
+ignore this warning. When you’re finished, you can run
 <code>wflow_publish</code> to commit the R Markdown file and build the
 HTML.</p>
 </div>
@@ -1919,13 +1919,13 @@ CT26_CAF_UMAP_sample.pdf
 <div class="panel panel-default">
 <div class="panel-heading">
 <p class="panel-title">
-<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomheininPIPACspatialtree548478b158397b08a9c0412d2aaccdebdfd8ac21targetblank548478ba">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomheininPIPACspatialtreef9fe197dcb6ac69d5943a027c92cbae7a1b2a051targetblankf9fe197a">
 <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> <strong>Repository version:</strong>
-<a href="https://github.com/heinin/PIPAC_spatial/tree/548478b158397b08a9c0412d2aaccdebdfd8ac21" target="_blank">548478b</a>
+<a href="https://github.com/heinin/PIPAC_spatial/tree/f9fe197dcb6ac69d5943a027c92cbae7a1b2a051" target="_blank">f9fe197</a>
 </a>
 </p>
 </div>
-<div id="strongRepositoryversionstrongahrefhttpsgithubcomheininPIPACspatialtree548478b158397b08a9c0412d2aaccdebdfd8ac21targetblank548478ba" class="panel-collapse collapse">
+<div id="strongRepositoryversionstrongahrefhttpsgithubcomheininPIPACspatialtreef9fe197dcb6ac69d5943a027c92cbae7a1b2a051targetblankf9fe197a" class="panel-collapse collapse">
 <div class="panel-body">
 <p>
 Great! You are using Git for version control. Tracking code development
@@ -1934,7 +1934,7 @@ reproducibility.
 </p>
 <p>
 The results in this page were generated with repository version
-<a href="https://github.com/heinin/PIPAC_spatial/tree/548478b158397b08a9c0412d2aaccdebdfd8ac21" target="_blank">548478b</a>.
+<a href="https://github.com/heinin/PIPAC_spatial/tree/f9fe197dcb6ac69d5943a027c92cbae7a1b2a051" target="_blank">f9fe197</a>.
 See the <em>Past versions</em> tab to see a history of the changes made
 to the R Markdown and HTML files.
 </p>
@@ -1974,14 +1974,9 @@ Ignored files:
     Ignored:    tumor_pretreatment_proximity_compiled.tsv
     Ignored:    tumor_proximity_compiled.tsv
 
-Untracked files:
-    Untracked:  analysis/PDX_CAF_scRNAseq_comparative_analysis.Rmd
-
 Unstaged changes:
-    Modified:   analysis/PDX_CAF_nonimmune_analysis.Rmd
     Modified:   analysis/PDX_CAF_scRNAseq_analysis.Rmd
-    Modified:   analysis/PDX_CAF_scRNAseq_processing.Rmd
-    Modified:   analysis/index.Rmd
+    Modified:   analysis/PDX_CAF_scRNAseq_comparative_analysis.Rmd
 
 </code></pre>
 <p>
@@ -1996,10 +1991,75 @@ have uncommitted changes.
 <hr>
 </div>
 <div id="versions" class="tab-pane fade">
+
 <p>
-There are no past versions. Publish this analysis with
-<code>wflow_publish()</code> to start tracking its development.
+These are the previous versions of the repository in which changes were
+made to the R Markdown
+(<code>analysis/PDX_CAF_scRNAseq_comparative_analysis.Rmd</code>) and
+HTML (<code>docs/PDX_CAF_scRNAseq_comparative_analysis.html</code>)
+files. If you’ve configured a remote Git repository (see
+<code>?wflow_git_remote</code>), click on the hyperlinks in the table
+below to view the files as they were in that past version.
 </p>
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+File
+</th>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+<th>
+Message
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+Rmd
+</td>
+<td>
+<a href="https://github.com/heinin/PIPAC_spatial/blob/f9fe197dcb6ac69d5943a027c92cbae7a1b2a051/analysis/PDX_CAF_scRNAseq_comparative_analysis.Rmd" target="_blank">f9fe197</a>
+</td>
+<td>
+heinin
+</td>
+<td>
+2026-03-21
+</td>
+<td>
+Updated annotations with MT-filtered data
+</td>
+</tr>
+<tr>
+<td>
+html
+</td>
+<td>
+<a href="https://rawcdn.githack.com/heinin/PIPAC_spatial/f9fe197dcb6ac69d5943a027c92cbae7a1b2a051/docs/PDX_CAF_scRNAseq_comparative_analysis.html" target="_blank">f9fe197</a>
+</td>
+<td>
+heinin
+</td>
+<td>
+2026-03-21
+</td>
+<td>
+Updated annotations with MT-filtered data
+</td>
+</tr>
+</tbody>
+</table>
+</div>
 <hr>
 </div>
 </div>
@@ -2047,7 +2107,20 @@ main_plot_features &lt;- gorth(main_plot_features, source_organism = &quot;hsapi
 <h2>Import data</h2>
 <pre class="r"><code>seurat_data &lt;- readRDS(&quot;/tgen_labs/banovich/PIPAC/CAF_scRNAseq/PDX_CAF_Seurat_annotated.rds&quot;)
 
-seurat_data$Updated_Annotation &lt;- seurat_data$Annotation</code></pre>
+seurat_data$Updated_Annotation &lt;- seurat_data$Annotation
+
+table(seurat_data$Updated_Annotation)</code></pre>
+<pre><code>
+           CAF1            CAF2            CAF3            CAF4            CAF5 
+            141             638            2903            2563            1208 
+           CAF6            CAF7       Lymphoid1   Lymphoid2_CD8     Lymphoid3_B 
+            206            1358             927            1587             615 
+Lymphoid4_CD247        Myeloid1        Myeloid2        Myeloid3        Myeloid4 
+           1448            1712            1690             196              80 
+         Tumor1          Tumor2          Tumor3          Tumor4          Tumor5 
+           4257            3445            2891            1783            3056 
+         Tumor6          Tumor7          Tumor8          Tumor9   Unclassified1 
+           2922             740            4752            3212            1353 </code></pre>
 </div>
 <div id="comparative-analysis" class="section level2">
 <h2>Comparative analysis</h2>
@@ -2074,7 +2147,7 @@ seurat_data$Updated_Annotation &lt;- seurat_data$Annotation</code></pre>
            Unclassified1
   CT26               445
   CT26_CAF           908</code></pre>
-<pre class="r"><code>cts &lt;- as.factor(sort(unique(as.character(seurat_data$Annotation))))
+<pre class="r"><code>cts &lt;- as.factor(sort(unique(as.character(seurat_data$Updated_Annotation))))
 ct_col &lt;- colorRampPalette(brewer.pal(10, &quot;Paired&quot;))(nb.cols &lt;- length(cts))
 names(ct_col) &lt;- levels(cts)
 

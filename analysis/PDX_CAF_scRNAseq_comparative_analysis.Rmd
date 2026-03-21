@@ -61,6 +61,7 @@ seurat_data <- readRDS("/tgen_labs/banovich/PIPAC/CAF_scRNAseq/PDX_CAF_Seurat_an
 
 seurat_data$Updated_Annotation <- seurat_data$Annotation
 
+table(seurat_data$Updated_Annotation)
 
 ```
 
@@ -73,7 +74,7 @@ seurat_data$Updated_Annotation <- seurat_data$Annotation
 table(seurat_data$Sample)
 table(seurat_data$Sample, seurat_data$Updated_Annotation)
 
-cts <- as.factor(sort(unique(as.character(seurat_data$Annotation))))
+cts <- as.factor(sort(unique(as.character(seurat_data$Updated_Annotation))))
 ct_col <- colorRampPalette(brewer.pal(10, "Paired"))(nb.cols <- length(cts))
 names(ct_col) <- levels(cts)
 

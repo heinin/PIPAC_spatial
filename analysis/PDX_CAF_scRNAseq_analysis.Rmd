@@ -646,7 +646,7 @@ VlnPlot(seurat_integrated,
 
 ```{r, message = F, warning = F, fig.width = 12, fig.height = 9, eval = T}
 
-table(seurat_integrated$Updated_Annotation)
+table(seurat_integrated$Annotation)
 
 #Rscript -e "rmarkdown::render('PDX_CAF_scRNAseq_analysis.Rmd')"
 
