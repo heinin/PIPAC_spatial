@@ -1,5 +1,5 @@
 ---
-title: "Integration, annotation, and comparative analysis of PDX CAF scRNAseq data"
+title: "Integration and annotation of CAF co-injection scRNAseq data"
 author: "heinin"
 date: "2026-01-31"
 output:
@@ -464,14 +464,14 @@ Key Mouse MDSC Markers and Subsets \
 - M-MDSC (Monocytic): CD11b+ Ly6G− Ly6Chigh, CCR2+, Arg1, Csf1r. \
 - Functional Genes: Arg1 (Arginase-1), Nos2 (iNOS), S100a8, S100a9, ROS.
 
-```{r, message = F, warning = F, fig.width = 8, fig.height = 10, eval = T}
+```{r, message = F, warning = F, fig.width = 8, fig.height = 15, eval = T}
 
-m2 <- c("CD11b", "Gr-1", "Ly6G", "Ly6C", "CD244", "Arg2", "Stat3", "Jaml",
-          "CCR2", "Arg1", "Csf1r", "Nos2", "S100a8", "S100a9", "ROS")
+mdsc <- c("Cd11b", "Gr-1", "Ly6G", "Ly6C", "CD244", "Arg2", "Stat3", "Jaml",
+          "Ccr2", "Arg1", "Csf1r", "Nos2", "S100a8", "S100a9", "ROS")
 
 VlnPlot(seurat_integrated,
         group.by = "Annotation",
-        features = m2,
+        features = mdsc,
         pt.size = 0,
         ncol = 2) &
   theme_bw() &
@@ -494,14 +494,14 @@ Key Mouse M2 Marker Genes: \
 - Novel Markers: Egr2 and Fpr2 are also identified as markers for M2 polarization.
 
 
-```{r, message = F, warning = F, fig.width = 8, fig.height = 10, eval = T}
+```{r, message = F, warning = F, fig.width = 8, fig.height = 13, eval = T}
 
-mdsc <- c("Cd11b", "Gr-1", "Ly6G", "Ly6C", "CD244", "Arg2", "Stat3", "Jaml",
-          "Ccr2", "Arg1", "Csf1r", "Nos2", "S100a8", "S100a9", "ROS")
+m2 <- c("CD11b", "Gr-1", "Ly6G", "Ly6C", "CD244", "Arg2", "Stat3", "Jaml",
+          "CCR2", "Arg1", "Csf1r", "Nos2", "S100a8", "S100a9", "ROS")
 
 VlnPlot(seurat_integrated,
         group.by = "Annotation",
-        features = mdsc,
+        features = m2,
         pt.size = 0,
         ncol = 2) &
   theme_bw() &
@@ -520,7 +520,7 @@ Core M1 Marker Genes and Molecules (Murine) \
 - Novel/Specific Markers: Cd38, Fpr2, Gpr18.
 
 
-```{r, message = F, warning = F, fig.width = 8, fig.height = 20, eval = T}
+```{r, message = F, warning = F, fig.width = 8, fig.height = 22, eval = T}
 
 m1 <- c("Nos2", "Il1b", "Il6", "Tnfa", "Il12a", "Il12b", "Il23", "Ccl5",
         "Cxcl2", "Cxcl10", "Cd80", "Cd38", "Cd68", "Cd64", "Fcgr1", "H2-Aa",
