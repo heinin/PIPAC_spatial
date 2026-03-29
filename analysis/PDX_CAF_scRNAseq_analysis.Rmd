@@ -466,8 +466,8 @@ Key Mouse MDSC Markers and Subsets \
 
 ```{r, message = F, warning = F, fig.width = 8, fig.height = 15, eval = T}
 
-mdsc <- c("Cd11b", "Gr-1", "Ly6G", "Ly6C", "CD244", "Arg2", "Stat3", "Jaml",
-          "Ccr2", "Arg1", "Csf1r", "Nos2", "S100a8", "S100a9", "ROS")
+mdsc <- c("Cd11b", "Gr-1", "Ly6G", "Ly6C", "Cd244", "Arg2", "Stat3", "Jaml",
+          "Ccr2", "Arg1", "Csf1r", "Nos2", "S100a8", "S100a9", "Ros")
 
 VlnPlot(seurat_integrated,
         group.by = "Annotation",
@@ -494,10 +494,11 @@ Key Mouse M2 Marker Genes: \
 - Novel Markers: Egr2 and Fpr2 are also identified as markers for M2 polarization.
 
 
-```{r, message = F, warning = F, fig.width = 8, fig.height = 13, eval = T}
+```{r, message = F, warning = F, fig.width = 8, fig.height = 22, eval = T}
 
-m2 <- c("CD11b", "Gr-1", "Ly6G", "Ly6C", "CD244", "Arg2", "Stat3", "Jaml",
-          "CCR2", "Arg1", "Csf1r", "Nos2", "S100a8", "S100a9", "ROS")
+m2 <- c("Arg1", "Mrc1", "Cd206", "Chil3", "Ym1", "Retnla", "Fizz1",
+        "Cd163", "Igf1", "Pparg", "Irf4", "Stat6", "Ccl17", "Ccl22", "Il10",
+        "Tgfb1", "Egr2", "Fpr2")
 
 VlnPlot(seurat_integrated,
         group.by = "Annotation",
@@ -518,7 +519,6 @@ Core M1 Marker Genes and Molecules (Murine) \
 - Chemokines: Ccl5 (RANTES), Cxcl2, Cxcl10. \
 - Surface Markers: Cd80, Cd86, Cd38, Cd68, Cd64, Fcgr1 (CD64), H2-Aa (MHC II), Cd11c. \
 - Novel/Specific Markers: Cd38, Fpr2, Gpr18.
-
 
 ```{r, message = F, warning = F, fig.width = 8, fig.height = 22, eval = T}
 
