@@ -395,7 +395,7 @@ aria-hidden="true"></span> </a>
 <div class="tab-content">
 <div id="summary" class="tab-pane fade in active">
 <p>
-<strong>Last updated:</strong> 2026-03-29
+<strong>Last updated:</strong> 2026-03-30
 </p>
 <p>
 <strong>Checks:</strong> <span
@@ -579,15 +579,15 @@ PDX_CAF_cluster_markers.tsv
 <div class="panel panel-default">
 <div class="panel-heading">
 <p class="panel-title">
-<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomheininPIPACspatialtree90027b3380a3684c1a784e999aa1d3ac5bc3a38atargetblank90027b3a">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomheininPIPACspatialtree5d0a83d12d07846480aeed495f8f449064b84525targetblank5d0a83da">
 <span class="glyphicon glyphicon-ok text-success"
 aria-hidden="true"></span> <strong>Repository version:</strong>
-<a href="https://github.com/heinin/PIPAC_spatial/tree/90027b3380a3684c1a784e999aa1d3ac5bc3a38a" target="_blank">90027b3</a>
+<a href="https://github.com/heinin/PIPAC_spatial/tree/5d0a83d12d07846480aeed495f8f449064b84525" target="_blank">5d0a83d</a>
 </a>
 </p>
 </div>
 <div
-id="strongRepositoryversionstrongahrefhttpsgithubcomheininPIPACspatialtree90027b3380a3684c1a784e999aa1d3ac5bc3a38atargetblank90027b3a"
+id="strongRepositoryversionstrongahrefhttpsgithubcomheininPIPACspatialtree5d0a83d12d07846480aeed495f8f449064b84525targetblank5d0a83da"
 class="panel-collapse collapse">
 <div class="panel-body">
 <p>
@@ -597,7 +597,7 @@ reproducibility.
 </p>
 <p>
 The results in this page were generated with repository version
-<a href="https://github.com/heinin/PIPAC_spatial/tree/90027b3380a3684c1a784e999aa1d3ac5bc3a38a" target="_blank">90027b3</a>.
+<a href="https://github.com/heinin/PIPAC_spatial/tree/5d0a83d12d07846480aeed495f8f449064b84525" target="_blank">5d0a83d</a>.
 See the <em>Past versions</em> tab to see a history of the changes made
 to the R Markdown and HTML files.
 </p>
@@ -614,7 +614,6 @@ were generated:
 Ignored files:
     Ignored:    PDX_CAF_cluster_markers.tsv
     Ignored:    PDX_CAF_nonimmune_cluster_markers.tsv
-    Ignored:    analysis/figure/
     Ignored:    cell_annotation_final_topmarkers.tsv
     Ignored:    cell_immune_cluster_marker_annotations.tsv
     Ignored:    cell_nonimmune_cluster_marker_annotations.tsv
@@ -639,6 +638,10 @@ Ignored files:
 
 Unstaged changes:
     Modified:   analysis/PDX_CAF_scRNAseq_analysis.Rmd
+    Modified:   analysis/PDX_CAF_scRNAseq_comparative_analysis.Rmd
+    Modified:   analysis/immune_analysis.Rmd
+    Modified:   analysis/updating_annotations.Rmd
+    Modified:   code/anndata_to_seurat.R
 
 </code></pre>
 <p>
@@ -685,6 +688,40 @@ Message
 </tr>
 </thead>
 <tbody>
+<tr>
+<td>
+Rmd
+</td>
+<td>
+<a href="https://github.com/heinin/PIPAC_spatial/blob/5d0a83d12d07846480aeed495f8f449064b84525/analysis/PDX_CAF_scRNAseq_analysis.Rmd" target="_blank">5d0a83d</a>
+</td>
+<td>
+heinin
+</td>
+<td>
+2026-03-29
+</td>
+<td>
+Fixed M2 markers
+</td>
+</tr>
+<tr>
+<td>
+html
+</td>
+<td>
+<a href="https://rawcdn.githack.com/heinin/PIPAC_spatial/5d0a83d12d07846480aeed495f8f449064b84525/docs/PDX_CAF_scRNAseq_analysis.html" target="_blank">5d0a83d</a>
+</td>
+<td>
+heinin
+</td>
+<td>
+2026-03-29
+</td>
+<td>
+Fixed M2 markers
+</td>
+</tr>
 <tr>
 <td>
 Rmd
@@ -1102,7 +1139,7 @@ seurat_integrated &lt;- FindNeighbors(object = seurat_integrated,
 seurat_integrated &lt;- FindClusters(object = seurat_integrated,
                                 resolution = c(0.1,0.2,0.3,0.5,0.8,1),
                                 graph.name = &quot;harmony_snn&quot;,
-                                 verbose = F)
+                                verbose = F)
 
 DimPlot(seurat_integrated,
         group.by = &quot;harmony_snn_res.0.8&quot;,
@@ -1176,6 +1213,17 @@ Date
 <tbody>
 <tr>
 <td>
+<a href="https://github.com/heinin/PIPAC_spatial/blob/5d0a83d12d07846480aeed495f8f449064b84525/docs/figure/PDX_CAF_scRNAseq_analysis.Rmd/unnamed-chunk-6-1.png" target="_blank">5d0a83d</a>
+</td>
+<td>
+heinin
+</td>
+<td>
+2026-03-29
+</td>
+</tr>
+<tr>
+<td>
 <a href="https://github.com/heinin/PIPAC_spatial/blob/cab17503eb8a7bc7543730adf56674c3e322cd7a/docs/figure/PDX_CAF_scRNAseq_analysis.Rmd/unnamed-chunk-6-1.png" target="_blank">cab1750</a>
 </td>
 <td>
@@ -1231,6 +1279,17 @@ Date
 </tr>
 </thead>
 <tbody>
+<tr>
+<td>
+<a href="https://github.com/heinin/PIPAC_spatial/blob/5d0a83d12d07846480aeed495f8f449064b84525/docs/figure/PDX_CAF_scRNAseq_analysis.Rmd/unnamed-chunk-7-1.png" target="_blank">5d0a83d</a>
+</td>
+<td>
+heinin
+</td>
+<td>
+2026-03-29
+</td>
+</tr>
 <tr>
 <td>
 <a href="https://github.com/heinin/PIPAC_spatial/blob/5e6549734a720e1b972d8f2587d25727bc816134/docs/figure/PDX_CAF_scRNAseq_analysis.Rmd/unnamed-chunk-7-1.png" target="_blank">5e65497</a>
@@ -1293,6 +1352,17 @@ Date
 </tr>
 </thead>
 <tbody>
+<tr>
+<td>
+<a href="https://github.com/heinin/PIPAC_spatial/blob/5d0a83d12d07846480aeed495f8f449064b84525/docs/figure/PDX_CAF_scRNAseq_analysis.Rmd/unnamed-chunk-8-1.png" target="_blank">5d0a83d</a>
+</td>
+<td>
+heinin
+</td>
+<td>
+2026-03-29
+</td>
+</tr>
 <tr>
 <td>
 <a href="https://github.com/heinin/PIPAC_spatial/blob/548478b158397b08a9c0412d2aaccdebdfd8ac21/docs/figure/PDX_CAF_scRNAseq_analysis.Rmd/unnamed-chunk-8-1.png" target="_blank">548478b</a>
@@ -1380,6 +1450,17 @@ Date
 <tbody>
 <tr>
 <td>
+<a href="https://github.com/heinin/PIPAC_spatial/blob/5d0a83d12d07846480aeed495f8f449064b84525/docs/figure/PDX_CAF_scRNAseq_analysis.Rmd/unnamed-chunk-10-1.png" target="_blank">5d0a83d</a>
+</td>
+<td>
+heinin
+</td>
+<td>
+2026-03-29
+</td>
+</tr>
+<tr>
+<td>
 <a href="https://github.com/heinin/PIPAC_spatial/blob/cab17503eb8a7bc7543730adf56674c3e322cd7a/docs/figure/PDX_CAF_scRNAseq_analysis.Rmd/unnamed-chunk-10-1.png" target="_blank">cab1750</a>
 </td>
 <td>
@@ -1428,6 +1509,17 @@ Date
 <tbody>
 <tr>
 <td>
+<a href="https://github.com/heinin/PIPAC_spatial/blob/5d0a83d12d07846480aeed495f8f449064b84525/docs/figure/PDX_CAF_scRNAseq_analysis.Rmd/unnamed-chunk-11-1.png" target="_blank">5d0a83d</a>
+</td>
+<td>
+heinin
+</td>
+<td>
+2026-03-29
+</td>
+</tr>
+<tr>
+<td>
 <a href="https://github.com/heinin/PIPAC_spatial/blob/ff362c68dc22785afbfaf87ee366216aa745ba11/docs/figure/PDX_CAF_scRNAseq_analysis.Rmd/unnamed-chunk-11-1.png" target="_blank">ff362c6</a>
 </td>
 <td>
@@ -1452,7 +1544,9 @@ heinin
 </table>
 </div>
 </div>
-<pre class="r"><code># Annotation df
+<pre class="r"><code>seurat_integrated &lt;- readRDS(&quot;/tgen_labs/banovich/PIPAC/CAF_scRNAseq/PDX_CAF_Seurat_annotated.rds&quot;)
+
+# Annotation df
 annotations &lt;- data.frame(&quot;cluster&quot; = c(0, seq(1, 24)),
                           &quot;annotation&quot; = c(&quot;Tumor8&quot;, # 0
                                            &quot;Tumor1&quot;,
@@ -1502,80 +1596,54 @@ seurat_integrated$Annotation &lt;- factor(seurat_integrated$Annotation,
 #table(seurat_integrated$Updated_Annotation)
 
 saveRDS(seurat_integrated, &quot;/tgen_labs/banovich/PIPAC/CAF_scRNAseq/PDX_CAF_Seurat_annotated.rds&quot;)</code></pre>
-<pre class="r"><code>#seurat_integrated &lt;- readRDS(&quot;/tgen_labs/banovich/PIPAC/CAF_scRNAseq/PDX_CAF_Seurat_annotated.rds&quot;)
+</div>
+</div>
+<div id="subclustering" class="section level2">
+<h2>Subclustering</h2>
+<pre class="r"><code>seurat_integrated &lt;- readRDS(&quot;/tgen_labs/banovich/PIPAC/CAF_scRNAseq/PDX_CAF_Seurat_annotated.rds&quot;)
 
-# Top markers for each celltype
-markers &lt;- presto::wilcoxauc(seurat_integrated,
-                             group_by = &quot;Annotation&quot;,
-                             assay = &quot;data&quot;,
-                             seurat_assay = &quot;RNA&quot;)
-top_markers &lt;- markers %&gt;% group_by(group) %&gt;% slice_max(order_by = auc, n = 50)
+# Renaming Lymphoid3_GZMB
+seurat_integrated$Annotation &lt;- gsub(&quot;Lymphoid3_GZMB&quot;, &quot;Lymphoid4_GZMB&quot;, seurat_integrated$Annotation)
 
-write.table(top_markers, &quot;/home/hnatri/PDX_celltype_markers_top50.tsv&quot;,
-           quote = F, sep = &quot;\t&quot;, row.names = F)
+Idents(seurat_integrated) &lt;- seurat_integrated$Annotation
+seurat_integrated &lt;- FindSubCluster(seurat_integrated,
+  cluster = &quot;CAF6&quot;,
+  graph.name = &quot;harmony_snn&quot;,
+  subcluster.name = &quot;Annotation_subcluster&quot;,
+  resolution = 0.5,
+  algorithm = 1)
+
+table(seurat_integrated$Annotation_subcluster)
+
+seurat_integrated$Annotation_subcluster &lt;- ifelse(seurat_integrated$Annotation_subcluster %in% c(&quot;CAF6_0&quot;, &quot;CAF6_1&quot;, &quot;CAF6_2&quot;), &quot;Myeloid6&quot;,
+                                                  ifelse(seurat_integrated$Annotation_subcluster == &quot;CAF6_3&quot;, &quot;CAF6&quot;, seurat_integrated$Annotation_subcluster))
+
+seurat_integrated$Annotation_subcluster &lt;- factor(seurat_integrated$Annotation_subcluster,
+                                            levels = sort(unique(seurat_integrated$Annotation_subcluster)))
+
+seurat_integrated$Annotation &lt;- seurat_integrated$Annotation_subcluster
+
+saveRDS(seurat_integrated, &quot;/tgen_labs/banovich/PIPAC/CAF_scRNAseq/PDX_CAF_Seurat_annotated.rds&quot;)</code></pre>
+</div>
+<div id="plotting-annotations-and-marker-expression"
+class="section level2">
+<h2>Plotting annotations and marker expression</h2>
+<pre class="r"><code>seurat_integrated &lt;- readRDS(&quot;/tgen_labs/banovich/PIPAC/CAF_scRNAseq/PDX_CAF_Seurat_annotated.rds&quot;)
 
 cts &lt;- as.factor(sort(unique(as.character(seurat_integrated$Annotation))))
 ct_col &lt;- colorRampPalette(brewer.pal(10, &quot;Paired&quot;))(nb.cols &lt;- length(cts))
 names(ct_col) &lt;- levels(cts)
 
-DimPlot(seurat_integrated,
-        group.by = &quot;Annotation&quot;,
-        reduction = &quot;harmony_umap&quot;,
-        cols = ct_col,
-        label = T,
-        label.box = T,
-        repel = T) +
-  coord_fixed(ratio = 1) +
-  theme_bw() +
-  NoLegend()</code></pre>
-<p><img src="figure/PDX_CAF_scRNAseq_analysis.Rmd/unnamed-chunk-13-1.png" width="576" style="display: block; margin: auto;" /></p>
-<p>
-<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-13-1">
-Past versions of unnamed-chunk-13-1.png
-</button>
-</p>
-<div id="fig-unnamed-chunk-13-1" class="collapse">
-<div class="table-responsive">
-<table class="table table-condensed table-hover">
-<thead>
-<tr>
-<th>
-Version
-</th>
-<th>
-Author
-</th>
-<th>
-Date
-</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>
-<a href="https://github.com/heinin/PIPAC_spatial/blob/cab17503eb8a7bc7543730adf56674c3e322cd7a/docs/figure/PDX_CAF_scRNAseq_analysis.Rmd/unnamed-chunk-13-1.png" target="_blank">cab1750</a>
-</td>
-<td>
-heinin
-</td>
-<td>
-2026-02-11
-</td>
-</tr>
-</tbody>
-</table>
-</div>
-</div>
-<pre class="r"><code>DimPlot(seurat_integrated,
-        group.by = &quot;Annotation&quot;,
-        split.by = &quot;Annotation&quot;,
-        reduction = &quot;harmony_umap&quot;,
-        cols = ct_col,
-        ncol = 8) +
-  coord_fixed(ratio = 1) +
-  theme_bw() +
-  NoLegend()</code></pre>
-<p><img src="figure/PDX_CAF_scRNAseq_analysis.Rmd/unnamed-chunk-14-1.png" width="1152" style="display: block; margin: auto;" /></p>
+create_dotplot_heatmap(seurat_object = seurat_integrated,
+                       plot_features = sort(main_plot_features),
+                       group_var = &quot;Annotation&quot;,
+                       group_colors = ct_col,
+                       column_title = &quot;&quot;,
+                       row_km = 5,
+                       col_km = 5,
+                       row.order = NULL,
+                       col.order = NULL)</code></pre>
+<p><img src="figure/PDX_CAF_scRNAseq_analysis.Rmd/unnamed-chunk-14-1.png" width="864" style="display: block; margin: auto;" /></p>
 <p>
 <button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-14-1">
 Past versions of unnamed-chunk-14-1.png
@@ -1598,6 +1666,17 @@ Date
 </tr>
 </thead>
 <tbody>
+<tr>
+<td>
+<a href="https://github.com/heinin/PIPAC_spatial/blob/5d0a83d12d07846480aeed495f8f449064b84525/docs/figure/PDX_CAF_scRNAseq_analysis.Rmd/unnamed-chunk-14-1.png" target="_blank">5d0a83d</a>
+</td>
+<td>
+heinin
+</td>
+<td>
+2026-03-29
+</td>
+</tr>
 <tr>
 <td>
 <a href="https://github.com/heinin/PIPAC_spatial/blob/ff362c68dc22785afbfaf87ee366216aa745ba11/docs/figure/PDX_CAF_scRNAseq_analysis.Rmd/unnamed-chunk-14-1.png" target="_blank">ff362c6</a>
@@ -1624,8 +1703,22 @@ heinin
 </table>
 </div>
 </div>
+<div id="top-cluster-markers-1" class="section level3">
+<h3>Top cluster markers</h3>
+<pre class="r"><code># Top markers for each celltype
+markers &lt;- presto::wilcoxauc(seurat_integrated,
+                             group_by = &quot;Annotation&quot;,
+                             assay = &quot;data&quot;,
+                             seurat_assay = &quot;RNA&quot;)
+top_markers &lt;- markers %&gt;% group_by(group) %&gt;% slice_max(order_by = auc, n = 50)
+
+write.table(top_markers, &quot;/home/hnatri/PDX_celltype_markers_top50.tsv&quot;,
+           quote = F, sep = &quot;\t&quot;, row.names = F)
+
+# For plotting
+top_cluster_markers &lt;- markers %&gt;% group_by(group) %&gt;% slice_max(order_by = auc, n = 10)</code></pre>
 <pre class="r"><code>create_dotplot_heatmap(seurat_object = seurat_integrated,
-                       plot_features = unique(top_cluster_markers$gene),
+                       plot_features = unique(top_cluster_markers$feature),
                        group_var = &quot;Annotation&quot;,
                        group_colors = ct_col,
                        column_title = &quot;&quot;,
@@ -1633,13 +1726,13 @@ heinin
                        col_km = 5,
                        row.order = NULL,
                        col.order = NULL)</code></pre>
-<p><img src="figure/PDX_CAF_scRNAseq_analysis.Rmd/unnamed-chunk-15-1.png" width="768" style="display: block; margin: auto;" /></p>
+<p><img src="figure/PDX_CAF_scRNAseq_analysis.Rmd/unnamed-chunk-16-1.png" width="864" style="display: block; margin: auto;" /></p>
 <p>
-<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-15-1">
-Past versions of unnamed-chunk-15-1.png
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-16-1">
+Past versions of unnamed-chunk-16-1.png
 </button>
 </p>
-<div id="fig-unnamed-chunk-15-1" class="collapse">
+<div id="fig-unnamed-chunk-16-1" class="collapse">
 <div class="table-responsive">
 <table class="table table-condensed table-hover">
 <thead>
@@ -1658,7 +1751,18 @@ Date
 <tbody>
 <tr>
 <td>
-<a href="https://github.com/heinin/PIPAC_spatial/blob/ff362c68dc22785afbfaf87ee366216aa745ba11/docs/figure/PDX_CAF_scRNAseq_analysis.Rmd/unnamed-chunk-15-1.png" target="_blank">ff362c6</a>
+<a href="https://github.com/heinin/PIPAC_spatial/blob/548478b158397b08a9c0412d2aaccdebdfd8ac21/docs/figure/PDX_CAF_scRNAseq_analysis.Rmd/unnamed-chunk-16-1.png" target="_blank">548478b</a>
+</td>
+<td>
+heinin
+</td>
+<td>
+2026-03-20
+</td>
+</tr>
+<tr>
+<td>
+<a href="https://github.com/heinin/PIPAC_spatial/blob/ff362c68dc22785afbfaf87ee366216aa745ba11/docs/figure/PDX_CAF_scRNAseq_analysis.Rmd/unnamed-chunk-16-1.png" target="_blank">ff362c6</a>
 </td>
 <td>
 heinin
@@ -1669,13 +1773,240 @@ heinin
 </tr>
 <tr>
 <td>
-<a href="https://github.com/heinin/PIPAC_spatial/blob/cab17503eb8a7bc7543730adf56674c3e322cd7a/docs/figure/PDX_CAF_scRNAseq_analysis.Rmd/unnamed-chunk-15-1.png" target="_blank">cab1750</a>
+<a href="https://github.com/heinin/PIPAC_spatial/blob/cab17503eb8a7bc7543730adf56674c3e322cd7a/docs/figure/PDX_CAF_scRNAseq_analysis.Rmd/unnamed-chunk-16-1.png" target="_blank">cab1750</a>
 </td>
 <td>
 heinin
 </td>
 <td>
 2026-02-11
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<pre class="r"><code>DimPlot(seurat_integrated,
+        group.by = &quot;Annotation&quot;,
+        reduction = &quot;harmony_umap&quot;,
+        cols = ct_col,
+        label = T,
+        label.box = T,
+        repel = T) +
+  coord_fixed(ratio = 1) +
+  theme_bw() +
+  NoLegend()</code></pre>
+<p><img src="figure/PDX_CAF_scRNAseq_analysis.Rmd/unnamed-chunk-17-1.png" width="576" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-17-1">
+Past versions of unnamed-chunk-17-1.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-17-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/heinin/PIPAC_spatial/blob/5d0a83d12d07846480aeed495f8f449064b84525/docs/figure/PDX_CAF_scRNAseq_analysis.Rmd/unnamed-chunk-17-1.png" target="_blank">5d0a83d</a>
+</td>
+<td>
+heinin
+</td>
+<td>
+2026-03-29
+</td>
+</tr>
+<tr>
+<td>
+<a href="https://github.com/heinin/PIPAC_spatial/blob/548478b158397b08a9c0412d2aaccdebdfd8ac21/docs/figure/PDX_CAF_scRNAseq_analysis.Rmd/unnamed-chunk-17-1.png" target="_blank">548478b</a>
+</td>
+<td>
+heinin
+</td>
+<td>
+2026-03-20
+</td>
+</tr>
+<tr>
+<td>
+<a href="https://github.com/heinin/PIPAC_spatial/blob/2f096d7752f2645b366f402e46386801809f948d/docs/figure/PDX_CAF_scRNAseq_analysis.Rmd/unnamed-chunk-17-1.png" target="_blank">2f096d7</a>
+</td>
+<td>
+heinin
+</td>
+<td>
+2026-03-03
+</td>
+</tr>
+<tr>
+<td>
+<a href="https://github.com/heinin/PIPAC_spatial/blob/ff362c68dc22785afbfaf87ee366216aa745ba11/docs/figure/PDX_CAF_scRNAseq_analysis.Rmd/unnamed-chunk-17-1.png" target="_blank">ff362c6</a>
+</td>
+<td>
+heinin
+</td>
+<td>
+2026-02-27
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<pre class="r"><code>DimPlot(seurat_integrated,
+        group.by = &quot;Annotation&quot;,
+        reduction = &quot;harmony_umap&quot;,
+        cols = ct_col) +
+  coord_fixed(ratio = 1) +
+  theme_bw()</code></pre>
+<p><img src="figure/PDX_CAF_scRNAseq_analysis.Rmd/unnamed-chunk-18-1.png" width="1152" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-18-1">
+Past versions of unnamed-chunk-18-1.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-18-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/heinin/PIPAC_spatial/blob/5d0a83d12d07846480aeed495f8f449064b84525/docs/figure/PDX_CAF_scRNAseq_analysis.Rmd/unnamed-chunk-18-1.png" target="_blank">5d0a83d</a>
+</td>
+<td>
+heinin
+</td>
+<td>
+2026-03-29
+</td>
+</tr>
+<tr>
+<td>
+<a href="https://github.com/heinin/PIPAC_spatial/blob/548478b158397b08a9c0412d2aaccdebdfd8ac21/docs/figure/PDX_CAF_scRNAseq_analysis.Rmd/unnamed-chunk-18-1.png" target="_blank">548478b</a>
+</td>
+<td>
+heinin
+</td>
+<td>
+2026-03-20
+</td>
+</tr>
+<tr>
+<td>
+<a href="https://github.com/heinin/PIPAC_spatial/blob/ff362c68dc22785afbfaf87ee366216aa745ba11/docs/figure/PDX_CAF_scRNAseq_analysis.Rmd/unnamed-chunk-18-1.png" target="_blank">ff362c6</a>
+</td>
+<td>
+heinin
+</td>
+<td>
+2026-02-27
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<pre class="r"><code>DimPlot(seurat_integrated,
+        group.by = &quot;Annotation&quot;,
+        split.by = &quot;Annotation&quot;,
+        reduction = &quot;harmony_umap&quot;,
+        cols = ct_col,
+        ncol = 8) +
+  coord_fixed(ratio = 1) +
+  theme_bw() +
+  NoLegend()</code></pre>
+<p><img src="figure/PDX_CAF_scRNAseq_analysis.Rmd/unnamed-chunk-19-1.png" width="1152" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-19-1">
+Past versions of unnamed-chunk-19-1.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-19-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/heinin/PIPAC_spatial/blob/5d0a83d12d07846480aeed495f8f449064b84525/docs/figure/PDX_CAF_scRNAseq_analysis.Rmd/unnamed-chunk-19-1.png" target="_blank">5d0a83d</a>
+</td>
+<td>
+heinin
+</td>
+<td>
+2026-03-29
+</td>
+</tr>
+<tr>
+<td>
+<a href="https://github.com/heinin/PIPAC_spatial/blob/548478b158397b08a9c0412d2aaccdebdfd8ac21/docs/figure/PDX_CAF_scRNAseq_analysis.Rmd/unnamed-chunk-19-1.png" target="_blank">548478b</a>
+</td>
+<td>
+heinin
+</td>
+<td>
+2026-03-20
+</td>
+</tr>
+<tr>
+<td>
+<a href="https://github.com/heinin/PIPAC_spatial/blob/2f096d7752f2645b366f402e46386801809f948d/docs/figure/PDX_CAF_scRNAseq_analysis.Rmd/unnamed-chunk-19-1.png" target="_blank">2f096d7</a>
+</td>
+<td>
+heinin
+</td>
+<td>
+2026-03-03
+</td>
+</tr>
+<tr>
+<td>
+<a href="https://github.com/heinin/PIPAC_spatial/blob/ff362c68dc22785afbfaf87ee366216aa745ba11/docs/figure/PDX_CAF_scRNAseq_analysis.Rmd/unnamed-chunk-19-1.png" target="_blank">ff362c6</a>
+</td>
+<td>
+heinin
+</td>
+<td>
+2026-02-27
 </td>
 </tr>
 </tbody>
@@ -1713,13 +2044,13 @@ VlnPlot(seurat_integrated,
   NoLegend() &amp;
   RotatedAxis() &amp;
   xlab(&quot;&quot;)</code></pre>
-<p><img src="figure/PDX_CAF_scRNAseq_analysis.Rmd/unnamed-chunk-17-1.png" width="768" style="display: block; margin: auto;" /></p>
+<p><img src="figure/PDX_CAF_scRNAseq_analysis.Rmd/unnamed-chunk-21-1.png" width="960" style="display: block; margin: auto;" /></p>
 <p>
-<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-17-1">
-Past versions of unnamed-chunk-17-1.png
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-21-1">
+Past versions of unnamed-chunk-21-1.png
 </button>
 </p>
-<div id="fig-unnamed-chunk-17-1" class="collapse">
+<div id="fig-unnamed-chunk-21-1" class="collapse">
 <div class="table-responsive">
 <table class="table table-condensed table-hover">
 <thead>
@@ -1738,7 +2069,18 @@ Date
 <tbody>
 <tr>
 <td>
-<a href="https://github.com/heinin/PIPAC_spatial/blob/548478b158397b08a9c0412d2aaccdebdfd8ac21/docs/figure/PDX_CAF_scRNAseq_analysis.Rmd/unnamed-chunk-17-1.png" target="_blank">548478b</a>
+<a href="https://github.com/heinin/PIPAC_spatial/blob/5d0a83d12d07846480aeed495f8f449064b84525/docs/figure/PDX_CAF_scRNAseq_analysis.Rmd/unnamed-chunk-21-1.png" target="_blank">5d0a83d</a>
+</td>
+<td>
+heinin
+</td>
+<td>
+2026-03-29
+</td>
+</tr>
+<tr>
+<td>
+<a href="https://github.com/heinin/PIPAC_spatial/blob/548478b158397b08a9c0412d2aaccdebdfd8ac21/docs/figure/PDX_CAF_scRNAseq_analysis.Rmd/unnamed-chunk-21-1.png" target="_blank">548478b</a>
 </td>
 <td>
 heinin
@@ -1749,7 +2091,7 @@ heinin
 </tr>
 <tr>
 <td>
-<a href="https://github.com/heinin/PIPAC_spatial/blob/2f096d7752f2645b366f402e46386801809f948d/docs/figure/PDX_CAF_scRNAseq_analysis.Rmd/unnamed-chunk-17-1.png" target="_blank">2f096d7</a>
+<a href="https://github.com/heinin/PIPAC_spatial/blob/2f096d7752f2645b366f402e46386801809f948d/docs/figure/PDX_CAF_scRNAseq_analysis.Rmd/unnamed-chunk-21-1.png" target="_blank">2f096d7</a>
 </td>
 <td>
 heinin
@@ -1760,7 +2102,7 @@ heinin
 </tr>
 <tr>
 <td>
-<a href="https://github.com/heinin/PIPAC_spatial/blob/ff362c68dc22785afbfaf87ee366216aa745ba11/docs/figure/PDX_CAF_scRNAseq_analysis.Rmd/unnamed-chunk-17-1.png" target="_blank">ff362c6</a>
+<a href="https://github.com/heinin/PIPAC_spatial/blob/ff362c68dc22785afbfaf87ee366216aa745ba11/docs/figure/PDX_CAF_scRNAseq_analysis.Rmd/unnamed-chunk-21-1.png" target="_blank">ff362c6</a>
 </td>
 <td>
 heinin
@@ -1801,13 +2143,13 @@ VlnPlot(seurat_integrated,
   NoLegend() &amp;
   RotatedAxis() &amp;
   xlab(&quot;&quot;)</code></pre>
-<p><img src="figure/PDX_CAF_scRNAseq_analysis.Rmd/unnamed-chunk-18-1.png" width="768" style="display: block; margin: auto;" /></p>
+<p><img src="figure/PDX_CAF_scRNAseq_analysis.Rmd/unnamed-chunk-22-1.png" width="960" style="display: block; margin: auto;" /></p>
 <p>
-<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-18-1">
-Past versions of unnamed-chunk-18-1.png
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-22-1">
+Past versions of unnamed-chunk-22-1.png
 </button>
 </p>
-<div id="fig-unnamed-chunk-18-1" class="collapse">
+<div id="fig-unnamed-chunk-22-1" class="collapse">
 <div class="table-responsive">
 <table class="table table-condensed table-hover">
 <thead>
@@ -1826,7 +2168,18 @@ Date
 <tbody>
 <tr>
 <td>
-<a href="https://github.com/heinin/PIPAC_spatial/blob/548478b158397b08a9c0412d2aaccdebdfd8ac21/docs/figure/PDX_CAF_scRNAseq_analysis.Rmd/unnamed-chunk-18-1.png" target="_blank">548478b</a>
+<a href="https://github.com/heinin/PIPAC_spatial/blob/5d0a83d12d07846480aeed495f8f449064b84525/docs/figure/PDX_CAF_scRNAseq_analysis.Rmd/unnamed-chunk-22-1.png" target="_blank">5d0a83d</a>
+</td>
+<td>
+heinin
+</td>
+<td>
+2026-03-29
+</td>
+</tr>
+<tr>
+<td>
+<a href="https://github.com/heinin/PIPAC_spatial/blob/548478b158397b08a9c0412d2aaccdebdfd8ac21/docs/figure/PDX_CAF_scRNAseq_analysis.Rmd/unnamed-chunk-22-1.png" target="_blank">548478b</a>
 </td>
 <td>
 heinin
@@ -1837,7 +2190,18 @@ heinin
 </tr>
 <tr>
 <td>
-<a href="https://github.com/heinin/PIPAC_spatial/blob/ff362c68dc22785afbfaf87ee366216aa745ba11/docs/figure/PDX_CAF_scRNAseq_analysis.Rmd/unnamed-chunk-18-1.png" target="_blank">ff362c6</a>
+<a href="https://github.com/heinin/PIPAC_spatial/blob/2f096d7752f2645b366f402e46386801809f948d/docs/figure/PDX_CAF_scRNAseq_analysis.Rmd/unnamed-chunk-22-1.png" target="_blank">2f096d7</a>
+</td>
+<td>
+heinin
+</td>
+<td>
+2026-03-03
+</td>
+</tr>
+<tr>
+<td>
+<a href="https://github.com/heinin/PIPAC_spatial/blob/ff362c68dc22785afbfaf87ee366216aa745ba11/docs/figure/PDX_CAF_scRNAseq_analysis.Rmd/unnamed-chunk-22-1.png" target="_blank">ff362c6</a>
 </td>
 <td>
 heinin
@@ -1890,13 +2254,13 @@ VlnPlot(seurat_integrated,
   NoLegend() &amp;
   RotatedAxis() &amp;
   xlab(&quot;&quot;)</code></pre>
-<p><img src="figure/PDX_CAF_scRNAseq_analysis.Rmd/unnamed-chunk-19-1.png" width="768" style="display: block; margin: auto;" /></p>
+<p><img src="figure/PDX_CAF_scRNAseq_analysis.Rmd/unnamed-chunk-23-1.png" width="960" style="display: block; margin: auto;" /></p>
 <p>
-<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-19-1">
-Past versions of unnamed-chunk-19-1.png
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-23-1">
+Past versions of unnamed-chunk-23-1.png
 </button>
 </p>
-<div id="fig-unnamed-chunk-19-1" class="collapse">
+<div id="fig-unnamed-chunk-23-1" class="collapse">
 <div class="table-responsive">
 <table class="table table-condensed table-hover">
 <thead>
@@ -1915,7 +2279,18 @@ Date
 <tbody>
 <tr>
 <td>
-<a href="https://github.com/heinin/PIPAC_spatial/blob/548478b158397b08a9c0412d2aaccdebdfd8ac21/docs/figure/PDX_CAF_scRNAseq_analysis.Rmd/unnamed-chunk-19-1.png" target="_blank">548478b</a>
+<a href="https://github.com/heinin/PIPAC_spatial/blob/5d0a83d12d07846480aeed495f8f449064b84525/docs/figure/PDX_CAF_scRNAseq_analysis.Rmd/unnamed-chunk-23-1.png" target="_blank">5d0a83d</a>
+</td>
+<td>
+heinin
+</td>
+<td>
+2026-03-29
+</td>
+</tr>
+<tr>
+<td>
+<a href="https://github.com/heinin/PIPAC_spatial/blob/548478b158397b08a9c0412d2aaccdebdfd8ac21/docs/figure/PDX_CAF_scRNAseq_analysis.Rmd/unnamed-chunk-23-1.png" target="_blank">548478b</a>
 </td>
 <td>
 heinin
@@ -1926,18 +2301,7 @@ heinin
 </tr>
 <tr>
 <td>
-<a href="https://github.com/heinin/PIPAC_spatial/blob/2f096d7752f2645b366f402e46386801809f948d/docs/figure/PDX_CAF_scRNAseq_analysis.Rmd/unnamed-chunk-19-1.png" target="_blank">2f096d7</a>
-</td>
-<td>
-heinin
-</td>
-<td>
-2026-03-03
-</td>
-</tr>
-<tr>
-<td>
-<a href="https://github.com/heinin/PIPAC_spatial/blob/ff362c68dc22785afbfaf87ee366216aa745ba11/docs/figure/PDX_CAF_scRNAseq_analysis.Rmd/unnamed-chunk-19-1.png" target="_blank">ff362c6</a>
+<a href="https://github.com/heinin/PIPAC_spatial/blob/ff362c68dc22785afbfaf87ee366216aa745ba11/docs/figure/PDX_CAF_scRNAseq_analysis.Rmd/unnamed-chunk-23-1.png" target="_blank">ff362c6</a>
 </td>
 <td>
 heinin
@@ -1978,13 +2342,13 @@ VlnPlot(seurat_integrated,
   NoLegend() &amp;
   RotatedAxis() &amp;
   xlab(&quot;&quot;)</code></pre>
-<p><img src="figure/PDX_CAF_scRNAseq_analysis.Rmd/unnamed-chunk-20-1.png" width="768" style="display: block; margin: auto;" /></p>
+<p><img src="figure/PDX_CAF_scRNAseq_analysis.Rmd/unnamed-chunk-24-1.png" width="960" style="display: block; margin: auto;" /></p>
 <p>
-<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-20-1">
-Past versions of unnamed-chunk-20-1.png
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-24-1">
+Past versions of unnamed-chunk-24-1.png
 </button>
 </p>
-<div id="fig-unnamed-chunk-20-1" class="collapse">
+<div id="fig-unnamed-chunk-24-1" class="collapse">
 <div class="table-responsive">
 <table class="table table-condensed table-hover">
 <thead>
@@ -2003,7 +2367,7 @@ Date
 <tbody>
 <tr>
 <td>
-<a href="https://github.com/heinin/PIPAC_spatial/blob/548478b158397b08a9c0412d2aaccdebdfd8ac21/docs/figure/PDX_CAF_scRNAseq_analysis.Rmd/unnamed-chunk-20-1.png" target="_blank">548478b</a>
+<a href="https://github.com/heinin/PIPAC_spatial/blob/548478b158397b08a9c0412d2aaccdebdfd8ac21/docs/figure/PDX_CAF_scRNAseq_analysis.Rmd/unnamed-chunk-24-1.png" target="_blank">548478b</a>
 </td>
 <td>
 heinin
@@ -2014,7 +2378,18 @@ heinin
 </tr>
 <tr>
 <td>
-<a href="https://github.com/heinin/PIPAC_spatial/blob/2f096d7752f2645b366f402e46386801809f948d/docs/figure/PDX_CAF_scRNAseq_analysis.Rmd/unnamed-chunk-20-1.png" target="_blank">2f096d7</a>
+<a href="https://github.com/heinin/PIPAC_spatial/blob/5e6549734a720e1b972d8f2587d25727bc816134/docs/figure/PDX_CAF_scRNAseq_analysis.Rmd/unnamed-chunk-24-1.png" target="_blank">5e65497</a>
+</td>
+<td>
+heinin
+</td>
+<td>
+2026-03-06
+</td>
+</tr>
+<tr>
+<td>
+<a href="https://github.com/heinin/PIPAC_spatial/blob/2f096d7752f2645b366f402e46386801809f948d/docs/figure/PDX_CAF_scRNAseq_analysis.Rmd/unnamed-chunk-24-1.png" target="_blank">2f096d7</a>
 </td>
 <td>
 heinin
@@ -2025,7 +2400,7 @@ heinin
 </tr>
 <tr>
 <td>
-<a href="https://github.com/heinin/PIPAC_spatial/blob/ff362c68dc22785afbfaf87ee366216aa745ba11/docs/figure/PDX_CAF_scRNAseq_analysis.Rmd/unnamed-chunk-20-1.png" target="_blank">ff362c6</a>
+<a href="https://github.com/heinin/PIPAC_spatial/blob/ff362c68dc22785afbfaf87ee366216aa745ba11/docs/figure/PDX_CAF_scRNAseq_analysis.Rmd/unnamed-chunk-24-1.png" target="_blank">ff362c6</a>
 </td>
 <td>
 heinin
@@ -2105,13 +2480,13 @@ VlnPlot(seurat_integrated,
   NoLegend() &amp;
   RotatedAxis() &amp;
   xlab(&quot;&quot;)</code></pre>
-<p><img src="figure/PDX_CAF_scRNAseq_analysis.Rmd/unnamed-chunk-21-1.png" width="768" style="display: block; margin: auto;" /></p>
+<p><img src="figure/PDX_CAF_scRNAseq_analysis.Rmd/unnamed-chunk-25-1.png" width="960" style="display: block; margin: auto;" /></p>
 <p>
-<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-21-1">
-Past versions of unnamed-chunk-21-1.png
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-25-1">
+Past versions of unnamed-chunk-25-1.png
 </button>
 </p>
-<div id="fig-unnamed-chunk-21-1" class="collapse">
+<div id="fig-unnamed-chunk-25-1" class="collapse">
 <div class="table-responsive">
 <table class="table table-condensed table-hover">
 <thead>
@@ -2130,7 +2505,7 @@ Date
 <tbody>
 <tr>
 <td>
-<a href="https://github.com/heinin/PIPAC_spatial/blob/548478b158397b08a9c0412d2aaccdebdfd8ac21/docs/figure/PDX_CAF_scRNAseq_analysis.Rmd/unnamed-chunk-21-1.png" target="_blank">548478b</a>
+<a href="https://github.com/heinin/PIPAC_spatial/blob/548478b158397b08a9c0412d2aaccdebdfd8ac21/docs/figure/PDX_CAF_scRNAseq_analysis.Rmd/unnamed-chunk-25-1.png" target="_blank">548478b</a>
 </td>
 <td>
 heinin
@@ -2141,18 +2516,18 @@ heinin
 </tr>
 <tr>
 <td>
-<a href="https://github.com/heinin/PIPAC_spatial/blob/2f096d7752f2645b366f402e46386801809f948d/docs/figure/PDX_CAF_scRNAseq_analysis.Rmd/unnamed-chunk-21-1.png" target="_blank">2f096d7</a>
+<a href="https://github.com/heinin/PIPAC_spatial/blob/5e6549734a720e1b972d8f2587d25727bc816134/docs/figure/PDX_CAF_scRNAseq_analysis.Rmd/unnamed-chunk-25-1.png" target="_blank">5e65497</a>
 </td>
 <td>
 heinin
 </td>
 <td>
-2026-03-03
+2026-03-06
 </td>
 </tr>
 <tr>
 <td>
-<a href="https://github.com/heinin/PIPAC_spatial/blob/ff362c68dc22785afbfaf87ee366216aa745ba11/docs/figure/PDX_CAF_scRNAseq_analysis.Rmd/unnamed-chunk-21-1.png" target="_blank">ff362c6</a>
+<a href="https://github.com/heinin/PIPAC_spatial/blob/ff362c68dc22785afbfaf87ee366216aa745ba11/docs/figure/PDX_CAF_scRNAseq_analysis.Rmd/unnamed-chunk-25-1.png" target="_blank">ff362c6</a>
 </td>
 <td>
 heinin
@@ -2195,13 +2570,13 @@ VlnPlot(seurat_integrated,
   NoLegend() &amp;
   RotatedAxis() &amp;
   xlab(&quot;&quot;)</code></pre>
-<p><img src="figure/PDX_CAF_scRNAseq_analysis.Rmd/unnamed-chunk-22-1.png" width="768" style="display: block; margin: auto;" /></p>
+<p><img src="figure/PDX_CAF_scRNAseq_analysis.Rmd/unnamed-chunk-26-1.png" width="960" style="display: block; margin: auto;" /></p>
 <p>
-<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-22-1">
-Past versions of unnamed-chunk-22-1.png
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-26-1">
+Past versions of unnamed-chunk-26-1.png
 </button>
 </p>
-<div id="fig-unnamed-chunk-22-1" class="collapse">
+<div id="fig-unnamed-chunk-26-1" class="collapse">
 <div class="table-responsive">
 <table class="table table-condensed table-hover">
 <thead>
@@ -2220,7 +2595,7 @@ Date
 <tbody>
 <tr>
 <td>
-<a href="https://github.com/heinin/PIPAC_spatial/blob/548478b158397b08a9c0412d2aaccdebdfd8ac21/docs/figure/PDX_CAF_scRNAseq_analysis.Rmd/unnamed-chunk-22-1.png" target="_blank">548478b</a>
+<a href="https://github.com/heinin/PIPAC_spatial/blob/548478b158397b08a9c0412d2aaccdebdfd8ac21/docs/figure/PDX_CAF_scRNAseq_analysis.Rmd/unnamed-chunk-26-1.png" target="_blank">548478b</a>
 </td>
 <td>
 heinin
@@ -2231,7 +2606,18 @@ heinin
 </tr>
 <tr>
 <td>
-<a href="https://github.com/heinin/PIPAC_spatial/blob/2f096d7752f2645b366f402e46386801809f948d/docs/figure/PDX_CAF_scRNAseq_analysis.Rmd/unnamed-chunk-22-1.png" target="_blank">2f096d7</a>
+<a href="https://github.com/heinin/PIPAC_spatial/blob/5e6549734a720e1b972d8f2587d25727bc816134/docs/figure/PDX_CAF_scRNAseq_analysis.Rmd/unnamed-chunk-26-1.png" target="_blank">5e65497</a>
+</td>
+<td>
+heinin
+</td>
+<td>
+2026-03-06
+</td>
+</tr>
+<tr>
+<td>
+<a href="https://github.com/heinin/PIPAC_spatial/blob/2f096d7752f2645b366f402e46386801809f948d/docs/figure/PDX_CAF_scRNAseq_analysis.Rmd/unnamed-chunk-26-1.png" target="_blank">2f096d7</a>
 </td>
 <td>
 heinin
@@ -2242,7 +2628,7 @@ heinin
 </tr>
 <tr>
 <td>
-<a href="https://github.com/heinin/PIPAC_spatial/blob/ff362c68dc22785afbfaf87ee366216aa745ba11/docs/figure/PDX_CAF_scRNAseq_analysis.Rmd/unnamed-chunk-22-1.png" target="_blank">ff362c6</a>
+<a href="https://github.com/heinin/PIPAC_spatial/blob/ff362c68dc22785afbfaf87ee366216aa745ba11/docs/figure/PDX_CAF_scRNAseq_analysis.Rmd/unnamed-chunk-26-1.png" target="_blank">ff362c6</a>
 </td>
 <td>
 heinin
@@ -2268,13 +2654,13 @@ VlnPlot(seurat_integrated,
         pt.size = 0,
         ncol = 1) &amp;
   NoLegend()</code></pre>
-<p><img src="figure/PDX_CAF_scRNAseq_analysis.Rmd/unnamed-chunk-23-1.png" width="1152" style="display: block; margin: auto;" /></p>
+<p><img src="figure/PDX_CAF_scRNAseq_analysis.Rmd/unnamed-chunk-27-1.png" width="1152" style="display: block; margin: auto;" /></p>
 <p>
-<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-23-1">
-Past versions of unnamed-chunk-23-1.png
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-27-1">
+Past versions of unnamed-chunk-27-1.png
 </button>
 </p>
-<div id="fig-unnamed-chunk-23-1" class="collapse">
+<div id="fig-unnamed-chunk-27-1" class="collapse">
 <div class="table-responsive">
 <table class="table table-condensed table-hover">
 <thead>
@@ -2293,7 +2679,7 @@ Date
 <tbody>
 <tr>
 <td>
-<a href="https://github.com/heinin/PIPAC_spatial/blob/548478b158397b08a9c0412d2aaccdebdfd8ac21/docs/figure/PDX_CAF_scRNAseq_analysis.Rmd/unnamed-chunk-23-1.png" target="_blank">548478b</a>
+<a href="https://github.com/heinin/PIPAC_spatial/blob/548478b158397b08a9c0412d2aaccdebdfd8ac21/docs/figure/PDX_CAF_scRNAseq_analysis.Rmd/unnamed-chunk-27-1.png" target="_blank">548478b</a>
 </td>
 <td>
 heinin
@@ -2304,7 +2690,29 @@ heinin
 </tr>
 <tr>
 <td>
-<a href="https://github.com/heinin/PIPAC_spatial/blob/ff362c68dc22785afbfaf87ee366216aa745ba11/docs/figure/PDX_CAF_scRNAseq_analysis.Rmd/unnamed-chunk-23-1.png" target="_blank">ff362c6</a>
+<a href="https://github.com/heinin/PIPAC_spatial/blob/5e6549734a720e1b972d8f2587d25727bc816134/docs/figure/PDX_CAF_scRNAseq_analysis.Rmd/unnamed-chunk-27-1.png" target="_blank">5e65497</a>
+</td>
+<td>
+heinin
+</td>
+<td>
+2026-03-06
+</td>
+</tr>
+<tr>
+<td>
+<a href="https://github.com/heinin/PIPAC_spatial/blob/2f096d7752f2645b366f402e46386801809f948d/docs/figure/PDX_CAF_scRNAseq_analysis.Rmd/unnamed-chunk-27-1.png" target="_blank">2f096d7</a>
+</td>
+<td>
+heinin
+</td>
+<td>
+2026-03-03
+</td>
+</tr>
+<tr>
+<td>
+<a href="https://github.com/heinin/PIPAC_spatial/blob/ff362c68dc22785afbfaf87ee366216aa745ba11/docs/figure/PDX_CAF_scRNAseq_analysis.Rmd/unnamed-chunk-27-1.png" target="_blank">ff362c6</a>
 </td>
 <td>
 heinin
@@ -2323,7 +2731,7 @@ heinin
         pt.size = 0,
         ncol = 1) &amp;
   NoLegend()</code></pre>
-<p><img src="figure/PDX_CAF_scRNAseq_analysis.Rmd/unnamed-chunk-23-2.png" width="1152" style="display: block; margin: auto;" /></p>
+<p><img src="figure/PDX_CAF_scRNAseq_analysis.Rmd/unnamed-chunk-27-2.png" width="1152" style="display: block; margin: auto;" /></p>
 </div>
 <div id="cell-numbers-by-celltype" class="section level2">
 <h2>Cell numbers by celltype</h2>
@@ -2332,17 +2740,17 @@ heinin
                CAF1                CAF2                CAF3                CAF4 
                 142                2059                2564                2131 
                CAF5                CAF6                CAF7 Lymphoid1_CD8_TIGIT 
-               1468                 215                2690                1579 
-          Lymphoid2         Lymphoid3_B      Lymphoid3_GZMB            Myeloid1 
+               1468                  50                2690                1579 
+          Lymphoid2         Lymphoid3_B      Lymphoid4_GZMB            Myeloid1 
                1478                 619                 921                2029 
            Myeloid2            Myeloid3            Myeloid4            Myeloid5 
                1711                 194                  80                1616 
-             Tumor1              Tumor2              Tumor3              Tumor4 
-               3963                3933                2310                1885 
-             Tumor5              Tumor6              Tumor7              Tumor8 
-               2951                 618                 750                4200 
-             Tumor9 
-               2955 </code></pre>
+           Myeloid6              Tumor1              Tumor2              Tumor3 
+                165                3963                3933                2310 
+             Tumor4              Tumor5              Tumor6              Tumor7 
+               1885                2951                 618                 750 
+             Tumor8              Tumor9 
+               4200                2955 </code></pre>
 <pre class="r"><code>#Rscript -e &quot;rmarkdown::render(&#39;PDX_CAF_scRNAseq_analysis.Rmd&#39;)&quot;</code></pre>
 <br>
 <p>

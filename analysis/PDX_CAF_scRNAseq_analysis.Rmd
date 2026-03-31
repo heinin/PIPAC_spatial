@@ -142,7 +142,7 @@ seurat_integrated <- FindNeighbors(object = seurat_integrated,
 seurat_integrated <- FindClusters(object = seurat_integrated,
                                 resolution = c(0.1,0.2,0.3,0.5,0.8,1),
                                 graph.name = "harmony_snn",
-                                 verbose = F)
+                                verbose = F)
 
 DimPlot(seurat_integrated,
         group.by = "harmony_snn_res.0.8",
@@ -300,7 +300,9 @@ FeaturePlot(seurat_integrated,
 
 ```
 
-```{r, message = F, warning = F, fig.width = 12, fig.height = 8, eval = T}
+```{r, message = F, warning = F, fig.width = 12, fig.height = 8, eval = F}
+
+seurat_integrated <- readRDS("/tgen_labs/banovich/PIPAC/CAF_scRNAseq/PDX_CAF_Seurat_annotated.rds")
 
 # Annotation df
 annotations <- data.frame("cluster" = c(0, seq(1, 24)),
@@ -355,10 +357,62 @@ saveRDS(seurat_integrated, "/tgen_labs/banovich/PIPAC/CAF_scRNAseq/PDX_CAF_Seura
 
 ```
 
+## Subclustering 
 
-```{r, message = F, warning = F, fig.width = 6, fig.height = 6, eval = T}
+```{r, message = F, warning = F, fig.width = 6, fig.height = 6, eval = F}
 
-#seurat_integrated <- readRDS("/tgen_labs/banovich/PIPAC/CAF_scRNAseq/PDX_CAF_Seurat_annotated.rds")
+seurat_integrated <- readRDS("/tgen_labs/banovich/PIPAC/CAF_scRNAseq/PDX_CAF_Seurat_annotated.rds")
+
+# Renaming Lymphoid3_GZMB
+seurat_integrated$Annotation <- gsub("Lymphoid3_GZMB", "Lymphoid4_GZMB", seurat_integrated$Annotation)
+
+Idents(seurat_integrated) <- seurat_integrated$Annotation
+seurat_integrated <- FindSubCluster(seurat_integrated,
+  cluster = "CAF6",
+  graph.name = "harmony_snn",
+  subcluster.name = "Annotation_subcluster",
+  resolution = 0.5,
+  algorithm = 1)
+
+table(seurat_integrated$Annotation_subcluster)
+
+seurat_integrated$Annotation_subcluster <- ifelse(seurat_integrated$Annotation_subcluster %in% c("CAF6_0", "CAF6_1", "CAF6_2"), "Myeloid6",
+                                                  ifelse(seurat_integrated$Annotation_subcluster == "CAF6_3", "CAF6", seurat_integrated$Annotation_subcluster))
+
+seurat_integrated$Annotation_subcluster <- factor(seurat_integrated$Annotation_subcluster,
+                                            levels = sort(unique(seurat_integrated$Annotation_subcluster)))
+
+seurat_integrated$Annotation <- seurat_integrated$Annotation_subcluster
+
+saveRDS(seurat_integrated, "/tgen_labs/banovich/PIPAC/CAF_scRNAseq/PDX_CAF_Seurat_annotated.rds")
+
+```
+
+## Plotting annotations and marker expression
+
+```{r, message = F, warning = F, fig.width = 9, fig.height = 16}
+
+seurat_integrated <- readRDS("/tgen_labs/banovich/PIPAC/CAF_scRNAseq/PDX_CAF_Seurat_annotated.rds")
+
+cts <- as.factor(sort(unique(as.character(seurat_integrated$Annotation))))
+ct_col <- colorRampPalette(brewer.pal(10, "Paired"))(nb.cols <- length(cts))
+names(ct_col) <- levels(cts)
+
+create_dotplot_heatmap(seurat_object = seurat_integrated,
+                       plot_features = sort(main_plot_features),
+                       group_var = "Annotation",
+                       group_colors = ct_col,
+                       column_title = "",
+                       row_km = 5,
+                       col_km = 5,
+                       row.order = NULL,
+                       col.order = NULL)
+
+```
+
+### Top cluster markers
+
+```{r, message = F, warning = F, fig.width = 5, fig.height = 4}
 
 # Top markers for each celltype
 markers <- presto::wilcoxauc(seurat_integrated,
@@ -370,9 +424,26 @@ top_markers <- markers %>% group_by(group) %>% slice_max(order_by = auc, n = 50)
 write.table(top_markers, "/home/hnatri/PDX_celltype_markers_top50.tsv",
            quote = F, sep = "\t", row.names = F)
 
-cts <- as.factor(sort(unique(as.character(seurat_integrated$Annotation))))
-ct_col <- colorRampPalette(brewer.pal(10, "Paired"))(nb.cols <- length(cts))
-names(ct_col) <- levels(cts)
+# For plotting
+top_cluster_markers <- markers %>% group_by(group) %>% slice_max(order_by = auc, n = 10)
+
+```
+
+```{r, message = F, warning = F, fig.width = 9, fig.height = 24}
+
+create_dotplot_heatmap(seurat_object = seurat_integrated,
+                       plot_features = unique(top_cluster_markers$feature),
+                       group_var = "Annotation",
+                       group_colors = ct_col,
+                       column_title = "",
+                       row_km = 5,
+                       col_km = 5,
+                       row.order = NULL,
+                       col.order = NULL)
+
+```
+
+```{r, message = F, warning = F, fig.width = 6, fig.height = 6, eval = T}
 
 DimPlot(seurat_integrated,
         group.by = "Annotation",
@@ -387,7 +458,19 @@ DimPlot(seurat_integrated,
 
 ```
 
-```{r, message = F, warning = F, fig.width = 12, fig.height = 12, eval = T}
+
+```{r, message = F, warning = F, fig.width = 12, fig.height = 6, eval = T}
+
+DimPlot(seurat_integrated,
+        group.by = "Annotation",
+        reduction = "harmony_umap",
+        cols = ct_col) +
+  coord_fixed(ratio = 1) +
+  theme_bw()
+
+```
+
+```{r, message = F, warning = F, fig.width = 12, fig.height = 8, eval = T}
 
 DimPlot(seurat_integrated,
         group.by = "Annotation",
@@ -399,21 +482,6 @@ DimPlot(seurat_integrated,
   theme_bw() +
   NoLegend()
   
-```
-
-
-```{r, message = F, warning = F, fig.width = 8, fig.height = 23, eval = T}
-
-create_dotplot_heatmap(seurat_object = seurat_integrated,
-                       plot_features = unique(top_cluster_markers$gene),
-                       group_var = "Annotation",
-                       group_colors = ct_col,
-                       column_title = "",
-                       row_km = 5,
-                       col_km = 5,
-                       row.order = NULL,
-                       col.order = NULL)
-
 ```
 
 ```{r, message = F, warning = F, fig.width = 8, fig.height = 24, eval = F}
@@ -433,7 +501,7 @@ create_dotplot_heatmap(seurat_object = seurat_integrated,
 
 ## CAF markers
 
-```{r, message = F, warning = F, fig.width = 8, fig.height = 24, eval = T}
+```{r, message = F, warning = F, fig.width = 10, fig.height = 24, eval = T}
 
 #grep("H2", rownames(seurat_integrated), value = T)
 caf_markers <- c("Ly6C", "Il6", "Ccl2", "Cxcl1", "Cxcl2", "Cxcl12",
@@ -464,7 +532,7 @@ Key Mouse MDSC Markers and Subsets \
 - M-MDSC (Monocytic): CD11b+ Ly6G− Ly6Chigh, CCR2+, Arg1, Csf1r. \
 - Functional Genes: Arg1 (Arginase-1), Nos2 (iNOS), S100a8, S100a9, ROS.
 
-```{r, message = F, warning = F, fig.width = 8, fig.height = 15, eval = T}
+```{r, message = F, warning = F, fig.width = 10, fig.height = 15, eval = T}
 
 mdsc <- c("Cd11b", "Gr-1", "Ly6G", "Ly6C", "Cd244", "Arg2", "Stat3", "Jaml",
           "Ccr2", "Arg1", "Csf1r", "Nos2", "S100a8", "S100a9", "Ros")
@@ -494,7 +562,7 @@ Key Mouse M2 Marker Genes: \
 - Novel Markers: Egr2 and Fpr2 are also identified as markers for M2 polarization.
 
 
-```{r, message = F, warning = F, fig.width = 8, fig.height = 22, eval = T}
+```{r, message = F, warning = F, fig.width = 10, fig.height = 22, eval = T}
 
 m2 <- c("Arg1", "Mrc1", "Cd206", "Chil3", "Ym1", "Retnla", "Fizz1",
         "Cd163", "Igf1", "Pparg", "Irf4", "Stat6", "Ccl17", "Ccl22", "Il10",
@@ -520,7 +588,7 @@ Core M1 Marker Genes and Molecules (Murine) \
 - Surface Markers: Cd80, Cd86, Cd38, Cd68, Cd64, Fcgr1 (CD64), H2-Aa (MHC II), Cd11c. \
 - Novel/Specific Markers: Cd38, Fpr2, Gpr18.
 
-```{r, message = F, warning = F, fig.width = 8, fig.height = 22, eval = T}
+```{r, message = F, warning = F, fig.width = 10, fig.height = 22, eval = T}
 
 m1 <- c("Nos2", "Il1b", "Il6", "Tnfa", "Il12a", "Il12b", "Il23", "Ccl5",
         "Cxcl2", "Cxcl10", "Cd80", "Cd38", "Cd68", "Cd64", "Fcgr1", "H2-Aa",
@@ -564,7 +632,7 @@ Key Activation/Memory Markers\
 - Memory T Cells: Cd44, Il7r (CD127)\
 - Exhaustion Markers: Pdcd1 (PD-1), Cd274 (PD-L1), Havcr2 (TIM-3) \
 
-```{r, message = F, warning = F, fig.width = 8, fig.height = 40, eval = T}
+```{r, message = F, warning = F, fig.width = 10, fig.height = 40, eval = T}
 
 mouse_immune <- c("Ptprc", "Cd3e", "Cd3g", "Cd247", "Cd4", "Cd8a", "Cd8b1", 
                   "Foxp3", "Cd25", "Il2ra", "Ctla4", "Cd19", "Ms4a1", "Cd79a",
@@ -600,7 +668,7 @@ Cdh1, Epcam, Krt8, Krt18, Ocln , Tjp1 and transcription
 factors including Snai1, Snai2, Twist1, Zeb1, Zeb2 up: Cdh2, Vim, Fn1,
 Col1a1, Acta2\
 
-```{r, message = F, warning = F, fig.width = 8, fig.height = 17, eval = T}
+```{r, message = F, warning = F, fig.width = 10, fig.height = 17, eval = T}
 
 #grep("Mmp2", rownames(seurat_integrated), value = T)
 

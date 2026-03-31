@@ -111,7 +111,7 @@ final_annotations <- read_sheet(metadata, sheet = "CT update prev")
 
 ```{r, message = F, warning = F, fig.width = 6, fig.height = 6, eval = F}
 
-seurat_data <- readRDS("/tgen_labs/banovich/PIPAC/Seurat/cell_merged_spatial_filtered_splitsamples_clustered_NN30_PC50_Seurat_denoIST_annotated.rds")
+seurat_data <- readRDS("/tgen_labs/banovich/PIPAC/Seurat/Freeze/cell_merged_spatial_filtered_splitsamples_clustered_NN30_PC50_Seurat_denoIST_annotated_updated.rds")
 
 #setdiff(seurat_data$Celltype, final_annotations$CelltypeFinal)
 sort(unique(seurat_data$Celltype))
@@ -132,11 +132,15 @@ sort(unique(seurat_data$Celltype))
 
 ```
 
+```{r, message = F, warning = F, fig.width = 8, fig.height = 10, eval = T}
+
+```
+
 ## Plotting annotations
 
 ```{r, message = F, warning = F, fig.width = 8, fig.height = 10}
 
-seurat_data <- readRDS("/tgen_labs/banovich/PIPAC/Seurat/cell_merged_spatial_filtered_splitsamples_clustered_NN30_PC50_Seurat_denoIST_annotated.rds")
+seurat_data <- readRDS("/tgen_labs/banovich/PIPAC/Seurat/Freeze/cell_merged_spatial_filtered_splitsamples_clustered_NN30_PC50_Seurat_denoIST_annotated_updated.rds")
 
 seurat_data <- NormalizeData(seurat_data)
 seurat_data <- ScaleData(seurat_data)
@@ -665,7 +669,7 @@ DotPlot(seurat_data,
         cols = c("gray98", "tomato3")) &
   RotatedAxis()
 
-saveRDS(seurat_data, "/tgen_labs/banovich/PIPAC/Seurat/cell_merged_spatial_filtered_splitsamples_clustered_NN30_PC50_Seurat_denoIST_annotated_updated.rds")
+#saveRDS(seurat_data, "/tgen_labs/banovich/PIPAC/Seurat/cell_merged_spatial_filtered_splitsamples_clustered_NN30_PC50_Seurat_denoIST_annotated_updated.rds")
 
 sort(unique(seurat_data$Celltype_Final))
 seurat_data@meta.data %>% dplyr::select(c("Celltype_Final", "Celltype_Updated", "Celltype", "Celltype_Plasma2")) %>%

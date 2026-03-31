@@ -79,6 +79,11 @@ markers_by_group <- read_sheet(markers_by_group, sheet = "Markers by group")
 
 seurat_data <- readRDS("/tgen_labs/banovich/PIPAC/Seurat/Freeze/cell_merged_spatial_filtered_splitsamples_clustered_NN30_PC50_Seurat_denoIST_annotated_updated.rds")
 
+#seurat_data$Celltype_Final <- ifelse(seurat_data$Celltype_Final == "M7", "L3",
+#                                ifelse(seurat_data$Celltype_Final == "L3", "M7", seurat_data$Celltype_Final))
+#
+#saveRDS(seurat_data, "/tgen_labs/banovich/PIPAC/Seurat/Freeze/cell_merged_spatial_filtered_splitsamples_clustered_NN30_PC50_Seurat_denoIST_annotated_updated.rds")
+
 ```
 
 ```{r, message = F, warning = F, fig.width = 8, fig.height = 4, eval = F}
@@ -105,9 +110,7 @@ immune <- immune %>%
 
 ```
 
-## Marker expression
-
-```{r, message = F, warning = F, fig.width = 4, fig.height = 4}
+```{r, message = F, warning = F, fig.width = 4, fig.height = 4, eval = F}
 
 immune <- readRDS("/tgen_labs/banovich/PIPAC/Seurat/immune_clustered_NN20_PC20_Seurat.rds")
 
@@ -119,6 +122,27 @@ immune <- immune %>%
 immune$Celltype_Final <- mapvalues(colnames(immune),
                                   from = colnames(seurat_data),
                                   to = seurat_data$Celltype_Final)
+
+```
+
+## Renaming mislabeled celltypes
+
+```{r, message = F, warning = F, fig.width = 4, fig.height = 4, eval = F}
+
+immune <- readRDS("/tgen_labs/banovich/PIPAC/Seurat/immune_clustered_NN20_PC20_Seurat.rds")
+
+immune$Celltype_Final <- ifelse(immune$Celltype_Final == "M7", "L3",
+                                ifelse(immune$Celltype_Final == "L3", "M7", immune$Celltype_Final))
+
+saveRDS(immune, "/tgen_labs/banovich/PIPAC/Seurat/immune_clustered_NN20_PC20_Seurat.rds")
+
+```
+
+## Marker expression
+
+```{r, message = F, warning = F, fig.width = 6, fig.height = 6}
+
+immune <- readRDS("/tgen_labs/banovich/PIPAC/Seurat/immune_clustered_NN20_PC20_Seurat.rds")
 
 celltype_final <- as.factor(sort(unique(immune$Celltype_Final)))
 celltype_final_col <- colorRampPalette(brewer.pal(10, "Paired"))(nb.cols <- length(celltype_final))
@@ -137,20 +161,6 @@ DimPlot(immune,
 
 ```
 
-```{r, message = F, warning = F, fig.width = 12, fig.height = 8}
-
-FeaturePlot(immune,
-            features = c(mycafs, icafs, abcafs, ficafs),
-            cols = c("gray98", "tomato3"),
-            reduction = "umap",
-            raster = T,
-            ncol = 3) &
-  coord_fixed(ratio = 1) &
-  theme_bw() &
-  NoLegend()
-
-```
-
 ```{r, message = F, warning = F, fig.width = 13, fig.height = 8}
 
 FeaturePlot(immune,
@@ -165,25 +175,26 @@ FeaturePlot(immune,
 
 ```
 
-```{r, message = F, warning = F, fig.width = 13, fig.height = 6}
+```{r, message = F, warning = F, fig.width = 13, fig.height = 26}
 
 create_dotplot_heatmap(seurat_object = immune,
-                       plot_features = unique(c(mycafs, icafs, abcafs, ficafs)),
+                       plot_features = main_plot_features,
                        group_var = "Celltype_Final",
                        group_colors = celltype_final_col,
                        column_title = "",
-                       row_km = 1,
-                       col_km = 6,
+                       row_km = 12,
+                       col_km = 5,
                        row.order = NULL,
                        col.order = NULL)
 
 ```
 
+## Immune markers
 
 ```{r, message = F, warning = F, fig.width = 13, fig.height = 26}
 
 create_dotplot_heatmap(seurat_object = immune,
-                       plot_features = main_plot_features,
+                       plot_features = unique(markers[which(markers$Annotation4 == "Immune"),]$Gene),
                        group_var = "Celltype_Final",
                        group_colors = celltype_final_col,
                        column_title = "",
@@ -233,10 +244,10 @@ DotPlot(immune,
 
 DotPlot(immune,
         group.by = "Celltype_Final",
-        features = unique(markers_by_group[which(markers_by_group$annotation1 == "Mesothelial"),]$feature),
+        features = unique(markers_by_group[which(markers_by_group$annotation1 == "Macrophage signaling"),]$feature),
         cols = c("azure", "tomato3")) +
   RotatedAxis() +
-  ggtitle("Mesothelial")
+  ggtitle("Macrophage signaling")
 
 ```
 
@@ -244,10 +255,10 @@ DotPlot(immune,
 
 DotPlot(immune,
         group.by = "Celltype_Final",
-        features = unique(markers_by_group[which(markers_by_group$annotation1 == "CAFs"),]$feature),
+        features = unique(markers_by_group[which(markers_by_group$annotation1 == "Macrophages"),]$feature),
         cols = c("azure", "tomato3")) +
   RotatedAxis() +
-  ggtitle("CAFs")
+  ggtitle("Macrophages")
 
 ```
 
@@ -439,10 +450,17 @@ permutation_plot(prop_test)
 
 ## DEGs between pre- and post-treatment, tumor
 
+### Lymphoid
+
 ```{r, message = F, warning = F, fig.width = 8, fig.height = 5}
 
+lymph <- grep("^L", sort(unique(seurat_data$Celltype_Final)), value = T)
+plasma <- grep("^Plasma", sort(unique(seurat_data$Celltype_Final)), value = T)
+lymph <- c(lymph, plasma, c("B1", "Treg1"))
+myel <- grep("^M", sort(unique(seurat_data$Celltype_Final)), value = T)
+
 Idents(seurat_arm3) <- seurat_arm3$Timepoint
-deg_res <- FindMarkers(subset(seurat_arm3, subset = Tissue == "Tumor"),
+deg_res <- FindMarkers(subset(seurat_arm3, subset = Tissue == "Tumor" & Celltype_Final %in% lymph),
                        ident.1 = "0",
                        ident.2 = "6",
                        assay = "RNA",
@@ -455,16 +473,11 @@ deg_res_sig <- deg_res %>%
 
 deg_res_sig
 
-which(deg_res_sig$feature %in% unique(c(mycafs, icafs, abcafs, ficafs)))
-
-deg_res %>% mutate_if(is.numeric, ~round(., 2)) %>%
-  filter(feature %in% unique(c(mycafs, icafs, abcafs, ficafs)))
-
 ```
 
 ```{r, message = F, warning = F, fig.width = 8, fig.height = 10}
 
-VlnPlot(subset(seurat_arm3, subset = Tissue == "Tumor"),
+VlnPlot(subset(seurat_arm3, subset = Tissue == "Tumor" & Celltype_Final %in% lymph),
         group.by = "Timepoint",
         features = deg_res_sig$feature,
         pt.size = 0,
@@ -475,13 +488,33 @@ VlnPlot(subset(seurat_arm3, subset = Tissue == "Tumor"),
 
 ```
 
-```{r, message = F, warning = F, fig.width = 8, fig.height = 6}
+### Myeloid
 
-VlnPlot(subset(seurat_arm3, subset = Tissue == "Tumor"),
+```{r, message = F, warning = F, fig.width = 8, fig.height = 5}
+
+Idents(seurat_arm3) <- seurat_arm3$Timepoint
+deg_res <- FindMarkers(subset(seurat_arm3, subset = Tissue == "Tumor" & Celltype_Final %in% myel),
+                       ident.1 = "0",
+                       ident.2 = "6",
+                       assay = "RNA",
+                       verbose = F)
+deg_res$feature <- rownames(deg_res)
+
+deg_res_sig <- deg_res %>%
+  mutate_if(is.numeric, ~round(., 2)) %>%
+  filter(abs(avg_log2FC) > 1 & p_val_adj < 0.05)
+
+deg_res_sig
+
+```
+
+```{r, message = F, warning = F, fig.width = 8, fig.height = 10}
+
+VlnPlot(subset(seurat_arm3, subset = Tissue == "Tumor" & Celltype_Final %in% myel),
         group.by = "Timepoint",
-        features = unique(c(mycafs, icafs, abcafs, ficafs)),
+        features = deg_res_sig$feature,
         pt.size = 0,
-        ncol = 3) &
+        ncol = 5) &
   theme_bw() &
   NoLegend() &
   xlab("")
@@ -490,9 +523,12 @@ VlnPlot(subset(seurat_arm3, subset = Tissue == "Tumor"),
 
 ## DEGs between pre- and post-treatment, tumor-adjacent
 
+### Lymphoid
+
 ```{r, message = F, warning = F, fig.width = 8, fig.height = 5}
 
-deg_res <- FindMarkers(subset(seurat_arm3, subset = Tissue == "Normal"),
+Idents(seurat_arm3) <- seurat_arm3$Timepoint
+deg_res <- FindMarkers(subset(seurat_arm3, subset = Tissue == "Normal" & Celltype_Final %in% lymph),
                        ident.1 = "0",
                        ident.2 = "6",
                        assay = "RNA",
@@ -505,16 +541,11 @@ deg_res_sig <- deg_res %>%
 
 deg_res_sig
 
-which(deg_res_sig$feature %in% unique(c(mycafs, icafs, abcafs, ficafs)))
-
-deg_res %>% mutate_if(is.numeric, ~round(., 2)) %>%
-  filter(feature %in% unique(c(mycafs, icafs, abcafs, ficafs)))
-
 ```
 
 ```{r, message = F, warning = F, fig.width = 8, fig.height = 10}
 
-VlnPlot(subset(seurat_arm3, subset = Tissue == "Normal"),
+VlnPlot(subset(seurat_arm3, subset = Tissue == "Normal" & Celltype_Final %in% lymph),
         group.by = "Timepoint",
         features = deg_res_sig$feature,
         pt.size = 0,
@@ -525,13 +556,32 @@ VlnPlot(subset(seurat_arm3, subset = Tissue == "Normal"),
 
 ```
 
-```{r, message = F, warning = F, fig.width = 8, fig.height = 6}
+### Myeloid
 
-VlnPlot(subset(seurat_arm3, subset = Tissue == "Normal"),
+```{r, message = F, warning = F, fig.width = 8, fig.height = 5}
+
+deg_res <- FindMarkers(subset(seurat_arm3, subset = Tissue == "Normal" & Celltype_Final %in% myel),
+                       ident.1 = "0",
+                       ident.2 = "6",
+                       assay = "RNA",
+                       verbose = F)
+deg_res$feature <- rownames(deg_res)
+
+deg_res_sig <- deg_res %>%
+  mutate_if(is.numeric, ~round(., 2)) %>%
+  filter(abs(avg_log2FC) > 1 & p_val_adj < 0.05)
+
+deg_res_sig
+
+```
+
+```{r, message = F, warning = F, fig.width = 8, fig.height = 10}
+
+VlnPlot(subset(seurat_arm3, subset = Tissue == "Normal" & Celltype_Final %in% myel),
         group.by = "Timepoint",
-        features = unique(c(mycafs, icafs, abcafs, ficafs)),
+        features = deg_res_sig$feature,
         pt.size = 0,
-        ncol = 3) &
+        ncol = 5) &
   theme_bw() &
   NoLegend() &
   xlab("")
