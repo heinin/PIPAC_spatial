@@ -55,10 +55,19 @@ main_plot_features <- c("PTPRC", "CD3D", "CD3E", "CD4", "CD8A", "JAK1", "JAK2", 
 
 mycafs <- c("TGFB1", "ACTA2", "TAGLN") #"HOPX", "MYL9"
 icafs <- c("IL6", "CXCL12", "CXCL14") #"CXCL13", 
-abcafs <- c("CD74", "HLA-DPB1", "HLA-DPB2", "HLA-DQA1", "HLA-DRA", "HLA-DRB1")
+apcafs <- c("CD74", "HLA-DPB1", "HLA-DPB2", "HLA-DQA1", "HLA-DRA", "HLA-DRB1")
 ficafs <- c("SFRP2", "SFRP4", "COMP", "CXCL14", "PLA2G2A", "ASPN")
 
-main_plot_features <- c(main_plot_features, mycafs, icafs, abcafs, ficafs)
+# F-apCAFs (C1QC, APOC1, RARRES1) and M-apCAFs (CD24, CA9, EGLN3)
+more_apcafs <- c("C1QC", "APOC1", "RARRES1", "CD24", "CA9", "EGLN3")
+
+# Matrix CAFs
+mcafs <- c()
+
+# Vascular CAFs
+vcafs <- c()
+
+main_plot_features <- c(main_plot_features, mycafs, icafs, apcafs, ficafs, more_apcafs)
 main_plot_features <- unique(main_plot_features)
 
 gs4_deauth()
@@ -99,6 +108,7 @@ lymph <- grep("^L", sort(unique(seurat_data$Celltype_Final)), value = T)
 plasma <- grep("^Plasma", sort(unique(seurat_data$Celltype_Final)), value = T)
 lymph <- c(lymph, plasma, c("B1", "Treg1"))
 myel <- grep("^M", sort(unique(seurat_data$Celltype_Final)), value = T)
+myel <- c(myel, c("Neut1"))
 immune_cts <- c(lymph, myel)
 
 immune <- subset(seurat_data, subset = Celltype_Final %in% immune_cts)
@@ -110,7 +120,7 @@ immune <- immune %>%
 
 ```
 
-```{r, message = F, warning = F, fig.width = 4, fig.height = 4, eval = F}
+```{r, message = F, warning = F, fig.width = 4, fig.height = 4, eval = T}
 
 immune <- readRDS("/tgen_labs/banovich/PIPAC/Seurat/immune_clustered_NN20_PC20_Seurat.rds")
 

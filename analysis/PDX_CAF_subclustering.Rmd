@@ -1,0 +1,911 @@
+---
+title: "Subclustering of immune and non-immune subsets"
+author: "heinin"
+date: "2026-04-03"
+output:
+  workflowr::wflow_html:
+    code_folding: hide
+  html_notebook: default
+editor_options:
+  chunk_output_type: console
+---
+
+## Libraries and environment variables
+
+```{r, message = F, warning = F}
+
+library(workflowr)
+library(Seurat)
+library(googlesheets4)
+library(tidyverse)
+library(plyr)
+library(SoupX)
+library(scProportionTest)
+library(clusterProfiler)
+library(org.Hs.eg.db)
+library(org.Mm.eg.db)
+library(biomaRt)
+library(gprofiler2)
+
+setwd("/home/hnatri/PIPAC_spatial/")
+set.seed(1234)
+options(future.globals.maxSize = 30000 * 1024^2)
+reduction <- "umap"
+
+source("/home/hnatri/SingleCellBestPractices/scripts/preprocessing_qc_module.R")
+source("/home/hnatri/SingleCellBestPractices/scripts/integration_module.R")
+source("/home/hnatri/Utilities/utilities.R")
+source("/home/hnatri/PIPAC_spatial/code/PIPAC_colors_themes.R")
+source("/home/hnatri/PIPAC_spatial/code/plot_functions.R")
+
+# Markers
+main_plot_features <- c("PTPRC", "CD3D", "CD3E", "CD4", "CD8A", "JAK1", "JAK2", "STAT4", "STAT3", "TIGIT", "GZMB", "SELL", "CD19", "CD68", "CD44", "MARCO", "APOE", "C1QB", "C1QBP", "CD163", "SPP1", "VCAN", "MUC5AC", "NOTCH3", "RGS5", "MS4A1", "PGA5", "PLVAP", "CCL21", "LYVE", "SPARCL1", "FN1", "DCN", "LUM", "COL1A2", "PDPN", "ACTA2", "LMNA", "EGR3", "TP53", "JUN", "FOS", "BRAF", "KIT", "SOX9", "RNF43", "EPCAM", "PECAM", "CEACAM", "TGFB1", "JUNB", "TCF7", "GZMA", "GZMK", "CD47", "CD74", "LYZ", "TREM2", "CD247", "COL5A1", "SPARC", "CD36", "CTLA4", "RGS1", "CCL2", "SELENOP", "LYVE1", "CTSD", "MMP9", "CDK1", "FLT1", "RAMP2", "CCL14", "MCAM", "NRP1", "CEACAM6", "IL32", "TGFBI", "VEGFA", "LAMP1", "IGFBP7", "POSTN", "C1S", "C1R", "CSF1", "NOTCH1", "FOXP3", "IL2RB", "TUBA1B", "S100A9", "C3", "CXCR2", "SDC1", "CD38", "IGHG1", "PRDX4", "ICAM1", "GATA2", "CXCL3", "JCHAIN")
+
+mycafs <- c("TGFB1", "ACTA2", "TAGLN") #"HOPX", "MYL9"
+icafs <- c("IL6", "CXCL12", "CXCL14") #"CXCL13", 
+apcafs <- c("CD74", "HLA-DPB1", "HLA-DPB2", "HLA-DQA1", "HLA-DRA", "HLA-DRB1")
+ficafs <- c("SFRP2", "SFRP4", "COMP", "CXCL14", "PLA2G2A", "ASPN")
+
+# F-apCAFs (C1QC, APOC1, RARRES1) and M-apCAFs (CD24, CA9, EGLN3)
+more_apcafs <- c("C1QC", "APOC1", "RARRES1", "CD24", "CA9", "EGLN3")
+
+# Matrix CAFs
+mcafs <- c("FBLN1", "PDGFRA", "POSTN")
+
+# Vascular CAFs
+vcafs <- c("KCNJ8", "RGS5", "MCAM", "CD146", "NOTCH3", "NID2", "DES", "PDGFRB", "ACTA2")
+
+main_plot_features <- c(main_plot_features, mycafs, icafs, apcafs, more_apcafs, ficafs, mcafs, vcafs)
+main_plot_features <- unique(main_plot_features)
+
+main_plot_features <- gorth(main_plot_features, source_organism = "hsapiens", target_organism = "mmusculus")$ortholog_name
+
+caf_markers <- c("Ly6c", "Il6", "Ccl2", "Cxcl1", "Cxcl2", "Cxcl12",
+                 "Pdgfra", "Agtr1", "Cfd", "Il1a", "Il1b", "Ccl8",
+                 "Ccl27", "Acta2", "Myl9", "Tagln", "Tpm2", "Col1a1",
+                 "Col1a2", "Col3a1")
+caf_markers <- unique(caf_markers)
+
+more_caf_markers <- c(mycafs, icafs, apcafs, more_apcafs, ficafs, mcafs, vcafs)
+more_caf_markers <- unique(more_caf_markers)
+
+more_caf_markers <- gorth(more_caf_markers, source_organism = "hsapiens", target_organism = "mmusculus")$ortholog_name
+
+caf_markers <- unique(c(caf_markers, more_caf_markers))
+
+mdsc <- c("Cd11b", "Gr-1", "Ly6G", "Ly6C", "Cd244", "Arg2", "Stat3", "Jaml",
+          "Ccr2", "Arg1", "Csf1r", "Nos2", "S100a8", "S100a9", "Ros")
+
+m2 <- c("Arg1", "Mrc1", "Cd206", "Chil3", "Ym1", "Retnla", "Fizz1",
+        "Cd163", "Igf1", "Pparg", "Irf4", "Stat6", "Ccl17", "Ccl22", "Il10",
+        "Tgfb1", "Egr2", "Fpr2")
+
+m1 <- c("Nos2", "Il1b", "Il6", "Tnfa", "Il12a", "Il12b", "Il23", "Ccl5",
+        "Cxcl2", "Cxcl10", "Cd80", "Cd38", "Cd68", "Cd64", "Fcgr1", "H2-Aa",
+        "Cd11c", "Fpr2", "Gpr18")
+
+mouse_immune <- c("Ptprc", "Cd3e", "Cd3g", "Cd247", "Cd4", "Cd8a", "Cd8b1", 
+                  "Foxp3", "Cd25", "Il2ra", "Ctla4", "Cd19", "Ms4a1", "Cd79a",
+                  "Ncr1", "NKp46", "Klrb1c", "Cd226",
+                  "Adgre1", "Cd68", "Cd11b", "Itgam",
+                  "Nos2", "Cd80", "Cd86",
+                  "Cd163", "Mrc1", "Arg1", "Itgax", "Cd11c",
+                  "Siglech", "Bst2", "Ly6g", "Ly6c", "S100a8",
+                  "Ly6c", "Cd34", "Kit", "Sell", "Ccr7", "Cd44",
+                  "Pdcd1")
+
+emt_markers <- c("Cdh1", "Epcam", "Vim", "Fn1", "Cdh2", "Itga5",
+                 "Snai1", "Snai2", "Twist1", "Zeb1", "Zeb2", "Mmp2",
+                 "Mmp9", "Col1a1")
+
+all_plot_features <- unique(c(main_plot_features, caf_markers, mdsc, m2, m1,
+                              mouse_immune, emt_markers))
+
+gs4_deauth()
+metadata  <- gs4_get("https://docs.google.com/spreadsheets/d/1dRWnmQrzN8Q0EFgccnwSGIZ5GtnFyPn5SMYIS3pQCBg/edit?usp=sharing")
+immune_annotations <- read_sheet(metadata, sheet = "Immune annotations")
+nonimmune_annotations <- read_sheet(metadata, sheet = "Non-immune annotations")
+
+```
+
+## Import data
+
+```{r, message = F, warning = F, eval = T, eval = T}
+
+seurat_integrated <- readRDS("/tgen_labs/banovich/PIPAC/CAF_scRNAseq/PDX_CAF_Seurat_annotated.rds")
+
+sort(as.character(unique(seurat_integrated$Updated_Annotation)))
+
+seurat_integrated$Updated_Annotation <- factor(seurat_integrated$Updated_Annotation,
+                                               levels = sort(as.character(unique(seurat_integrated$Updated_Annotation))))
+
+immune_cts <- c("Lymph1_Tc_Tex", "Lymph2_Tc", "Lymph3_B", "Lymph4_NK", "Plasma1",
+                "Myel1_MDSC_M2", "Myel2_pDC", "Myel3_MDSC_M2", "Myel4_mMDSC")
+
+```
+
+## Immune subset
+
+### Integration
+
+```{r, message = F, warning = F, eval = F}
+
+immune <- subset(seurat_integrated, subset = Updated_Annotation %in% immune_cts)
+
+immune[["RNA"]] <- split(immune[["RNA"]], f = immune$Sample )
+
+DefaultAssay(immune) <- "RNA"
+immune <-  SCTransform(immune, 
+                       vars.to.regress = c("percent.mt_RNA", "nCount_RNA", "nFeature_RNA"),
+                       verbose = F)
+
+s.genes <- cc.genes.updated.2019$s.genes
+g2m.genes <- cc.genes.updated.2019$g2m.genes
+
+mmus_s <- gorth(s.genes, source_organism = "hsapiens", target_organism = "mmusculus")$ortholog_name
+mmus_g2m <- gorth(g2m.genes, source_organism = "hsapiens", target_organism = "mmusculus")$ortholog_name
+
+immune <- CellCycleScoring(immune,
+                           s.features = mmus_s,
+                           g2m.features = mmus_g2m,
+                           set.ident = F,
+                           verbose = F) 
+
+immune <-  SCTransform(immune, 
+                       vars.to.regress = c("percent.mt_RNA", "nCount_RNA", "nFeature_RNA",
+                                           "S.Score", "G2M.Score", "Phase"),
+                       verbose = F)
+
+immune <- RunPCA(immune, assay = "SCT",
+                 verbose = F)
+
+immune <- IntegrateLayers(object = immune,
+                          method = HarmonyIntegration,
+                          orig.reduction = "pca",
+                          new.reduction = 'harmony',
+                          normalization.method = "SCT",
+                          k.weight = 20, 
+                          verbose = F)
+
+#saveRDS(immune, "/tgen_labs/banovich/PIPAC/CAF_scRNAseq/PDX_CAF_Seurat_immune_integrated.rds")
+
+```
+
+### Dimensionality reduction and clustering
+
+```{r, message = F, warning = F, fig.width = 5, fig.height = 4, eval = F}
+
+#immune <- readRDS("/tgen_labs/banovich/PIPAC/CAF_scRNAseq/PDX_CAF_Seurat_immune_integrated.rds")
+
+immune <-  SCTransform(immune, 
+                       vars.to.regress = c("percent.mt_RNA", "nCount_RNA", "nFeature_RNA",
+                                          "S.Score", "G2M.Score", "Phase"),
+                       verbose = F)
+
+immune <- RunPCA(immune,
+                 assay = "SCT",
+                 verbose = F)
+
+umap_pcs <- get_pcs(immune, reduction_name = "pca")
+
+immune <- RunUMAP(object = immune,
+                  assay = "SCT",
+                  reduction = "harmony",
+                  reduction.name = "harmony_umap",
+                  reduction.key = "harmony_umap_",
+                  dims = 1:min(umap_pcs),
+                  return.model = TRUE,
+                  verbose = F)
+
+immune <- FindNeighbors(object = immune,
+                        assay = "SCT",
+                        reduction = "harmony",
+                        dims = 1:min(umap_pcs),
+                        graph.name = c("harmony_nn",
+                                       "harmony_snn"),
+                        verbose = F)
+
+immune <- FindClusters(object = immune,
+                       resolution = c(0.1,0.2,0.3,0.5,0.8,1),
+                       graph.name = "harmony_snn",
+                       verbose = F)
+
+#saveRDS(immune, "/tgen_labs/banovich/PIPAC/CAF_scRNAseq/PDX_CAF_Seurat_immune_integrated.rds")
+
+```
+
+```{r, message = F, warning = F, fig.width = 5, fig.height = 5, eval = T}
+
+immune <- readRDS("/tgen_labs/banovich/PIPAC/CAF_scRNAseq/PDX_CAF_Seurat_immune_integrated.rds")
+
+DimPlot(immune,
+        group.by = "harmony_snn_res.0.5",
+        reduction = "harmony_umap",
+        label = T) +
+  coord_fixed(ratio = 1) +
+  theme_bw() +
+  NoLegend()
+
+```
+
+```{r, message = F, warning = F, fig.width = 8, fig.height = 5, eval = T}
+
+DimPlot(immune,
+        group.by = "Updated_Annotation",
+        reduction = "harmony_umap",
+        label = T,
+        repel = T) +
+  coord_fixed(ratio = 1) +
+  theme_bw()
+
+```
+
+```{r, message = F, warning = F, fig.width = 12, fig.height = 8, eval = T}
+
+DimPlot(immune,
+        group.by = "Updated_Annotation",
+        split.by = "harmony_snn_res.0.5",
+        reduction = "harmony_umap",
+        ncol = 5) +
+  coord_fixed(ratio = 1) +
+  theme_bw()
+
+DimPlot(immune,
+        group.by = "harmony_snn_res.0.5",
+        split.by = "Updated_Annotation",
+        reduction = "harmony_umap",
+        ncol = 4) +
+  coord_fixed(ratio = 1) +
+  theme_bw()
+
+```
+
+### Cluster/celltype stacked barplots
+
+```{r, message = F, warning = F, fig.width = 10, fig.height = 5, eval = T}
+
+table(immune$harmony_snn_res.0.5)
+
+cts <- as.factor(sort(unique(as.character(immune$Updated_Annotation))))
+ct_col <- colorRampPalette(brewer.pal(10, "Paired"))(nb.cols <- length(cts))
+names(ct_col) <- levels(cts)
+
+clusters <- as.factor(sort(unique(immune$harmony_snn_res.0.5)))
+cluster_col <- colorRampPalette(brewer.pal(10, "Paired"))(nb.cols <- length(clusters))
+names(cluster_col) <- levels(clusters)
+
+create_barplot(immune,
+               group_var = "harmony_snn_res.0.5",
+               plot_var = "Updated_Annotation",
+               plot_levels = sort(unique(as.character(immune$Updated_Annotation))),
+               group_levels = sort(unique(immune$harmony_snn_res.0.5)),
+               plot_colors = ct_col,
+               var_names =  c("Frequency (%)", ""),
+               legend_title = "Celltype")
+
+```
+
+```{r, message = F, warning = F, fig.width = 10, fig.height = 5, eval = T}
+
+create_barplot(immune,
+               group_var = "Updated_Annotation",
+               plot_var = "harmony_snn_res.0.5",
+               plot_levels = sort(unique(as.character(immune$harmony_snn_res.0.5))),
+               group_levels = sort(unique(immune$Updated_Annotation)),
+               plot_colors = cluster_col,
+               var_names =  c("Frequency (%)", ""),
+               legend_title = "harmony_snn_res.0.5")
+
+```
+
+### Marker DotPlot
+
+```{r, message = F, warning = F, fig.width = 8, fig.height = 18}
+
+create_dotplot_heatmap(seurat_object = immune,
+                       plot_features = sort(all_plot_features),
+                       group_var = "harmony_snn_res.0.5",
+                       group_colors = cluster_col,
+                       column_title = "",
+                       row_km = 5,
+                       col_km = 5,
+                       row.order = NULL,
+                       col.order = NULL)
+
+```
+
+```{r, message = F, warning = F, fig.width = 14, fig.height = 60, eval = F}
+
+FeaturePlot(immune,
+            features = sort(all_plot_features),
+            cols = c("gray98", "tomato3"),
+            reduction = "harmony_umap",
+            raster = T,
+            order = T,
+            ncol = 6) &
+  coord_fixed(ratio = 1) &
+  theme_bw() &
+  NoLegend()
+
+```
+
+### Marker FeaturePlots
+
+```{r, message = F, warning = F, fig.width = 12, fig.height = 12}
+
+small_markers <- c("EPCAM", "VIM", "FN1",
+                   "COL1A1", "ASPN", "PTPRC",
+                   "CD3E", "CD8A", "CD4",
+                   "C1QC", "SPP1", "TRP53",
+                   "CDK1", "CD14", "JCHAIN")
+small_markers <- gorth(small_markers, source_organism = "hsapiens", target_organism = "mmusculus")$ortholog_name
+
+FeaturePlot(immune,
+            features = sort(small_markers),
+            cols = c("gray98", "tomato3"),
+            reduction = "harmony_umap",
+            raster = T,
+            order = T,
+            ncol = 4) &
+  coord_fixed(ratio = 1) &
+  theme_bw() &
+  NoLegend()
+
+```
+
+### QC metrics by cluster
+
+```{r, message = F, warning = F, fig.width = 12, fig.height = 9, eval = T}
+
+VlnPlot(immune,
+        features = c("nCount_RNA", "nFeature_RNA", "percent.mt_RNA"),
+        group.by = "harmony_snn_res.0.5",
+        pt.size = 0,
+        ncol = 1) &
+  NoLegend()
+
+VlnPlot(immune,
+        features = c("G2M.Score", "S.Score"),
+        group.by = "Updated_Annotation",
+        pt.size = 0,
+        ncol = 1) &
+  NoLegend()
+
+```
+
+```{r, message = F, warning = F, fig.width = 10, fig.height = 4}
+
+FeaturePlot(immune,
+            features = c("nCount_RNA", "nFeature_RNA", "percent.mt_RNA"),
+            cols = c("gray98", "tomato3"),
+            reduction = "harmony_umap",
+            raster = T,
+            order = T,
+            ncol = 3) &
+  coord_fixed(ratio = 1) &
+  theme_bw() &
+  NoLegend()
+
+```
+
+```{r, message = F, warning = F, fig.width = 6, fig.height = 4}
+
+FeaturePlot(immune,
+            features = c("G2M.Score", "S.Score"),
+            cols = c("gray98", "tomato3"),
+            reduction = "harmony_umap",
+            raster = T,
+            order = T,
+            ncol = 2) &
+  coord_fixed(ratio = 1) &
+  theme_bw() &
+  NoLegend()
+
+```
+
+## Non-immune subset
+
+### Integration
+
+```{r, message = F, warning = F, eval = F}
+
+nonimmune <- subset(seurat_integrated, subset = Updated_Annotation %in% immune_cts, invert = T)
+
+nonimmune[["RNA"]] <- split(nonimmune[["RNA"]], f = nonimmune$Sample )
+
+DefaultAssay(nonimmune) <- "RNA"
+nonimmune <-  SCTransform(nonimmune, 
+                       vars.to.regress = c("percent.mt_RNA", "nCount_RNA", "nFeature_RNA"),
+                       verbose = F)
+
+s.genes <- cc.genes.updated.2019$s.genes
+g2m.genes <- cc.genes.updated.2019$g2m.genes
+
+mmus_s <- gorth(s.genes, source_organism = "hsapiens", target_organism = "mmusculus")$ortholog_name
+mmus_g2m <- gorth(g2m.genes, source_organism = "hsapiens", target_organism = "mmusculus")$ortholog_name
+
+nonimmune <- CellCycleScoring(nonimmune,
+                              s.features = mmus_s,
+                              g2m.features = mmus_g2m,
+                              set.ident = F,
+                              verbose = F) 
+
+nonimmune <-  SCTransform(nonimmune, 
+                          vars.to.regress = c("percent.mt_RNA", "nCount_RNA", "nFeature_RNA",
+                                              "S.Score", "G2M.Score", "Phase"),
+                          verbose = F)
+
+nonimmune <- RunPCA(nonimmune, assay = "SCT",
+                    verbose = F)
+
+nonimmune <- IntegrateLayers(object = nonimmune,
+                             method = HarmonyIntegration,
+                             orig.reduction = "pca",
+                             new.reduction = 'harmony',
+                             normalization.method = "SCT",
+                             k.weight = 20, 
+                             verbose = F)
+
+saveRDS(nonimmune, "/tgen_labs/banovich/PIPAC/CAF_scRNAseq/PDX_CAF_Seurat_nonimmune_integrated.rds")
+
+```
+
+### Dimensionality reduction and clustering
+
+```{r, message = F, warning = F, fig.width = 5, fig.height = 4, eval = F}
+
+#nonimmune <- readRDS("/tgen_labs/banovich/PIPAC/CAF_scRNAseq/PDX_CAF_Seurat_nonimmune_integrated.rds")
+
+nonimmune <-  SCTransform(nonimmune, 
+                       vars.to.regress = c("percent.mt_RNA", "nCount_RNA", "nFeature_RNA",
+                                          "S.Score", "G2M.Score", "Phase"),
+                       verbose = F)
+
+nonimmune <- RunPCA(nonimmune,
+                 assay = "SCT",
+                 verbose = F)
+
+umap_pcs <- get_pcs(nonimmune, reduction_name = "pca")
+
+nonimmune <- RunUMAP(object = nonimmune,
+                  assay = "SCT",
+                  reduction = "harmony",
+                  reduction.name = "harmony_umap",
+                  reduction.key = "harmony_umap_",
+                  dims = 1:min(umap_pcs),
+                  return.model = TRUE,
+                  verbose = F)
+
+nonimmune <- FindNeighbors(object = nonimmune,
+                        assay = "SCT",
+                        reduction = "harmony",
+                        dims = 1:min(umap_pcs),
+                        graph.name = c("harmony_nn",
+                                       "harmony_snn"),
+                        verbose = F)
+
+nonimmune <- FindClusters(object = nonimmune,
+                       resolution = c(0.1,0.2,0.3,0.5,0.8,1),
+                       graph.name = "harmony_snn",
+                       verbose = F)
+
+#saveRDS(nonimmune, "/tgen_labs/banovich/PIPAC/CAF_scRNAseq/PDX_CAF_Seurat_nonimmune_integrated.rds")
+
+```
+
+### Subclusteering subclusters
+
+```{r, message = F, warning = F, fig.width = 5, fig.height = 5, eval = F}
+
+nonimmune <- readRDS("/tgen_labs/banovich/PIPAC/CAF_scRNAseq/PDX_CAF_Seurat_nonimmune_integrated.rds")
+
+Idents(nonimmune) <- nonimmune$harmony_snn_res.0.5
+nonimmune <- FindSubCluster(nonimmune,
+                            graph.name = "harmony_snn",
+                            cluster = "9",
+                            subcluster.name = "9_subcluster",
+                            resolution = 0.5,
+                            algorithm = 1)
+
+Idents(nonimmune) <- nonimmune$`9_subcluster`
+nonimmune <- FindSubCluster(nonimmune,
+                            graph.name = "harmony_snn",
+                            cluster = "11",
+                            subcluster.name = "11_subcluster",
+                            resolution = 0.5,
+                            algorithm = 1)
+
+Idents(nonimmune) <- nonimmune$`11_subcluster`
+nonimmune <- FindSubCluster(nonimmune,
+                            graph.name = "harmony_snn",
+                            cluster = "12",
+                            subcluster.name = "12_subcluster",
+                            resolution = 0.5,
+                            algorithm = 1)
+
+Idents(nonimmune) <- nonimmune$`12_subcluster`
+nonimmune <- FindSubCluster(nonimmune,
+                            graph.name = "harmony_snn",
+                            cluster = "3",
+                            subcluster.name = "3_subcluster",
+                            resolution = 0.5,
+                            algorithm = 1)
+
+Idents(nonimmune) <- nonimmune$`3_subcluster`
+nonimmune <- FindSubCluster(nonimmune,
+                            graph.name = "harmony_snn",
+                            cluster = "5",
+                            subcluster.name = "Subcluster",
+                            resolution = 0.2,
+                            algorithm = 1)
+
+sort(unique(nonimmune$Subcluster))
+
+DimPlot(nonimmune,
+        group.by = "Subcluster",
+        label = T) +
+  theme_classic() +
+  NoLegend()
+
+saveRDS(nonimmune, "/tgen_labs/banovich/PIPAC/CAF_scRNAseq/PDX_CAF_Seurat_nonimmune_subclustered.rds")
+
+```
+
+```{r, message = F, warning = F, fig.width = 8, fig.height = 8, eval = T}
+
+nonimmune <- readRDS("/tgen_labs/banovich/PIPAC/CAF_scRNAseq/PDX_CAF_Seurat_nonimmune_subclustered.rds")
+
+DimPlot(nonimmune,
+        group.by = "Subcluster",
+        reduction = "harmony_umap",
+        label = T) +
+  coord_fixed(ratio = 1) +
+  theme_bw() +
+  NoLegend()
+
+```
+
+```{r, message = F, warning = F, fig.width = 8, fig.height = 5, eval = T}
+
+DimPlot(nonimmune,
+        group.by = "Updated_Annotation",
+        reduction = "harmony_umap",
+        label = T,
+        repel = T) +
+  coord_fixed(ratio = 1) +
+  theme_bw()
+
+```
+
+```{r, message = F, warning = F, fig.width = 10, fig.height = 12, eval = T}
+
+DimPlot(nonimmune,
+        group.by = "Updated_Annotation",
+        split.by = "Subcluster",
+        reduction = "harmony_umap",
+        ncol = 6) +
+  coord_fixed(ratio = 1) +
+  theme_bw()
+
+```
+
+```{r, message = F, warning = F, fig.width = 12, fig.height = 8, eval = T}
+
+DimPlot(nonimmune,
+        group.by = "Subcluster",
+        split.by = "Updated_Annotation",
+        reduction = "harmony_umap",
+        ncol = 6) +
+  coord_fixed(ratio = 1) +
+  theme_bw()
+
+```
+
+### Cluster/celltype stacked barplots
+
+```{r, message = F, warning = F, fig.width = 8, fig.height = 5, eval = T}
+
+cts <- as.factor(sort(unique(as.character(nonimmune$Updated_Annotation))))
+ct_col <- colorRampPalette(brewer.pal(10, "Paired"))(nb.cols <- length(cts))
+names(ct_col) <- levels(cts)
+
+clusters <- as.factor(sort(unique(nonimmune$Subcluster)))
+cluster_col <- colorRampPalette(brewer.pal(12, "Paired"))(nb.cols <- length(clusters))
+names(cluster_col) <- levels(clusters)
+
+create_barplot(nonimmune,
+               group_var = "Subcluster",
+               plot_var = "Updated_Annotation",
+               plot_levels = sort(unique(as.character(nonimmune$Updated_Annotation))),
+               group_levels = sort(unique(nonimmune$Subcluster)),
+               plot_colors = ct_col,
+               var_names =  c("Frequency (%)", ""),
+               legend_title = "Celltype")
+
+```
+
+```{r, message = F, warning = F, fig.width = 10, fig.height = 5, eval = T}
+
+create_barplot(nonimmune,
+               group_var = "Updated_Annotation",
+               plot_var = "Subcluster",
+               plot_levels = sort(unique(as.character(nonimmune$Subcluster))),
+               group_levels = sort(unique(nonimmune$Updated_Annotation)),
+               plot_colors = cluster_col,
+               var_names =  c("Frequency (%)", ""),
+               legend_title = "Cluster")
+
+```
+
+### Marker DotPlot
+
+```{r, message = F, warning = F, fig.width = 8, fig.height = 18}
+
+create_dotplot_heatmap(seurat_object = nonimmune,
+                       plot_features = sort(all_plot_features),
+                       group_var = "Subcluster",
+                       group_colors = cluster_col,
+                       column_title = "",
+                       row_km = 5,
+                       col_km = 5,
+                       row.order = NULL,
+                       col.order = NULL)
+
+```
+
+```{r, message = F, warning = F, fig.width = 14, fig.height = 60, eval = F}
+
+FeaturePlot(nonimmune,
+            features = sort(all_plot_features),
+            cols = c("gray98", "tomato3"),
+            reduction = "harmony_umap",
+            raster = T,
+            order = T,
+            ncol = 6) &
+  coord_fixed(ratio = 1) &
+  theme_bw() &
+  NoLegend()
+
+```
+
+### Marker FeaturePlots
+
+```{r, message = F, warning = F, fig.width = 12, fig.height = 12}
+
+small_markers <- c("EPCAM", "VIM", "FN1", "COL1A1", "ASPN", "PTPRC", "TGFB1",
+                   "CD74", "EGFR", "VEGF")
+small_markers <- gorth(small_markers, source_organism = "hsapiens", target_organism = "mmusculus")$ortholog_name
+
+FeaturePlot(nonimmune,
+            features = sort(small_markers),
+            cols = c("gray98", "tomato3"),
+            reduction = "harmony_umap",
+            raster = T,
+            order = T,
+            ncol = 4) &
+  coord_fixed(ratio = 1) &
+  theme_bw() &
+  NoLegend()
+
+```
+
+### QC metrics by cluster
+
+```{r, message = F, warning = F, fig.width = 12, fig.height = 9, eval = T}
+
+VlnPlot(nonimmune,
+        features = c("nCount_RNA", "nFeature_RNA", "percent.mt_RNA"),
+        group.by = "Subcluster",
+        pt.size = 0,
+        ncol = 1) &
+  NoLegend()
+
+VlnPlot(nonimmune,
+        features = c("G2M.Score", "S.Score"),
+        group.by = "Subcluster",
+        pt.size = 0,
+        ncol = 1) &
+  NoLegend()
+
+```
+
+```{r, message = F, warning = F, fig.width = 10, fig.height = 4}
+
+FeaturePlot(nonimmune,
+            features = c("nCount_RNA", "nFeature_RNA", "percent.mt_RNA"),
+            cols = c("gray98", "tomato3"),
+            reduction = "harmony_umap",
+            raster = T,
+            order = T,
+            ncol = 3) &
+  coord_fixed(ratio = 1) &
+  theme_bw() &
+  NoLegend()
+
+```
+
+```{r, message = F, warning = F, fig.width = 6, fig.height = 4}
+
+FeaturePlot(nonimmune,
+            features = c("G2M.Score", "S.Score"),
+            cols = c("gray98", "tomato3"),
+            reduction = "harmony_umap",
+            raster = T,
+            order = T,
+            ncol = 2) &
+  coord_fixed(ratio = 1) &
+  theme_bw() &
+  NoLegend()
+
+```
+
+## Removing doublets, reconstructing the UMAP, adding new annotations
+
+```{r, message = F, warning = F, fig.width = 6, fig.height = 4, eval = F}
+
+immune$Final_Celltype <- mapvalues(immune$harmony_snn_res.0.5,
+                                   immune_annotations$harmony_snn_res.0.5,
+                                   immune_annotations$`Final annotation`)
+
+immune <- subset(immune, Final_Celltype == "Doublets", invert = T)
+
+nonimmune$Final_Celltype <- mapvalues(nonimmune$Subcluster,
+                                   nonimmune_annotations$Subcluster,
+                                   nonimmune_annotations$`Final annotation`)
+
+nonimmune <- subset(nonimmune, Final_Celltype %in% c("Doublets", "Remove"), invert = T)
+
+immune_nonimmune <- list("immune" = immune,
+                         "nonimmune" = nonimmune)
+
+immune_nonimmune <- lapply(immune_nonimmune, function(xx){
+  xx <-  SCTransform(xx, 
+                     vars.to.regress = c("percent.mt_RNA", "nCount_RNA", "nFeature_RNA",
+                                        "S.Score", "G2M.Score", "Phase"),
+                     verbose = F)
+
+  xx <- RunPCA(xx,
+                   assay = "SCT",
+                   verbose = F)
+  
+  umap_pcs <- get_pcs(xx, reduction_name = "pca")
+  
+  xx <- RunUMAP(object = xx,
+                    assay = "SCT",
+                    reduction = "pca",
+                    reduction.name = "umap",
+                    reduction.key = "umap_",
+                    dims = 1:min(umap_pcs),
+                    return.model = TRUE,
+                    verbose = F)
+  
+  xx <- FindNeighbors(object = xx,
+                          assay = "SCT",
+                          reduction = "pca",
+                          dims = 1:min(umap_pcs),
+                          graph.name = c("nn",
+                                         "snn"),
+                          verbose = F)
+  
+  xx <- FindClusters(object = xx,
+                         resolution = c(0.1,0.2,0.3,0.5,0.8,1),
+                         graph.name = "snn",
+                         verbose = F)
+  
+  return(xx)
+})
+
+saveRDS(immune_nonimmune[["immune"]], "/tgen_labs/banovich/PIPAC/CAF_scRNAseq/PDX_CAF_Seurat_immune_annotated_reUMAP.rds")
+saveRDS(immune_nonimmune[["nonimmune"]], "/tgen_labs/banovich/PIPAC/CAF_scRNAseq/PDX_CAF_Seurat_nonimmune_annotated_reUMAP.rds")
+
+```
+
+```{r, message = F, warning = F, fig.width = 6, fig.height = 4, eval = F}
+
+# Merging
+DefaultAssay(immune_nonimmune[["immune"]]) <- "RNA"
+DefaultAssay(immune_nonimmune[["nonimmune"]]) <- "RNA"
+immune_nonimmune[["immune"]]@assays$SCT <- NULL
+immune_nonimmune[["nonimmune"]]@assays$SCT <- NULL
+immune_nonimmune_seurat <- merge(immune_nonimmune[[1]], immune_nonimmune[[2]])
+
+immune_nonimmune_seurat <-  SCTransform(immune_nonimmune_seurat, 
+                                        vars.to.regress = c("percent.mt_RNA", "nCount_RNA", "nFeature_RNA",
+                                                           "S.Score", "G2M.Score", "Phase"),
+                                        verbose = F)
+
+immune_nonimmune_seurat <- RunPCA(immune_nonimmune_seurat,
+                 assay = "SCT",
+                 verbose = F)
+
+umap_pcs <- get_pcs(immune_nonimmune_seurat, reduction_name = "pca")
+
+immune_nonimmune_seurat <- RunUMAP(object = immune_nonimmune_seurat,
+                  assay = "SCT",
+                  reduction = "pca",
+                  reduction.name = "umap",
+                  reduction.key = "map_",
+                  dims = 1:min(umap_pcs),
+                  return.model = TRUE,
+                  verbose = F)
+
+immune_nonimmune_seurat <- FindNeighbors(object = immune_nonimmune_seurat,
+                        assay = "SCT",
+                        reduction = "pca",
+                        dims = 1:min(umap_pcs),
+                        graph.name = c("nn",
+                                       "snn"),
+                        verbose = F)
+
+immune_nonimmune_seurat <- FindClusters(object = immune_nonimmune_seurat,
+                       resolution = c(0.1,0.2,0.3,0.5,0.8,1),
+                       graph.name = "snn",
+                       verbose = F)
+                         
+saveRDS(immune_nonimmune_seurat, "/tgen_labs/banovich/PIPAC/CAF_scRNAseq/PDX_CAF_Seurat_fulldata_annotated.rds")
+
+```
+
+```{r, message = F, warning = F, fig.width = 5, fig.height = 5, eval = T}
+
+immune_nonimmune_seurat <- readRDS("/tgen_labs/banovich/PIPAC/CAF_scRNAseq/PDX_CAF_Seurat_fulldata_annotated.rds")
+immune <- readRDS("/tgen_labs/banovich/PIPAC/CAF_scRNAseq/PDX_CAF_Seurat_immune_annotated_reUMAP.rds")
+nonimmune <- readRDS("/tgen_labs/banovich/PIPAC/CAF_scRNAseq/PDX_CAF_Seurat_nonimmune_annotated_reUMAP.rds")
+
+cts <- as.factor(sort(unique(as.character(immune_nonimmune_seurat$Final_Celltype))))
+ct_col <- colorRampPalette(brewer.pal(10, "Paired"))(nb.cols <- length(cts))
+names(ct_col) <- levels(cts)
+
+DimPlot(immune_nonimmune_seurat,
+        group.by = "Final_Celltype",
+        reduction = "umap",
+        label = T,
+        repel = T,
+        cols = ct_col) +
+  xlab("UMAP 1") +
+  ylab("UMAP 2") +
+  coord_fixed(ratio = 1) +
+  theme_bw() +
+  NoLegend()
+
+DimPlot(immune,
+        group.by = "Final_Celltype",
+        reduction = "umap",
+        label = T,
+        repel = T,
+        cols = ct_col) +
+  coord_fixed(ratio = 1) +
+  xlab("UMAP 1") +
+  ylab("UMAP 2") +
+  theme_bw() +
+  NoLegend()
+
+DimPlot(immune,
+        group.by = "snn_res.1",
+        reduction = "umap",
+        label = T,
+        repel = T) +
+  coord_fixed(ratio = 1) +
+  xlab("UMAP 1") +
+  ylab("UMAP 2") +
+  theme_bw() +
+  NoLegend()
+
+DimPlot(nonimmune,
+        group.by = "Final_Celltype",
+        reduction = "umap",
+        label = T,
+        repel = T,
+        cols = ct_col) +
+  coord_fixed(ratio = 1) +
+  xlab("UMAP 1") +
+  ylab("UMAP 2") +
+  theme_bw() +
+  NoLegend()
+
+
+# Rscript -e "rmarkdown::render('PDX_CAF_subclustering.Rmd')"
+
+```
+
+

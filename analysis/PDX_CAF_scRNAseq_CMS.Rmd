@@ -40,14 +40,17 @@ source("/home/hnatri/PIPAC_spatial/code/plot_functions.R")
 
 ```{r, message = F, warning = F, eval = T}
 
-seurat_data <- readRDS("/tgen_labs/banovich/PIPAC/CAF_scRNAseq/PDX_CAF_Seurat_integrated.rds")
+seurat_data <- readRDS("/tgen_labs/banovich/PIPAC/CAF_scRNAseq/PDX_CAF_Seurat_annotated.rds")
 
 table(seurat_data$Sample)
 
+```
+
+## Pseudobulk analysis
+
+```{r, message = F, warning = F, eval = T}
+
 # Pseudobulk of tumor
-t_cells <- c(12, 13)
-myeloid <- c(10, 11)
-immune <- c(17, 21, 20, 22, 24, 23)
 tumor_caf <- setdiff(unique(seurat_data$harmony_snn_res.0.8), c(t_cells, myeloid, immune))
 tumor_only <- subset(seurat_data, subset = harmony_snn_res.0.8 %in% tumor_caf)
 
@@ -272,3 +275,4 @@ VlnPlot(tumor_only,
 
 ```
 
+Regarding CMS classication .. CMS4 was derived from bulk RNA-seq data. Single cell analysis has found that that tumor cells in CMS4 tumors are either iCMS2 (enerocyte like) or iCMS3 (goblet ell like). This paper suggests that iCMS3 has more predicliction for peritoneal mets and associated with F-apCAF and inflammed but dysfunctional immune profile

@@ -49,10 +49,10 @@ main_plot_features <- c("PTPRC", "CD3D", "CD3E", "CD4", "CD8A", "JAK1", "JAK2", 
 
 mycafs <- c("TGFB1", "ACTA2", "TAGLN") #"HOPX", "MYL9"
 icafs <- c("IL6", "CXCL12", "CXCL14") #"CXCL13", 
-abcafs <- c("CD74", "HLA-DPB1", "HLA-DPB2", "HLA-DQA1", "HLA-DRA", "HLA-DRB1")
+apcafs <- c("CD74", "HLA-DPB1", "HLA-DPB2", "HLA-DQA1", "HLA-DRA", "HLA-DRB1")
 ficafs <- c("SFRP2", "SFRP4", "COMP", "CXCL14", "PLA2G2A", "ASPN")
 
-main_plot_features <- c(main_plot_features, mycafs, icafs, abcafs, ficafs)
+main_plot_features <- c(main_plot_features, mycafs, icafs, apcafs, ficafs)
 main_plot_features <- unique(main_plot_features)
 
 ```
@@ -77,25 +77,25 @@ final_annotations <- read_sheet(metadata, sheet = "CT update clean")
 
 ```{r, message = F, warning = F, fig.width = 6, fig.height = 6, eval = F}
 
-seurat_data <- readRDS("/tgen_labs/banovich/PIPAC/Seurat/cell_merged_spatial_filtered_splitsamples_clustered_NN30_PC50_Seurat_denoIST_annotated_updated.rds")
+seurat_data <- readRDS("/tgen_labs/banovich/PIPAC/Seurat/Freeze/cell_merged_spatial_filtered_splitsamples_clustered_NN30_PC50_Seurat_denoIST_annotated_updated.rds")
 
 unique(seurat_data$Celltype_Updated)
 sort(unique(seurat_data$Celltype_Final))
 
 #setdiff(seurat_data$Old_Celltype_Final, final_annotations$Old_Celltype_Final)
 
-seurat_data$Old_Celltype_Final <- seurat_data$Celltype_Final
-seurat_data$Celltype_Final <- mapvalues(seurat_data$Old_Celltype_Final,
-                                  from = final_annotations$Old_Celltype_Final,
-                                  to = final_annotations$Celltype_Final)
-
-as.data.frame(table(seurat_data$Celltype_Final))
+#seurat_data$Old_Celltype_Final <- seurat_data$Celltype_Final
+#seurat_data$Celltype_Final <- mapvalues(seurat_data$Old_Celltype_Final,
+#                                  from = final_annotations$Old_Celltype_Final,
+#                                  to = final_annotations$Celltype_Final)
+#
+#as.data.frame(table(seurat_data$Celltype_Final))
 
 write.table(as.data.frame(table(seurat_data$Celltype_Final)),
             "/home/hnatri/PIPAC_spatial/ncells.tsv",
             quote = F, row.names = F, sep = "\t")
 
-saveRDS(seurat_data, "/tgen_labs/banovich/PIPAC/Seurat/cell_merged_spatial_filtered_splitsamples_clustered_NN30_PC50_Seurat_denoIST_annotated_updated.rds")
+#saveRDS(seurat_data, "/tgen_labs/banovich/PIPAC/Seurat/cell_merged_spatial_filtered_splitsamples_clustered_NN30_PC50_Seurat_denoIST_annotated_updated.rds")
 
 ```
 
@@ -139,25 +139,19 @@ DimPlot(seurat_data,
 
 ## Plotting top markers and canonical markers
 
-```{r, message = F, warning = F, fig.width = 18, fig.height = 35}
+```{r, message = F, warning = F, fig.width = 18, fig.height = 40}
 
-Idents(seurat_data) <- seurat_data$Celltype_Final
-cluster_markers <- FindAllMarkers(seurat_data,
-                                  return.thresh = 0.01,
-                                  logfc.threshold = 0.5,
-                                  min.pct = 0.20,
-                                  verbose = F)
+markers <- presto::wilcoxauc(seurat_data,
+                             group_by = "Celltype_Final",
+                             assay = "data",
+                             seurat_assay = "RNA")
+top_markers <- markers %>% group_by(group) %>% slice_max(order_by = auc, n = 50)
 
-top_cluster_markers <- cluster_markers %>%
-  arrange(dplyr::desc(avg_log2FC)) %>%
-  group_by(cluster) %>%
-  dplyr::slice(1:50)
-
-write.table(top_cluster_markers, "/home/hnatri/PIPAC_spatial/cell_annotation_final_topmarkers.tsv",
+write.table(top_markers, "/home/hnatri/PIPAC_spatial/cell_annotation_final_topmarkers.tsv",
             sep = "\t", quote = F, row.names = T)
 
 hp <- create_dotplot_heatmap(seurat_object = seurat_data,
-                             plot_features = unique(c(top_cluster_markers$gene, main_plot_features)),
+                             plot_features = unique(c(top_markers$feature, main_plot_features)),
                              group_var = "Celltype_Final",
                              group_colors = celltype_final_col,
                              column_title = "",
@@ -293,7 +287,7 @@ selected_markers <- c("CCL21", "SPP1", "CD3E", "IL7R", "CD47", "JCHAIN",
                       "BANK1", "NOTCH2", "JAK2", "FLT1", "IL7R", "DGKA",
                       "CXCR4", "KLRK1", "XBP1")
 
-selected_markers <- c(selected_markers, mycafs, icafs, abcafs, ficafs)
+selected_markers <- c(selected_markers, mycafs, icafs, apcafs, ficafs)
 selected_markers <- unique(selected_markers)
 
 selected_markers <- setdiff(selected_markers, c("IL6"))

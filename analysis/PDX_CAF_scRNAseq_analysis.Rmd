@@ -43,13 +43,26 @@ main_plot_features <- c("PTPRC", "CD3D", "CD3E", "CD4", "CD8A", "JAK1", "JAK2", 
 
 mycafs <- c("TGFB1", "ACTA2", "TAGLN") #"HOPX", "MYL9"
 icafs <- c("IL6", "CXCL12", "CXCL14") #"CXCL13", 
-abcafs <- c("CD74", "HLA-DPB1", "HLA-DPB2", "HLA-DQA1", "HLA-DRA", "HLA-DRB1")
+apcafs <- c("CD74", "HLA-DPB1", "HLA-DPB2", "HLA-DQA1", "HLA-DRA", "HLA-DRB1")
 ficafs <- c("SFRP2", "SFRP4", "COMP", "CXCL14", "PLA2G2A", "ASPN")
 
-main_plot_features <- c(main_plot_features, mycafs, icafs, abcafs, ficafs)
+# F-apCAFs (C1QC, APOC1, RARRES1) and M-apCAFs (CD24, CA9, EGLN3)
+more_apcafs <- c("C1QC", "APOC1", "RARRES1", "CD24", "CA9", "EGLN3")
+
+# Matrix CAFs
+mcafs <- c("FBLN1", "PDGFRA", "POSTN")
+
+# Vascular CAFs
+vcafs <- c("KCNJ8", "RGS5", "MCAM", "CD146", "NOTCH3", "NID2", "DES", "PDGFRB", "ACTA2")
+
+main_plot_features <- c(main_plot_features, mycafs, icafs, apcafs, more_apcafs, ficafs, mcafs, vcafs)
 main_plot_features <- unique(main_plot_features)
 
 main_plot_features <- gorth(main_plot_features, source_organism = "hsapiens", target_organism = "mmusculus")$ortholog_name
+
+gs4_deauth()
+metadata  <- gs4_get("https://docs.google.com/spreadsheets/d/1dRWnmQrzN8Q0EFgccnwSGIZ5GtnFyPn5SMYIS3pQCBg/edit?usp=sharing")
+main_annotations <- read_sheet(metadata, sheet = "Final main annotations")
 
 ```
 
@@ -300,6 +313,8 @@ FeaturePlot(seurat_integrated,
 
 ```
 
+## Adding annotations
+
 ```{r, message = F, warning = F, fig.width = 12, fig.height = 8, eval = F}
 
 seurat_integrated <- readRDS("/tgen_labs/banovich/PIPAC/CAF_scRNAseq/PDX_CAF_Seurat_annotated.rds")
@@ -339,20 +354,6 @@ seurat_integrated$Annotation <- mapvalues(seurat_integrated$harmony_snn_res.0.8,
 seurat_integrated$Annotation <- factor(seurat_integrated$Annotation,
                                        levels = sort(unique(as.character(seurat_integrated$Annotation))))
 
-# Updating annotations
-#seurat_integrated$Updated_Annotation <- seurat_integrated$Annotation
-#seurat_integrated$Updated_Annotation <- gsub("Immune_Unclassified1", "Lymphoid3", seurat_integrated$Updated_Annotation)
-#seurat_integrated$Updated_Annotation <- gsub("Immune_Unclassified2", "Lymphoid4", seurat_integrated$Updated_Annotation)
-#seurat_integrated$Updated_Annotation <- gsub("Immune_Unclassified6", "Lymphoid5", seurat_integrated$Updated_Annotation)
-#seurat_integrated$Updated_Annotation <- gsub("Immune_Unclassified3", "Myeloid3", seurat_integrated$Updated_Annotation)
-#seurat_integrated$Updated_Annotation <- gsub("Immune_Unclassified4", "Myeloid4", seurat_integrated$Updated_Annotation)
-#seurat_integrated$Updated_Annotation <- gsub("Immune_Unclassified5", "Unclassified", seurat_integrated$Updated_Annotation)
-#
-#seurat_integrated$Updated_Annotation <- factor(seurat_integrated$Updated_Annotation,
-#                                       levels = sort(unique(as.character(seurat_integrated$Updated_Annotation))))
-#
-#table(seurat_integrated$Updated_Annotation)
-
 saveRDS(seurat_integrated, "/tgen_labs/banovich/PIPAC/CAF_scRNAseq/PDX_CAF_Seurat_annotated.rds")
 
 ```
@@ -388,19 +389,33 @@ saveRDS(seurat_integrated, "/tgen_labs/banovich/PIPAC/CAF_scRNAseq/PDX_CAF_Seura
 
 ```
 
+## Updating annotations
+
+```{r, message = F, warning = F, fig.width = 6, fig.height = 6, eval = F}
+
+seurat_integrated <- readRDS("/tgen_labs/banovich/PIPAC/CAF_scRNAseq/PDX_CAF_Seurat_annotated.rds")
+
+seurat_integrated$Updated_Annotation <- mapvalues(x = seurat_integrated$Annotation,
+                                                  from = main_annotations$Celltype,
+                                                  to = main_annotations$`Descriptive name/Updated celltype`)
+
+saveRDS(seurat_integrated, "/tgen_labs/banovich/PIPAC/CAF_scRNAseq/PDX_CAF_Seurat_annotated.rds")
+
+```
+
 ## Plotting annotations and marker expression
 
 ```{r, message = F, warning = F, fig.width = 9, fig.height = 16}
 
 seurat_integrated <- readRDS("/tgen_labs/banovich/PIPAC/CAF_scRNAseq/PDX_CAF_Seurat_annotated.rds")
 
-cts <- as.factor(sort(unique(as.character(seurat_integrated$Annotation))))
+cts <- as.factor(sort(unique(as.character(seurat_integrated$Updated_Annotation))))
 ct_col <- colorRampPalette(brewer.pal(10, "Paired"))(nb.cols <- length(cts))
 names(ct_col) <- levels(cts)
 
 create_dotplot_heatmap(seurat_object = seurat_integrated,
                        plot_features = sort(main_plot_features),
-                       group_var = "Annotation",
+                       group_var = "Updated_Annotation",
                        group_colors = ct_col,
                        column_title = "",
                        row_km = 5,
@@ -416,7 +431,7 @@ create_dotplot_heatmap(seurat_object = seurat_integrated,
 
 # Top markers for each celltype
 markers <- presto::wilcoxauc(seurat_integrated,
-                             group_by = "Annotation",
+                             group_by = "Updated_Annotation",
                              assay = "data",
                              seurat_assay = "RNA")
 top_markers <- markers %>% group_by(group) %>% slice_max(order_by = auc, n = 50)
@@ -433,7 +448,7 @@ top_cluster_markers <- markers %>% group_by(group) %>% slice_max(order_by = auc,
 
 create_dotplot_heatmap(seurat_object = seurat_integrated,
                        plot_features = unique(top_cluster_markers$feature),
-                       group_var = "Annotation",
+                       group_var = "Updated_Annotation",
                        group_colors = ct_col,
                        column_title = "",
                        row_km = 5,
@@ -446,11 +461,10 @@ create_dotplot_heatmap(seurat_object = seurat_integrated,
 ```{r, message = F, warning = F, fig.width = 6, fig.height = 6, eval = T}
 
 DimPlot(seurat_integrated,
-        group.by = "Annotation",
+        group.by = "Updated_Annotation",
         reduction = "harmony_umap",
         cols = ct_col,
         label = T,
-        label.box = T,
         repel = T) +
   coord_fixed(ratio = 1) +
   theme_bw() +
@@ -462,7 +476,7 @@ DimPlot(seurat_integrated,
 ```{r, message = F, warning = F, fig.width = 12, fig.height = 6, eval = T}
 
 DimPlot(seurat_integrated,
-        group.by = "Annotation",
+        group.by = "Updated_Annotation",
         reduction = "harmony_umap",
         cols = ct_col) +
   coord_fixed(ratio = 1) +
@@ -473,8 +487,8 @@ DimPlot(seurat_integrated,
 ```{r, message = F, warning = F, fig.width = 12, fig.height = 8, eval = T}
 
 DimPlot(seurat_integrated,
-        group.by = "Annotation",
-        split.by = "Annotation",
+        group.by = "Updated_Annotation",
+        split.by = "Updated_Annotation",
         reduction = "harmony_umap",
         cols = ct_col,
         ncol = 8) +
@@ -501,17 +515,24 @@ DimPlot(seurat_integrated,
 
 ## CAF markers
 
-```{r, message = F, warning = F, fig.width = 10, fig.height = 24, eval = T}
+```{r, message = F, warning = F, fig.width = 10, fig.height = 50, eval = T}
 
 #grep("H2", rownames(seurat_integrated), value = T)
-caf_markers <- c("Ly6C", "Il6", "Ccl2", "Cxcl1", "Cxcl2", "Cxcl12",
+caf_markers <- c("Ly6c", "Il6", "Ccl2", "Cxcl1", "Cxcl2", "Cxcl12",
                  "Pdgfra", "Agtr1", "Cfd", "Il1a", "Il1b", "Ccl8",
                  "Ccl27", "Acta2", "Myl9", "Tagln", "Tpm2", "Col1a1",
                  "Col1a2", "Col3a1")
 caf_markers <- unique(caf_markers)
 
+more_caf_markers <- c(mycafs, icafs, apcafs, more_apcafs, ficafs, mcafs, vcafs)
+more_caf_markers <- unique(more_caf_markers)
+
+more_caf_markers <- gorth(more_caf_markers, source_organism = "hsapiens", target_organism = "mmusculus")$ortholog_name
+
+caf_markers <- unique(c(caf_markers, more_caf_markers))
+
 VlnPlot(seurat_integrated,
-        group.by = "Annotation",
+        group.by = "Updated_Annotation",
         features = caf_markers,
         pt.size = 0,
         ncol = 2) &
@@ -525,7 +546,7 @@ VlnPlot(seurat_integrated,
 
 ## Myeloid markers
 
-Key Mouse MDSC Markers and Subsets \
+Key MDSC Markers and Subsets \
 
 - Pan-MDSC: CD11b+, Gr-1+ \
 - PMN-MDSC (Granulocytic): CD11b+ Ly6G+ Ly6Clow, CD244+, Arg2, Stat3, Jaml. \
@@ -538,7 +559,7 @@ mdsc <- c("Cd11b", "Gr-1", "Ly6G", "Ly6C", "Cd244", "Arg2", "Stat3", "Jaml",
           "Ccr2", "Arg1", "Csf1r", "Nos2", "S100a8", "S100a9", "Ros")
 
 VlnPlot(seurat_integrated,
-        group.by = "Annotation",
+        group.by = "Updated_Annotation",
         features = mdsc,
         pt.size = 0,
         ncol = 2) &
@@ -569,7 +590,7 @@ m2 <- c("Arg1", "Mrc1", "Cd206", "Chil3", "Ym1", "Retnla", "Fizz1",
         "Tgfb1", "Egr2", "Fpr2")
 
 VlnPlot(seurat_integrated,
-        group.by = "Annotation",
+        group.by = "Updated_Annotation",
         features = m2,
         pt.size = 0,
         ncol = 2) &
@@ -595,7 +616,7 @@ m1 <- c("Nos2", "Il1b", "Il6", "Tnfa", "Il12a", "Il12b", "Il23", "Ccl5",
         "Cd11c", "Fpr2", "Gpr18")
 
 VlnPlot(seurat_integrated,
-        group.by = "Annotation",
+        group.by = "Updated_Annotation",
         features = m1,
         pt.size = 0,
         ncol = 2) &
@@ -632,7 +653,7 @@ Key Activation/Memory Markers\
 - Memory T Cells: Cd44, Il7r (CD127)\
 - Exhaustion Markers: Pdcd1 (PD-1), Cd274 (PD-L1), Havcr2 (TIM-3) \
 
-```{r, message = F, warning = F, fig.width = 10, fig.height = 40, eval = T}
+```{r, message = F, warning = F, fig.width = 10, fig.height = 44, eval = T}
 
 mouse_immune <- c("Ptprc", "Cd3e", "Cd3g", "Cd247", "Cd4", "Cd8a", "Cd8b1", 
                   "Foxp3", "Cd25", "Il2ra", "Ctla4", "Cd19", "Ms4a1", "Cd79a",
@@ -641,10 +662,12 @@ mouse_immune <- c("Ptprc", "Cd3e", "Cd3g", "Cd247", "Cd4", "Cd8a", "Cd8b1",
                   "Nos2", "Cd80", "Cd86",
                   "Cd163", "Mrc1", "Arg1", "Itgax", "Cd11c",
                   "Siglech", "Bst2", "Ly6g", "Ly6c", "S100a8",
-                  "Ly6c", "Cd34", "Kit")
+                  "Ly6c", "Cd34", "Kit", "Sell", "Ccr7", "Cd44",
+                  "Pdcd1")
+mouse_immune <- unique(mouse_immune)
 
 VlnPlot(seurat_integrated,
-        group.by = "Annotation",
+        group.by = "Updated_Annotation",
         features = mouse_immune,
         pt.size = 0,
         ncol = 2) &
@@ -677,7 +700,7 @@ emt_markers <- c("Cdh1", "Epcam", "Vim", "Fn1", "Cdh2", "Itga5",
                  "Mmp9", "Col1a1")
 
 VlnPlot(seurat_integrated,
-        group.by = "Annotation",
+        group.by = "Updated_Annotation",
         features = emt_markers,
         pt.size = 0,
         ncol = 2) &
@@ -698,14 +721,14 @@ VlnPlot(seurat_integrated,
 
 VlnPlot(seurat_integrated,
         features = c("nCount_RNA", "nFeature_RNA", "percent.mt_RNA"),
-        group.by = "Annotation",
+        group.by = "Updated_Annotation",
         pt.size = 0,
         ncol = 1) &
   NoLegend()
 
 VlnPlot(seurat_integrated,
         features = c("G2M.Score", "S.Score"),
-        group.by = "Annotation",
+        group.by = "Updated_Annotation",
         pt.size = 0,
         ncol = 1) &
   NoLegend()
@@ -716,7 +739,7 @@ VlnPlot(seurat_integrated,
 
 ```{r, message = F, warning = F, fig.width = 12, fig.height = 9, eval = T}
 
-table(seurat_integrated$Annotation)
+table(seurat_integrated$Updated_Annotation)
 
 #Rscript -e "rmarkdown::render('PDX_CAF_scRNAseq_analysis.Rmd')"
 

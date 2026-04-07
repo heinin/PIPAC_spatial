@@ -37,14 +37,14 @@ Niche and proximity analysis\
 Arm 3 analysis\
 1. [Arm 3 first-pass comparative analysis](arm3_comparative_analysis.html)\
 2. [CAF analysis](CAF_analysis.html)\
-3. Immune analysis\
+3. [Immune analysis](immune_analysis.html)\
 
 CAFs\
 1. [CAF bulk-RNAseq with and without Mitomycin C](CAF_bulkRNAseq.html)\
 2. [CT26 + CAF scRNAseq processing](PDX_CAF_scRNAseq_processing.html)\
-3. [CT26 + CAF scRNAseq integration and annotation](PDX_CAF_scRNAseq_analysis.html)\
-4. [CT26 + CAF scRNAseq comparative analysis](PDX_CAF_scRNAseq_comparative_analysis.html)\
-5. [CT26 + CAF scRNAseq CMS scoring](PDX_CAF_scRNAseq_CMS.html)\
-
+3. [CT26 + CAF scRNAseq integration and 1st pass annotation](PDX_CAF_scRNAseq_analysis.html)\
+4. [CT26 + CAF scRNAseq subclustering and 2nd pass annotation](PDX_CAF_subclustering.html)\
+5. [CT26 + CAF scRNAseq comparative analysis](PDX_CAF_scRNAseq_comparative_analysis.html)\
+6. [CT26 + CAF scRNAseq CMS scoring](PDX_CAF_scRNAseq_CMS.html)\
 
 Contact: Heini M Natri, hnatri@tgen.org

@@ -1,3 +1,5 @@
+*slurm*.err
+*slurm*.out
 .Rproj.user
 .Rhistory
 .RData

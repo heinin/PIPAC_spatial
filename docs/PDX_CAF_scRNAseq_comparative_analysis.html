@@ -395,7 +395,7 @@ aria-hidden="true"></span> </a>
 <div class="tab-content">
 <div id="summary" class="tab-pane fade in active">
 <p>
-<strong>Last updated:</strong> 2026-03-30
+<strong>Last updated:</strong> 2026-04-06
 </p>
 <p>
 <strong>Checks:</strong> <span
@@ -603,15 +603,15 @@ CT26_CAF_UMAP_sample.pdf
 <div class="panel panel-default">
 <div class="panel-heading">
 <p class="panel-title">
-<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomheininPIPACspatialtree5d0a83d12d07846480aeed495f8f449064b84525targetblank5d0a83da">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomheininPIPACspatialtree1ad97ad0fa2f9fcf8a525dbb43ac79573b7b7480targetblank1ad97ada">
 <span class="glyphicon glyphicon-ok text-success"
 aria-hidden="true"></span> <strong>Repository version:</strong>
-<a href="https://github.com/heinin/PIPAC_spatial/tree/5d0a83d12d07846480aeed495f8f449064b84525" target="_blank">5d0a83d</a>
+<a href="https://github.com/heinin/PIPAC_spatial/tree/1ad97ad0fa2f9fcf8a525dbb43ac79573b7b7480" target="_blank">1ad97ad</a>
 </a>
 </p>
 </div>
 <div
-id="strongRepositoryversionstrongahrefhttpsgithubcomheininPIPACspatialtree5d0a83d12d07846480aeed495f8f449064b84525targetblank5d0a83da"
+id="strongRepositoryversionstrongahrefhttpsgithubcomheininPIPACspatialtree1ad97ad0fa2f9fcf8a525dbb43ac79573b7b7480targetblank1ad97ada"
 class="panel-collapse collapse">
 <div class="panel-body">
 <p>
@@ -621,7 +621,7 @@ reproducibility.
 </p>
 <p>
 The results in this page were generated with repository version
-<a href="https://github.com/heinin/PIPAC_spatial/tree/5d0a83d12d07846480aeed495f8f449064b84525" target="_blank">5d0a83d</a>.
+<a href="https://github.com/heinin/PIPAC_spatial/tree/1ad97ad0fa2f9fcf8a525dbb43ac79573b7b7480" target="_blank">1ad97ad</a>.
 See the <em>Past versions</em> tab to see a history of the changes made
 to the R Markdown and HTML files.
 </p>
@@ -638,6 +638,7 @@ were generated:
 Ignored files:
     Ignored:    PDX_CAF_cluster_markers.tsv
     Ignored:    PDX_CAF_nonimmune_cluster_markers.tsv
+    Ignored:    analysis/figure/
     Ignored:    cell_annotation_final_topmarkers.tsv
     Ignored:    cell_immune_cluster_marker_annotations.tsv
     Ignored:    cell_nonimmune_cluster_marker_annotations.tsv
@@ -645,6 +646,7 @@ Ignored files:
     Ignored:    code/.RData
     Ignored:    code/.Rapp.history
     Ignored:    code/.Rhistory
+    Ignored:    code/PDX_CAF_scRNAseq_inferCNA.Rout
     Ignored:    code/Proximity_analysis/.DS_Store
     Ignored:    code/Proximity_analysis/data/
     Ignored:    code/Proximity_analysis/output/
@@ -660,12 +662,38 @@ Ignored files:
     Ignored:    tumor_pretreatment_proximity_compiled.tsv
     Ignored:    tumor_proximity_compiled.tsv
 
+Untracked files:
+    Untracked:  analysis/PDX_CAF_subclustering.Rmd
+    Untracked:  code/PDX_CAF_scRNAseq_inferCNA.R
+    Untracked:  code/arm2_sample_summary.R
+    Untracked:  code/poster_plots.R
+    Untracked:  code/slurm.31914145.err
+    Untracked:  code/slurm.31914145.out
+    Untracked:  code/slurm.31914197.err
+    Untracked:  code/slurm.31914197.out
+    Untracked:  code/slurm.31914223.err
+    Untracked:  code/slurm.31914223.out
+    Untracked:  code/slurm.31930759.err
+    Untracked:  code/slurm.31930759.out
+    Untracked:  code/slurm.31954236.err
+    Untracked:  code/slurm.31954236.out
+    Untracked:  output/CT26_CNAmtx.RData
+    Untracked:  output/CT26_Clonal_CN.seg
+    Untracked:  output/CT26_coarse-grainedClonalCNProfile.png
+    Untracked:  output/CT26heatmap.png
+    Untracked:  output/CT26onlytumorheatmap.png
+    Untracked:  output/CT26onlytumorvega_output
+    Untracked:  output/CT26vega_output
+
 Unstaged changes:
+    Modified:   analysis/PDX_CAF_scRNAseq_CMS.Rmd
     Modified:   analysis/PDX_CAF_scRNAseq_analysis.Rmd
     Modified:   analysis/PDX_CAF_scRNAseq_comparative_analysis.Rmd
+    Modified:   analysis/arm3_comparative_analysis.Rmd
     Modified:   analysis/immune_analysis.Rmd
-    Modified:   analysis/updating_annotations.Rmd
-    Modified:   code/anndata_to_seurat.R
+    Modified:   analysis/pretty_plots.Rmd
+    Modified:   code/run_rscript.sh
+    Modified:   ncells.tsv
 
 </code></pre>
 <p>
@@ -712,6 +740,42 @@ Message
 </tr>
 </thead>
 <tbody>
+<tr>
+<td>
+Rmd
+</td>
+<td>
+<a href="https://github.com/heinin/PIPAC_spatial/blob/1ad97ad0fa2f9fcf8a525dbb43ac79573b7b7480/analysis/PDX_CAF_scRNAseq_comparative_analysis.Rmd" target="_blank">1ad97ad</a>
+</td>
+<td>
+heinin
+</td>
+<td>
+2026-03-31
+</td>
+<td>
+Co-injection scRNAseq subclustering, updated comparative analysis, added
+Xenim immune subset analysis
+</td>
+</tr>
+<tr>
+<td>
+html
+</td>
+<td>
+<a href="https://rawcdn.githack.com/heinin/PIPAC_spatial/1ad97ad0fa2f9fcf8a525dbb43ac79573b7b7480/docs/PDX_CAF_scRNAseq_comparative_analysis.html" target="_blank">1ad97ad</a>
+</td>
+<td>
+heinin
+</td>
+<td>
+2026-03-31
+</td>
+<td>
+Co-injection scRNAseq subclustering, updated comparative analysis, added
+Xenim immune subset analysis
+</td>
+</tr>
 <tr>
 <td>
 html
@@ -831,64 +895,134 @@ source(&quot;/home/hnatri/PIPAC_spatial/code/PIPAC_colors_themes.R&quot;)
 source(&quot;/home/hnatri/PIPAC_spatial/code/plot_functions.R&quot;)
 
 # Markers
-main_plot_features &lt;- c(&quot;PTPRC&quot;, &quot;CD3D&quot;, &quot;CD3E&quot;, &quot;CD4&quot;, &quot;CD8A&quot;, &quot;JAK1&quot;, &quot;JAK2&quot;, &quot;STAT4&quot;, &quot;STAT3&quot;, &quot;TIGIT&quot;, &quot;GZMB&quot;, &quot;SELL&quot;, &quot;CD19&quot;, &quot;CD68&quot;, &quot;CD44&quot;, &quot;MARCO&quot;, &quot;APOE&quot;, &quot;C1QB&quot;, &quot;C1QBP&quot;, &quot;CD163&quot;, &quot;SPP1&quot;, &quot;VCAN&quot;, &quot;MUC5AC&quot;, &quot;NOTCH3&quot;, &quot;RGS5&quot;, &quot;MS4A1&quot;, &quot;PGA5&quot;, &quot;PLVAP&quot;, &quot;CCL21&quot;, &quot;LYVE&quot;, &quot;SPARCL1&quot;, &quot;FN1&quot;, &quot;DCN&quot;, &quot;LUM&quot;, &quot;COL1A2&quot;, &quot;PDPN&quot;, &quot;ACTA2&quot;, &quot;LMNA&quot;, &quot;EGR3&quot;, &quot;TP53&quot;, &quot;JUN&quot;, &quot;FOS&quot;, &quot;BRAF&quot;, &quot;KIT&quot;, &quot;SOX9&quot;, &quot;RNF43&quot;, &quot;EPCAM&quot;, &quot;PECAM&quot;, &quot;CEACAM&quot;, &quot;TGFB1&quot;, &quot;JUNB&quot;, &quot;TCF7&quot;, &quot;GZMA&quot;, &quot;GZMK&quot;, &quot;CD47&quot;, &quot;CD74&quot;, &quot;LYZ&quot;, &quot;TREM2&quot;, &quot;CD247&quot;, &quot;COL5A1&quot;, &quot;SPARC&quot;, &quot;CD36&quot;, &quot;CTLA4&quot;, &quot;RGS1&quot;, &quot;CCL2&quot;, &quot;SELENOP&quot;, &quot;LYVE1&quot;, &quot;CTSD&quot;, &quot;MMP9&quot;, &quot;CDK1&quot;, &quot;FLT1&quot;, &quot;RAMP2&quot;, &quot;CCL14&quot;, &quot;MCAM&quot;, &quot;NRP1&quot;, &quot;CEACAM6&quot;, &quot;IL32&quot;, &quot;TGFBI&quot;, &quot;VEGFA&quot;, &quot;LAMP1&quot;, &quot;IGFBP7&quot;, &quot;POSTN&quot;, &quot;C1S&quot;, &quot;C1R&quot;, &quot;CSF1&quot;, &quot;NOTCH1&quot;, &quot;FOXP3&quot;, &quot;IL2RB&quot;, &quot;TUBA1B&quot;, &quot;S100A9&quot;, &quot;C3&quot;, &quot;CXCR2&quot;, &quot;SDC1&quot;, &quot;CD38&quot;, &quot;IGHG1&quot;, &quot;PRDX4&quot;, &quot;ICAM1&quot;, &quot;GATA2&quot;, &quot;CXCL3&quot;)
+main_plot_features &lt;- c(&quot;PTPRC&quot;, &quot;CD3D&quot;, &quot;CD3E&quot;, &quot;CD4&quot;, &quot;CD8A&quot;, &quot;JAK1&quot;, &quot;JAK2&quot;, &quot;STAT4&quot;, &quot;STAT3&quot;, &quot;TIGIT&quot;, &quot;GZMB&quot;, &quot;SELL&quot;, &quot;CD19&quot;, &quot;CD68&quot;, &quot;CD44&quot;, &quot;MARCO&quot;, &quot;APOE&quot;, &quot;C1QB&quot;, &quot;C1QBP&quot;, &quot;CD163&quot;, &quot;SPP1&quot;, &quot;VCAN&quot;, &quot;MUC5AC&quot;, &quot;NOTCH3&quot;, &quot;RGS5&quot;, &quot;MS4A1&quot;, &quot;PGA5&quot;, &quot;PLVAP&quot;, &quot;CCL21&quot;, &quot;LYVE&quot;, &quot;SPARCL1&quot;, &quot;FN1&quot;, &quot;DCN&quot;, &quot;LUM&quot;, &quot;COL1A2&quot;, &quot;PDPN&quot;, &quot;ACTA2&quot;, &quot;LMNA&quot;, &quot;EGR3&quot;, &quot;TP53&quot;, &quot;JUN&quot;, &quot;FOS&quot;, &quot;BRAF&quot;, &quot;KIT&quot;, &quot;SOX9&quot;, &quot;RNF43&quot;, &quot;EPCAM&quot;, &quot;PECAM&quot;, &quot;CEACAM&quot;, &quot;TGFB1&quot;, &quot;JUNB&quot;, &quot;TCF7&quot;, &quot;GZMA&quot;, &quot;GZMK&quot;, &quot;CD47&quot;, &quot;CD74&quot;, &quot;LYZ&quot;, &quot;TREM2&quot;, &quot;CD247&quot;, &quot;COL5A1&quot;, &quot;SPARC&quot;, &quot;CD36&quot;, &quot;CTLA4&quot;, &quot;RGS1&quot;, &quot;CCL2&quot;, &quot;SELENOP&quot;, &quot;LYVE1&quot;, &quot;CTSD&quot;, &quot;MMP9&quot;, &quot;CDK1&quot;, &quot;FLT1&quot;, &quot;RAMP2&quot;, &quot;CCL14&quot;, &quot;MCAM&quot;, &quot;NRP1&quot;, &quot;CEACAM6&quot;, &quot;IL32&quot;, &quot;TGFBI&quot;, &quot;VEGFA&quot;, &quot;LAMP1&quot;, &quot;IGFBP7&quot;, &quot;POSTN&quot;, &quot;C1S&quot;, &quot;C1R&quot;, &quot;CSF1&quot;, &quot;NOTCH1&quot;, &quot;FOXP3&quot;, &quot;IL2RB&quot;, &quot;TUBA1B&quot;, &quot;S100A9&quot;, &quot;C3&quot;, &quot;CXCR2&quot;, &quot;SDC1&quot;, &quot;CD38&quot;, &quot;IGHG1&quot;, &quot;PRDX4&quot;, &quot;ICAM1&quot;, &quot;GATA2&quot;, &quot;CXCL3&quot;, &quot;JCHAIN&quot;)
 
 mycafs &lt;- c(&quot;TGFB1&quot;, &quot;ACTA2&quot;, &quot;TAGLN&quot;) #&quot;HOPX&quot;, &quot;MYL9&quot;
 icafs &lt;- c(&quot;IL6&quot;, &quot;CXCL12&quot;, &quot;CXCL14&quot;) #&quot;CXCL13&quot;, 
-abcafs &lt;- c(&quot;CD74&quot;, &quot;HLA-DPB1&quot;, &quot;HLA-DPB2&quot;, &quot;HLA-DQA1&quot;, &quot;HLA-DRA&quot;, &quot;HLA-DRB1&quot;)
+apcafs &lt;- c(&quot;CD74&quot;, &quot;HLA-DPB1&quot;, &quot;HLA-DPB2&quot;, &quot;HLA-DQA1&quot;, &quot;HLA-DRA&quot;, &quot;HLA-DRB1&quot;)
 ficafs &lt;- c(&quot;SFRP2&quot;, &quot;SFRP4&quot;, &quot;COMP&quot;, &quot;CXCL14&quot;, &quot;PLA2G2A&quot;, &quot;ASPN&quot;)
 
-main_plot_features &lt;- c(main_plot_features, mycafs, icafs, abcafs, ficafs)
+# F-apCAFs (C1QC, APOC1, RARRES1) and M-apCAFs (CD24, CA9, EGLN3)
+more_apcafs &lt;- c(&quot;C1QC&quot;, &quot;APOC1&quot;, &quot;RARRES1&quot;, &quot;CD24&quot;, &quot;CA9&quot;, &quot;EGLN3&quot;)
+
+# Matrix CAFs
+mcafs &lt;- c(&quot;FBLN1&quot;, &quot;PDGFRA&quot;, &quot;POSTN&quot;)
+
+# Vascular CAFs
+vcafs &lt;- c(&quot;KCNJ8&quot;, &quot;RGS5&quot;, &quot;MCAM&quot;, &quot;CD146&quot;, &quot;NOTCH3&quot;, &quot;NID2&quot;, &quot;DES&quot;, &quot;PDGFRB&quot;, &quot;ACTA2&quot;)
+
+main_plot_features &lt;- c(main_plot_features, mycafs, icafs, apcafs, more_apcafs, ficafs, mcafs, vcafs)
 main_plot_features &lt;- unique(main_plot_features)
 
-main_plot_features &lt;- gorth(main_plot_features, source_organism = &quot;hsapiens&quot;, target_organism = &quot;mmusculus&quot;)$ortholog_name</code></pre>
+main_plot_features &lt;- gorth(main_plot_features, source_organism = &quot;hsapiens&quot;, target_organism = &quot;mmusculus&quot;)$ortholog_name
+
+caf_markers &lt;- c(&quot;Ly6c&quot;, &quot;Il6&quot;, &quot;Ccl2&quot;, &quot;Cxcl1&quot;, &quot;Cxcl2&quot;, &quot;Cxcl12&quot;,
+                 &quot;Pdgfra&quot;, &quot;Agtr1&quot;, &quot;Cfd&quot;, &quot;Il1a&quot;, &quot;Il1b&quot;, &quot;Ccl8&quot;,
+                 &quot;Ccl27&quot;, &quot;Acta2&quot;, &quot;Myl9&quot;, &quot;Tagln&quot;, &quot;Tpm2&quot;, &quot;Col1a1&quot;,
+                 &quot;Col1a2&quot;, &quot;Col3a1&quot;)
+caf_markers &lt;- unique(caf_markers)
+
+more_caf_markers &lt;- c(mycafs, icafs, apcafs, more_apcafs, ficafs, mcafs, vcafs)
+more_caf_markers &lt;- unique(more_caf_markers)
+
+more_caf_markers &lt;- gorth(more_caf_markers, source_organism = &quot;hsapiens&quot;, target_organism = &quot;mmusculus&quot;)$ortholog_name
+
+caf_markers &lt;- unique(c(caf_markers, more_caf_markers))
+
+mdsc &lt;- c(&quot;Cd11b&quot;, &quot;Gr-1&quot;, &quot;Ly6G&quot;, &quot;Ly6C&quot;, &quot;Cd244&quot;, &quot;Arg2&quot;, &quot;Stat3&quot;, &quot;Jaml&quot;,
+          &quot;Ccr2&quot;, &quot;Arg1&quot;, &quot;Csf1r&quot;, &quot;Nos2&quot;, &quot;S100a8&quot;, &quot;S100a9&quot;, &quot;Ros&quot;)
+
+m2 &lt;- c(&quot;Arg1&quot;, &quot;Mrc1&quot;, &quot;Cd206&quot;, &quot;Chil3&quot;, &quot;Ym1&quot;, &quot;Retnla&quot;, &quot;Fizz1&quot;,
+        &quot;Cd163&quot;, &quot;Igf1&quot;, &quot;Pparg&quot;, &quot;Irf4&quot;, &quot;Stat6&quot;, &quot;Ccl17&quot;, &quot;Ccl22&quot;, &quot;Il10&quot;,
+        &quot;Tgfb1&quot;, &quot;Egr2&quot;, &quot;Fpr2&quot;)
+
+m1 &lt;- c(&quot;Nos2&quot;, &quot;Il1b&quot;, &quot;Il6&quot;, &quot;Tnfa&quot;, &quot;Il12a&quot;, &quot;Il12b&quot;, &quot;Il23&quot;, &quot;Ccl5&quot;,
+        &quot;Cxcl2&quot;, &quot;Cxcl10&quot;, &quot;Cd80&quot;, &quot;Cd38&quot;, &quot;Cd68&quot;, &quot;Cd64&quot;, &quot;Fcgr1&quot;, &quot;H2-Aa&quot;,
+        &quot;Cd11c&quot;, &quot;Fpr2&quot;, &quot;Gpr18&quot;)
+
+mouse_immune &lt;- c(&quot;Ptprc&quot;, &quot;Cd3e&quot;, &quot;Cd3g&quot;, &quot;Cd247&quot;, &quot;Cd4&quot;, &quot;Cd8a&quot;, &quot;Cd8b1&quot;, 
+                  &quot;Foxp3&quot;, &quot;Cd25&quot;, &quot;Il2ra&quot;, &quot;Ctla4&quot;, &quot;Cd19&quot;, &quot;Ms4a1&quot;, &quot;Cd79a&quot;,
+                  &quot;Ncr1&quot;, &quot;NKp46&quot;, &quot;Klrb1c&quot;, &quot;Cd226&quot;,
+                  &quot;Adgre1&quot;, &quot;Cd68&quot;, &quot;Cd11b&quot;, &quot;Itgam&quot;,
+                  &quot;Nos2&quot;, &quot;Cd80&quot;, &quot;Cd86&quot;,
+                  &quot;Cd163&quot;, &quot;Mrc1&quot;, &quot;Arg1&quot;, &quot;Itgax&quot;, &quot;Cd11c&quot;,
+                  &quot;Siglech&quot;, &quot;Bst2&quot;, &quot;Ly6g&quot;, &quot;Ly6c&quot;, &quot;S100a8&quot;,
+                  &quot;Ly6c&quot;, &quot;Cd34&quot;, &quot;Kit&quot;, &quot;Sell&quot;, &quot;Ccr7&quot;, &quot;Cd44&quot;,
+                  &quot;Pdcd1&quot;)
+
+emt_markers &lt;- c(&quot;Cdh1&quot;, &quot;Epcam&quot;, &quot;Vim&quot;, &quot;Fn1&quot;, &quot;Cdh2&quot;, &quot;Itga5&quot;,
+                 &quot;Snai1&quot;, &quot;Snai2&quot;, &quot;Twist1&quot;, &quot;Zeb1&quot;, &quot;Zeb2&quot;, &quot;Mmp2&quot;,
+                 &quot;Mmp9&quot;, &quot;Col1a1&quot;)
+
+all_plot_features &lt;- unique(c(main_plot_features, caf_markers, mdsc, m2, m1,
+                              mouse_immune, emt_markers))
+
+main_plot_features &lt;- gorth(all_plot_features, source_organism = &quot;hsapiens&quot;, target_organism = &quot;mmusculus&quot;)$ortholog_name</code></pre>
 </div>
 <div id="import-data" class="section level2">
 <h2>Import data</h2>
-<pre class="r"><code>seurat_data &lt;- readRDS(&quot;/tgen_labs/banovich/PIPAC/CAF_scRNAseq/PDX_CAF_Seurat_annotated.rds&quot;)
+<pre class="r"><code>seurat_data &lt;- readRDS(&quot;/tgen_labs/banovich/PIPAC/CAF_scRNAseq/PDX_CAF_Seurat_fulldata_annotated.rds&quot;)
+immune &lt;- readRDS(&quot;/tgen_labs/banovich/PIPAC/CAF_scRNAseq/PDX_CAF_Seurat_immune_annotated_reUMAP.rds&quot;)
+nonimmune &lt;- readRDS(&quot;/tgen_labs/banovich/PIPAC/CAF_scRNAseq/PDX_CAF_Seurat_nonimmune_annotated_reUMAP.rds&quot;)
 
-seurat_data$Annotation &lt;- seurat_data$Annotation
+DefaultAssay(seurat_data) &lt;- &quot;RNA&quot;
+DefaultAssay(immune) &lt;- &quot;RNA&quot;
+DefaultAssay(nonimmune) &lt;- &quot;RNA&quot;
+
+seurat_data &lt;- JoinLayers(seurat_data)
+immune &lt;- JoinLayers(immune)
+nonimmune &lt;- JoinLayers(nonimmune)
+
+seurat_data$Annotation &lt;- seurat_data$Final_Celltype
+immune$Annotation &lt;- immune$Final_Celltype
+nonimmune$Annotation &lt;- nonimmune$Final_Celltype
 
 table(seurat_data$Annotation)</code></pre>
 <pre><code>
-               CAF1                CAF2                CAF3                CAF4 
-                142                2059                2564                2131 
-               CAF5                CAF6                CAF7 Lymphoid1_CD8_TIGIT 
-               1468                  50                2690                1579 
-          Lymphoid2         Lymphoid3_B      Lymphoid4_GZMB            Myeloid1 
-               1478                 619                 921                2029 
-           Myeloid2            Myeloid3            Myeloid4            Myeloid5 
-               1711                 194                  80                1616 
-           Myeloid6              Tumor1              Tumor2              Tumor3 
-                165                3963                3933                2310 
-             Tumor4              Tumor5              Tumor6              Tumor7 
-               1885                2951                 618                 750 
-             Tumor8              Tumor9 
-               4200                2955 </code></pre>
+       Ambiguous             CAF1       CAF2_fiCAF             CAF3 
+             426             4751             2212              476 
+            CAF4             CAF5             CAF6             CAF7 
+            2201             2200              241              207 
+      CAF8_fiCAF    Lymph1_Tc_Tex        Lymph2_NK        Lymph3_Tc 
+             864             1328              867              651 
+        Lymph4_B        Lymph5_Tc    Lymph6_Tc_Tex        Lymph7_NK 
+             483              466              170              120 
+   Lymph8_Plasma      Lymph9_Treg    Myel1_MDSC_M2    Myel2_MDSC_M2 
+              82              172             1260              996 
+   Myel3_MDSC_M2        Myel4_pDC           Tumor1 Tumor2_CellCycle 
+             869              183             5049             4820 
+          Tumor3           Tumor4           Tumor5 Tumor6_CellCycle 
+            1381             3383             2915             3062 
+          Tumor7           Tumor8           Tumor9 
+            1119              376              444 </code></pre>
 </div>
 <div id="cell-type-proportions" class="section level2">
 <h2>Cell type proportions</h2>
 <pre class="r"><code>table(seurat_data$Sample)</code></pre>
 <pre><code>
     CT26 CT26_CAF 
-   19641    25420 </code></pre>
+   19095    24679 </code></pre>
 <pre class="r"><code>table(seurat_data$Sample, seurat_data$Annotation)</code></pre>
 <pre><code>          
-           CAF1 CAF2 CAF3 CAF4 CAF5 CAF6 CAF7 Lymphoid1_CD8_TIGIT Lymphoid2
-  CT26       93  523  530  685  568   17  774                1075       773
-  CT26_CAF   49 1536 2034 1446  900   33 1916                 504       705
+           Ambiguous CAF1 CAF2_fiCAF CAF3 CAF4 CAF5 CAF6 CAF7 CAF8_fiCAF
+  CT26           175 1310        569  180  590  775  124   93        276
+  CT26_CAF       251 3441       1643  296 1611 1425  117  114        588
           
-           Lymphoid3_B Lymphoid4_GZMB Myeloid1 Myeloid2 Myeloid3 Myeloid4
-  CT26             334            710      854     1168      174       58
-  CT26_CAF         285            211     1175      543       20       22
+           Lymph1_Tc_Tex Lymph2_NK Lymph3_Tc Lymph4_B Lymph5_Tc Lymph6_Tc_Tex
+  CT26               870       677       398      276       267           159
+  CT26_CAF           458       190       253      207       199            11
           
-           Myeloid5 Myeloid6 Tumor1 Tumor2 Tumor3 Tumor4 Tumor5 Tumor6 Tumor7
-  CT26         1123      101   1619   1353    905    669    979    316    214
-  CT26_CAF      493       64   2344   2580   1405   1216   1972    302    536
+           Lymph7_NK Lymph8_Plasma Lymph9_Treg Myel1_MDSC_M2 Myel2_MDSC_M2
+  CT26            67            56         101           982           642
+  CT26_CAF        53            26          71           278           354
           
-           Tumor8 Tumor9
-  CT26       2393   1633
-  CT26_CAF   1807   1322</code></pre>
+           Myel3_MDSC_M2 Myel4_pDC Tumor1 Tumor2_CellCycle Tumor3 Tumor4 Tumor5
+  CT26               565       165   2032             2955    282   1291   1090
+  CT26_CAF           304        18   3017             1865   1099   2092   1825
+          
+           Tumor6_CellCycle Tumor7 Tumor8 Tumor9
+  CT26                 1570    447     65     46
+  CT26_CAF             1492    672    311    398</code></pre>
 <pre class="r"><code>cts &lt;- as.factor(sort(unique(as.character(seurat_data$Annotation))))
 ct_col &lt;- colorRampPalette(brewer.pal(10, &quot;Paired&quot;))(nb.cols &lt;- length(cts))
 names(ct_col) &lt;- levels(cts)
@@ -902,6 +1036,43 @@ create_barplot(seurat_data,
                var_names =  c(&quot;Frequency (%)&quot;, &quot;&quot;),
                legend_title = &quot;Celltype&quot;)</code></pre>
 <p><img src="figure/PDX_CAF_scRNAseq_comparative_analysis.Rmd/unnamed-chunk-3-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-3-1">
+Past versions of unnamed-chunk-3-1.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-3-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/heinin/PIPAC_spatial/blob/1ad97ad0fa2f9fcf8a525dbb43ac79573b7b7480/docs/figure/PDX_CAF_scRNAseq_comparative_analysis.Rmd/unnamed-chunk-3-1.png" target="_blank">1ad97ad</a>
+</td>
+<td>
+heinin
+</td>
+<td>
+2026-03-31
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 <pre class="r"><code>prop_test &lt;- sc_utils(seurat_data)
 prop_test &lt;- permutation_test(
     prop_test, cluster_identity = &quot;Annotation&quot;,
@@ -911,6 +1082,43 @@ prop_test &lt;- permutation_test(
 permutation_plot(prop_test) +
   ggtitle(&quot;CT26 vs. CT26+CAF&quot;)</code></pre>
 <p><img src="figure/PDX_CAF_scRNAseq_comparative_analysis.Rmd/unnamed-chunk-4-1.png" width="576" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-4-1">
+Past versions of unnamed-chunk-4-1.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-4-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/heinin/PIPAC_spatial/blob/1ad97ad0fa2f9fcf8a525dbb43ac79573b7b7480/docs/figure/PDX_CAF_scRNAseq_comparative_analysis.Rmd/unnamed-chunk-4-1.png" target="_blank">1ad97ad</a>
+</td>
+<td>
+heinin
+</td>
+<td>
+2026-03-31
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 <pre class="r"><code>#filename &lt;- &quot;/home/hnatri/PIPAC_spatial/CT26_CAF_celltypeprops.pdf&quot;
 #
 #pdf(file=filename,
@@ -937,7 +1145,7 @@ permutation_plot(prop_test) +
 #                &quot;Proliferating1&quot;, &quot;Proliferating2&quot;, &quot;Proliferating3&quot;,
 #                &quot;Tumor1&quot;, &quot;Tumor2&quot;, &quot;Tumor3&quot;, &quot;Tumor4&quot;, &quot;Tumor5&quot;)
 
-caf_only &lt;- c(&quot;CAF1&quot;, &quot;CAF2&quot;, &quot;CAF3&quot;, &quot;CAF4&quot;, &quot;CAF5&quot;, &quot;CAF6&quot;, &quot;CAF7&quot;)
+caf_only &lt;- unique(grep(&quot;CAF&quot;, seurat_data$Annotation, value = T))
 
 caf_only &lt;- subset(seurat_data, subset = Annotation %in% caf_only)
 
@@ -953,10 +1161,121 @@ caf_DEGs &lt;- FindMarkers(caf_only,
 # Distribution of p-values and log2FC
 hist(caf_DEGs$p_val)</code></pre>
 <p><img src="figure/PDX_CAF_scRNAseq_comparative_analysis.Rmd/unnamed-chunk-5-1.png" width="768" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-5-1">
+Past versions of unnamed-chunk-5-1.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-5-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/heinin/PIPAC_spatial/blob/1ad97ad0fa2f9fcf8a525dbb43ac79573b7b7480/docs/figure/PDX_CAF_scRNAseq_comparative_analysis.Rmd/unnamed-chunk-5-1.png" target="_blank">1ad97ad</a>
+</td>
+<td>
+heinin
+</td>
+<td>
+2026-03-31
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 <pre class="r"><code>hist(caf_DEGs$p_val_adj)</code></pre>
 <p><img src="figure/PDX_CAF_scRNAseq_comparative_analysis.Rmd/unnamed-chunk-5-2.png" width="768" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-5-2">
+Past versions of unnamed-chunk-5-2.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-5-2" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/heinin/PIPAC_spatial/blob/1ad97ad0fa2f9fcf8a525dbb43ac79573b7b7480/docs/figure/PDX_CAF_scRNAseq_comparative_analysis.Rmd/unnamed-chunk-5-2.png" target="_blank">1ad97ad</a>
+</td>
+<td>
+heinin
+</td>
+<td>
+2026-03-31
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 <pre class="r"><code>hist(caf_DEGs$avg_log2FC)</code></pre>
 <p><img src="figure/PDX_CAF_scRNAseq_comparative_analysis.Rmd/unnamed-chunk-5-3.png" width="768" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-5-3">
+Past versions of unnamed-chunk-5-3.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-5-3" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/heinin/PIPAC_spatial/blob/1ad97ad0fa2f9fcf8a525dbb43ac79573b7b7480/docs/figure/PDX_CAF_scRNAseq_comparative_analysis.Rmd/unnamed-chunk-5-3.png" target="_blank">1ad97ad</a>
+</td>
+<td>
+heinin
+</td>
+<td>
+2026-03-31
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 <pre class="r"><code>ensembl &lt;- useMart(&quot;ensembl&quot;, dataset=&quot;mmusculus_gene_ensembl&quot;)
 geneinfo &lt;- getBM(attributes=c(&quot;mgi_symbol&quot;, &quot;ensembl_gene_id&quot;), 
       filters = &#39;mgi_symbol&#39;, 
@@ -974,10 +1293,10 @@ caf_DEGs_sig &lt;- caf_DEGs %&gt;%
 
 caf_DEGs_sig %&gt;%
   filter(avg_log2FC&gt;0) %&gt;% rownames() %&gt;% length()</code></pre>
-<pre><code>[1] 65</code></pre>
+<pre><code>[1] 71</code></pre>
 <pre class="r"><code>caf_DEGs_sig %&gt;%
   filter(avg_log2FC&lt;0) %&gt;% rownames() %&gt;% length()</code></pre>
-<pre><code>[1] 117</code></pre>
+<pre><code>[1] 80</code></pre>
 </div>
 <div id="some-features-upregulated-in-ct26caf" class="section level2">
 <h2>Some features upregulated in CT26+CAF</h2>
@@ -986,26 +1305,26 @@ caf_DEGs_sig %&gt;%
   arrange(desc(avg_log2FC)) %&gt;%
   head(20)</code></pre>
 <pre><code>                 p_val avg_log2FC pct.1 pct.2     p_val_adj            gene_id
-Tsc22d3   0.000000e+00   3.698712 0.759 0.212  0.000000e+00 ENSMUSG00000031431
-Mertk    3.814552e-135   3.276973 0.244 0.045 1.285351e-130 ENSMUSG00000014361
-Fkbp5     0.000000e+00   3.247624 0.956 0.532  0.000000e+00 ENSMUSG00000024222
-Ddit4    4.460340e-114   2.533606 0.265 0.080 1.502956e-109 ENSMUSG00000020108
-Ampd3    3.203546e-177   2.489148 0.386 0.127 1.079467e-172 ENSMUSG00000005686
-Clca3a1   0.000000e+00   2.426799 0.715 0.429  0.000000e+00 ENSMUSG00000056025
-Sorbs1    0.000000e+00   2.408963 0.790 0.422  0.000000e+00 ENSMUSG00000025006
-Spsb1    1.183505e-112   2.395679 0.283 0.095 3.987939e-108 ENSMUSG00000039911
-Cebpd     0.000000e+00   2.302411 0.702 0.366  0.000000e+00 ENSMUSG00000071637
-Cblb      0.000000e+00   2.226780 0.728 0.360  0.000000e+00 ENSMUSG00000022637
-Bcl2l1   5.986563e-307   2.200831 0.630 0.317 2.017232e-302 ENSMUSG00000007659
-Mt2       0.000000e+00   2.184564 0.967 0.662  0.000000e+00 ENSMUSG00000031762
-Mt1       0.000000e+00   2.162891 0.975 0.697  0.000000e+00 ENSMUSG00000031765
-Ccn2     7.014218e-110   2.053472 0.323 0.130 2.363511e-105 ENSMUSG00000019997
-Krt20    4.481321e-104   1.968188 0.363 0.184  1.510026e-99 ENSMUSG00000035775
-Ccnd3     0.000000e+00   1.967706 0.786 0.467  0.000000e+00 ENSMUSG00000034165
-Slc22a23  1.157319e-69   1.949441 0.262 0.121  3.899703e-65 ENSMUSG00000038267
-Stk38    1.049425e-281   1.818871 0.687 0.446 3.536143e-277 ENSMUSG00000024006
-Lgalsl    1.365554e-69   1.692570 0.315 0.180  4.601371e-65 ENSMUSG00000042363
-Gm4117    1.741049e-99   1.643485 0.427 0.248  5.866640e-95 ENSMUSG00000089940</code></pre>
+Tsc22d3   0.000000e+00   3.616021 0.674 0.178  0.000000e+00 ENSMUSG00000031431
+Mertk    3.140527e-155   3.423219 0.226 0.039 1.058232e-150 ENSMUSG00000014361
+Fkbp5     0.000000e+00   3.207850 0.942 0.523  0.000000e+00 ENSMUSG00000024222
+Ddit4    6.900522e-144   3.011857 0.233 0.051 2.325200e-139 ENSMUSG00000020108
+Ccn2     5.952079e-199   2.779032 0.340 0.098 2.005612e-194 ENSMUSG00000019997
+Ampd3    1.268021e-201   2.643261 0.353 0.108 4.272724e-197 ENSMUSG00000005686
+Cebpd     0.000000e+00   2.609565 0.572 0.233  0.000000e+00 ENSMUSG00000071637
+Clca3a1   0.000000e+00   2.603161 0.712 0.399  0.000000e+00 ENSMUSG00000056025
+Mt2       0.000000e+00   2.546513 0.960 0.603  0.000000e+00 ENSMUSG00000031762
+Spsb1    5.479328e-141   2.527468 0.278 0.088 1.846314e-136 ENSMUSG00000039911
+Mt1       0.000000e+00   2.444006 0.968 0.625  0.000000e+00 ENSMUSG00000031765
+Cblb      0.000000e+00   2.405603 0.728 0.341  0.000000e+00 ENSMUSG00000022637
+Ccnd3     0.000000e+00   2.251160 0.746 0.369  0.000000e+00 ENSMUSG00000034165
+Sorbs1    0.000000e+00   2.245726 0.780 0.441  0.000000e+00 ENSMUSG00000025006
+Bcl2l1    0.000000e+00   2.015039 0.630 0.347  0.000000e+00 ENSMUSG00000007659
+Krt20    4.594522e-136   1.990531 0.369 0.177 1.548170e-131 ENSMUSG00000035775
+Slc22a23  6.288817e-88   1.962176 0.265 0.120  2.119080e-83 ENSMUSG00000038267
+Lgalsl    5.434806e-75   1.829048 0.254 0.126  1.831312e-70 ENSMUSG00000042363
+Stk38    1.150813e-298   1.808913 0.639 0.401 3.877780e-294 ENSMUSG00000024006
+F3        4.388084e-62   1.790660 0.213 0.100  1.478609e-57 ENSMUSG00000028128</code></pre>
 <pre class="r"><code>upreg &lt;- caf_DEGs_sig %&gt;%
   filter(avg_log2FC&gt;0) %&gt;% 
   arrange(desc(avg_log2FC)) %&gt;%
@@ -1021,6 +1340,43 @@ VlnPlot(caf_only,
   RotatedAxis() &amp;
   xlab(&quot;&quot;)</code></pre>
 <p><img src="figure/PDX_CAF_scRNAseq_comparative_analysis.Rmd/unnamed-chunk-6-1.png" width="768" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-6-1">
+Past versions of unnamed-chunk-6-1.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-6-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/heinin/PIPAC_spatial/blob/1ad97ad0fa2f9fcf8a525dbb43ac79573b7b7480/docs/figure/PDX_CAF_scRNAseq_comparative_analysis.Rmd/unnamed-chunk-6-1.png" target="_blank">1ad97ad</a>
+</td>
+<td>
+heinin
+</td>
+<td>
+2026-03-31
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 </div>
 <div id="some-features-downregulated-in-ct26caf" class="section level2">
 <h2>Some features downregulated in CT26+CAF</h2>
@@ -1029,26 +1385,26 @@ VlnPlot(caf_only,
   arrange(desc(avg_log2FC)) %&gt;%
   tail(20)</code></pre>
 <pre><code>                p_val avg_log2FC pct.1 pct.2     p_val_adj            gene_id
-Slc5a3  1.028472e-166  -1.489104 0.123 0.357 3.465541e-162 ENSMUSG00000089774
-Cd74     2.998021e-96  -1.501621 0.074 0.215  1.010213e-91 ENSMUSG00000024610
-Plk2     0.000000e+00  -1.501931 0.452 0.837  0.000000e+00 ENSMUSG00000021701
-Slc22a4 2.329601e-110  -1.512960 0.086 0.248 7.849822e-106 ENSMUSG00000020334
-Gask1b  4.338009e-106  -1.520137 0.075 0.226 1.461736e-101 ENSMUSG00000027955
-Hes1    2.650092e-136  -1.553635 0.058 0.221 8.929749e-132 ENSMUSG00000022528
-Sgms2   3.631115e-282  -1.573019 0.231 0.593 1.223541e-277 ENSMUSG00000050931
-Gbp4    7.009136e-203  -1.573455 0.165 0.444 2.361798e-198 ENSMUSG00000079363
-Cd44     0.000000e+00  -1.574741 0.573 0.879  0.000000e+00 ENSMUSG00000005087
-Gvin2   1.695796e-140  -1.600735 0.061 0.231 5.714153e-136 ENSMUSG00000078606
-Pcdh18  2.409763e-149  -1.611074 0.058 0.232 8.119937e-145 ENSMUSG00000037892
-Camk1d   0.000000e+00  -1.628601 0.531 0.928  0.000000e+00 ENSMUSG00000039145
-Dkk2    1.611997e-216  -1.676946 0.157 0.439 5.431785e-212 ENSMUSG00000028031
-Slit2    0.000000e+00  -1.728567 0.880 0.981  0.000000e+00 ENSMUSG00000031558
-Lars2    0.000000e+00  -1.754546 0.528 0.915  0.000000e+00 ENSMUSG00000035202
-Gja1    2.670291e-299  -1.773924 0.167 0.511 8.997814e-295 ENSMUSG00000050953
-Sell    6.319736e-224  -1.793687 0.135 0.409 2.129498e-219 ENSMUSG00000026581
-Ern1     0.000000e+00  -1.842065 0.391 0.798  0.000000e+00 ENSMUSG00000020715
-Mtcl1   4.074682e-153  -1.910632 0.057 0.231 1.373005e-148 ENSMUSG00000052105
-Gpr39   2.564092e-243  -2.557254 0.054 0.281 8.639963e-239 ENSMUSG00000026343</code></pre>
+Noct    5.069481e-187  -1.312347 0.176 0.423 1.708212e-182 ENSMUSG00000023087
+Smad7   1.861428e-223  -1.319164 0.156 0.426 6.272268e-219 ENSMUSG00000025880
+Slc22a4 9.846036e-123  -1.365803 0.098 0.259 3.317720e-118 ENSMUSG00000020334
+Gbp4    5.960150e-172  -1.368407 0.128 0.345 2.008332e-167 ENSMUSG00000079363
+Cmss1    0.000000e+00  -1.382154 0.929 0.999  0.000000e+00 ENSMUSG00000022748
+Slc5a3  2.339319e-204  -1.383405 0.142 0.390 7.882569e-200 ENSMUSG00000089774
+Cd44     0.000000e+00  -1.412532 0.596 0.893  0.000000e+00 ENSMUSG00000005087
+Gja1    8.986540e-231  -1.452310 0.167 0.439 3.028104e-226 ENSMUSG00000050953
+Sgms2   1.686144e-306  -1.469514 0.285 0.632 5.681632e-302 ENSMUSG00000050931
+Dkk2    6.989287e-175  -1.514842 0.137 0.355 2.355110e-170 ENSMUSG00000028031
+Gvin2   1.019202e-134  -1.517350 0.058 0.203 3.434304e-130 ENSMUSG00000078606
+Gbp6    1.442780e-135  -1.522630 0.088 0.255 4.861593e-131 ENSMUSG00000104713
+Gm19951 4.951743e-203  -1.576434 0.086 0.299 1.668539e-198 ENSMUSG00000113136
+Camk1d   0.000000e+00  -1.628401 0.475 0.900  0.000000e+00 ENSMUSG00000039145
+Slit2    0.000000e+00  -1.646742 0.894 0.994  0.000000e+00 ENSMUSG00000031558
+Sell    1.107819e-226  -1.648761 0.114 0.355 3.732905e-222 ENSMUSG00000026581
+Ern1     0.000000e+00  -1.658580 0.414 0.801  0.000000e+00 ENSMUSG00000020715
+Lars2    0.000000e+00  -1.755044 0.476 0.889  0.000000e+00 ENSMUSG00000035202
+Mtcl1   8.410212e-182  -1.767857 0.068 0.251 2.833905e-177 ENSMUSG00000052105
+Gpr39    0.000000e+00  -2.487849 0.067 0.331  0.000000e+00 ENSMUSG00000026343</code></pre>
 <pre class="r"><code>downreg &lt;- caf_DEGs_sig %&gt;%
   filter(avg_log2FC&lt;0) %&gt;% 
   arrange(desc(avg_log2FC)) %&gt;%
@@ -1064,6 +1420,43 @@ VlnPlot(caf_only,
   RotatedAxis() &amp;
   xlab(&quot;&quot;)</code></pre>
 <p><img src="figure/PDX_CAF_scRNAseq_comparative_analysis.Rmd/unnamed-chunk-7-1.png" width="768" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-7-1">
+Past versions of unnamed-chunk-7-1.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-7-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/heinin/PIPAC_spatial/blob/1ad97ad0fa2f9fcf8a525dbb43ac79573b7b7480/docs/figure/PDX_CAF_scRNAseq_comparative_analysis.Rmd/unnamed-chunk-7-1.png" target="_blank">1ad97ad</a>
+</td>
+<td>
+heinin
+</td>
+<td>
+2026-03-31
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 </div>
 <div id="pathway-enrichment-upregulated-in-ct26caf"
 class="section level2">
@@ -1089,9 +1482,46 @@ ddp &lt;- dotplot(gse_res, showCategory=10, font.size=10, color=&quot;pvalue&quo
         text = element_text(size=6))
 
 dim(gse_res)</code></pre>
-<pre><code>[1] 54  9</code></pre>
+<pre><code>[1] 90  9</code></pre>
 <pre class="r"><code>ddp</code></pre>
 <p><img src="figure/PDX_CAF_scRNAseq_comparative_analysis.Rmd/unnamed-chunk-8-1.png" width="480" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-8-1">
+Past versions of unnamed-chunk-8-1.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-8-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/heinin/PIPAC_spatial/blob/1ad97ad0fa2f9fcf8a525dbb43ac79573b7b7480/docs/figure/PDX_CAF_scRNAseq_comparative_analysis.Rmd/unnamed-chunk-8-1.png" target="_blank">1ad97ad</a>
+</td>
+<td>
+heinin
+</td>
+<td>
+2026-03-31
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 <pre class="r"><code>#filename &lt;- &quot;/home/hnatri/PIPAC_spatial/CT26_CAF_pathways.pdf&quot;
 #
 #pdf(file=filename,
@@ -1126,9 +1556,46 @@ ddp &lt;- dotplot(gse_res, showCategory=10, font.size=10, color=&quot;pvalue&quo
         text = element_text(size=6))
 
 dim(gse_res)</code></pre>
-<pre><code>[1] 417   9</code></pre>
+<pre><code>[1] 280   9</code></pre>
 <pre class="r"><code>ddp</code></pre>
 <p><img src="figure/PDX_CAF_scRNAseq_comparative_analysis.Rmd/unnamed-chunk-9-1.png" width="480" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-9-1">
+Past versions of unnamed-chunk-9-1.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-9-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/heinin/PIPAC_spatial/blob/1ad97ad0fa2f9fcf8a525dbb43ac79573b7b7480/docs/figure/PDX_CAF_scRNAseq_comparative_analysis.Rmd/unnamed-chunk-9-1.png" target="_blank">1ad97ad</a>
+</td>
+<td>
+heinin
+</td>
+<td>
+2026-03-31
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 <pre class="r"><code>#filename &lt;- &quot;/home/hnatri/PIPAC_spatial/CT26_CAF_pathways.pdf&quot;
 #
 #pdf(file=filename,
@@ -1177,9 +1644,8 @@ dev.off()</code></pre>
 <div id="myeloid-marker-expression-in-each-group"
 class="section level2">
 <h2>Myeloid marker expression in each group</h2>
-<pre class="r"><code>myel_only &lt;- subset(seurat_data, subset = Annotation %in% c(&quot;Myeloid1&quot;, &quot;Myeloid2&quot;,
-                                                                    &quot;Myeloid3&quot;, &quot;Myeloid4&quot;,
-                                                                    &quot;Myeloid5&quot;, &quot;Myeloid6&quot;))
+<pre class="r"><code>myel_cts &lt;- unique(grep(&quot;Myel&quot;, seurat_data$Annotation, value = T))
+myel_only &lt;- subset(seurat_data, subset = Annotation %in% myel_cts)
 
 m1 &lt;- c(&quot;Nos2&quot;, &quot;Il1b&quot;, &quot;Il6&quot;, &quot;Tnfa&quot;, &quot;Il12a&quot;, &quot;Il12b&quot;, &quot;Il23&quot;, &quot;Ccl5&quot;,
         &quot;Cxcl2&quot;, &quot;Cxcl10&quot;, &quot;Cd80&quot;, &quot;Cd38&quot;, &quot;Cd68&quot;, &quot;Cd64&quot;, &quot;Fcgr1&quot;, &quot;H2-Aa&quot;,
@@ -1195,6 +1661,43 @@ VlnPlot(myel_only,
   RotatedAxis() &amp;
   xlab(&quot;&quot;)</code></pre>
 <p><img src="figure/PDX_CAF_scRNAseq_comparative_analysis.Rmd/unnamed-chunk-11-1.png" width="768" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-11-1">
+Past versions of unnamed-chunk-11-1.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-11-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/heinin/PIPAC_spatial/blob/1ad97ad0fa2f9fcf8a525dbb43ac79573b7b7480/docs/figure/PDX_CAF_scRNAseq_comparative_analysis.Rmd/unnamed-chunk-11-1.png" target="_blank">1ad97ad</a>
+</td>
+<td>
+heinin
+</td>
+<td>
+2026-03-31
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 <pre class="r"><code>m2 &lt;- c(&quot;Arg1&quot;, &quot;Mrc1&quot;, &quot;Cd206&quot;, &quot;Chil3&quot;, &quot;Ym1&quot;, &quot;Retnla&quot;, &quot;Fizz1&quot;,
         &quot;Cd163&quot;, &quot;Igf1&quot;, &quot;Pparg&quot;, &quot;Irf4&quot;, &quot;Stat6&quot;, &quot;Ccl17&quot;, &quot;Ccl22&quot;, &quot;Il10&quot;,
         &quot;Tgfb1&quot;, &quot;Egr2&quot;, &quot;Fpr2&quot;)
@@ -1209,6 +1712,43 @@ VlnPlot(myel_only,
   RotatedAxis() &amp;
   xlab(&quot;&quot;)</code></pre>
 <p><img src="figure/PDX_CAF_scRNAseq_comparative_analysis.Rmd/unnamed-chunk-12-1.png" width="768" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-12-1">
+Past versions of unnamed-chunk-12-1.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-12-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/heinin/PIPAC_spatial/blob/1ad97ad0fa2f9fcf8a525dbb43ac79573b7b7480/docs/figure/PDX_CAF_scRNAseq_comparative_analysis.Rmd/unnamed-chunk-12-1.png" target="_blank">1ad97ad</a>
+</td>
+<td>
+heinin
+</td>
+<td>
+2026-03-31
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 <pre class="r"><code>mdsc &lt;- c(&quot;Cd11b&quot;, &quot;Gr-1&quot;, &quot;Ly6G&quot;, &quot;Ly6C&quot;, &quot;Cd244&quot;, &quot;Arg2&quot;, &quot;Stat3&quot;, &quot;Jaml&quot;,
           &quot;Ccr2&quot;, &quot;Arg1&quot;, &quot;Csf1r&quot;, &quot;Nos2&quot;, &quot;S100a8&quot;, &quot;S100a9&quot;, &quot;Ros&quot;)
 
@@ -1222,6 +1762,43 @@ VlnPlot(myel_only,
   RotatedAxis() &amp;
   xlab(&quot;&quot;)</code></pre>
 <p><img src="figure/PDX_CAF_scRNAseq_comparative_analysis.Rmd/unnamed-chunk-13-1.png" width="768" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-13-1">
+Past versions of unnamed-chunk-13-1.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-13-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/heinin/PIPAC_spatial/blob/1ad97ad0fa2f9fcf8a525dbb43ac79573b7b7480/docs/figure/PDX_CAF_scRNAseq_comparative_analysis.Rmd/unnamed-chunk-13-1.png" target="_blank">1ad97ad</a>
+</td>
+<td>
+heinin
+</td>
+<td>
+2026-03-31
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 <pre class="r"><code>VlnPlot(myel_only,
         group.by = &quot;Sample&quot;,
         features =  c(&quot;Spp1&quot;, &quot;C1qa&quot;, &quot;C1qb&quot;, &quot;C1qc&quot;, &quot;Gas6&quot;, &quot;Mfge8&quot;,
@@ -1233,10 +1810,47 @@ VlnPlot(myel_only,
   RotatedAxis() &amp;
   xlab(&quot;&quot;)</code></pre>
 <p><img src="figure/PDX_CAF_scRNAseq_comparative_analysis.Rmd/unnamed-chunk-14-1.png" width="768" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-14-1">
+Past versions of unnamed-chunk-14-1.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-14-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/heinin/PIPAC_spatial/blob/1ad97ad0fa2f9fcf8a525dbb43ac79573b7b7480/docs/figure/PDX_CAF_scRNAseq_comparative_analysis.Rmd/unnamed-chunk-14-1.png" target="_blank">1ad97ad</a>
+</td>
+<td>
+heinin
+</td>
+<td>
+2026-03-31
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 </div>
 <div id="t-cell-marker-expression-in-each-group" class="section level2">
 <h2>T cell marker expression in each group</h2>
-<pre class="r"><code>lymph_cts &lt;- grep(&quot;Lymphoid&quot;, unique(seurat_data$Annotation), value = T)
+<pre class="r"><code>lymph_cts &lt;- unique(grep(&quot;Lymph&quot;, unique(seurat_data$Annotation), value = T))
 lymph_only &lt;- subset(seurat_data, subset = Annotation %in% lymph_cts)
 
 lymphoid &lt;- c(&quot;Cd3e&quot;, &quot;Cd3g&quot;, &quot;Cd247&quot;, &quot;Cd4&quot;, &quot;Cd8a&quot;, &quot;Cd8b1&quot;, 
@@ -1255,6 +1869,43 @@ VlnPlot(lymph_only,
   RotatedAxis() &amp;
   xlab(&quot;&quot;)</code></pre>
 <p><img src="figure/PDX_CAF_scRNAseq_comparative_analysis.Rmd/unnamed-chunk-15-1.png" width="768" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-15-1">
+Past versions of unnamed-chunk-15-1.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-15-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/heinin/PIPAC_spatial/blob/1ad97ad0fa2f9fcf8a525dbb43ac79573b7b7480/docs/figure/PDX_CAF_scRNAseq_comparative_analysis.Rmd/unnamed-chunk-15-1.png" target="_blank">1ad97ad</a>
+</td>
+<td>
+heinin
+</td>
+<td>
+2026-03-31
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 </div>
 <div id="caf-marker-expression-in-each-group" class="section level2">
 <h2>CAF marker expression in each group</h2>
@@ -1274,6 +1925,43 @@ VlnPlot(caf_only,
   RotatedAxis() &amp;
   xlab(&quot;&quot;)</code></pre>
 <p><img src="figure/PDX_CAF_scRNAseq_comparative_analysis.Rmd/unnamed-chunk-16-1.png" width="768" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-16-1">
+Past versions of unnamed-chunk-16-1.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-16-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/heinin/PIPAC_spatial/blob/1ad97ad0fa2f9fcf8a525dbb43ac79573b7b7480/docs/figure/PDX_CAF_scRNAseq_comparative_analysis.Rmd/unnamed-chunk-16-1.png" target="_blank">1ad97ad</a>
+</td>
+<td>
+heinin
+</td>
+<td>
+2026-03-31
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 <p>Acta2 = alpha-SMA S100a4 = FAP</p>
 <pre class="r"><code>#grep(&quot;Cd24&quot;, rownames(seurat_data), value = T)
 
@@ -1291,6 +1979,43 @@ VlnPlot(caf_only,
   RotatedAxis() &amp;
   xlab(&quot;&quot;)</code></pre>
 <p><img src="figure/PDX_CAF_scRNAseq_comparative_analysis.Rmd/unnamed-chunk-17-1.png" width="768" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-17-1">
+Past versions of unnamed-chunk-17-1.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-17-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/heinin/PIPAC_spatial/blob/1ad97ad0fa2f9fcf8a525dbb43ac79573b7b7480/docs/figure/PDX_CAF_scRNAseq_comparative_analysis.Rmd/unnamed-chunk-17-1.png" target="_blank">1ad97ad</a>
+</td>
+<td>
+heinin
+</td>
+<td>
+2026-03-31
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 </div>
 <div id="markers-from-tiane" class="section level2">
 <h2>Markers from Tiane</h2>
@@ -1320,6 +2045,43 @@ VlnPlot(caf_only,
   RotatedAxis() &amp;
   xlab(&quot;&quot;)</code></pre>
 <p><img src="figure/PDX_CAF_scRNAseq_comparative_analysis.Rmd/unnamed-chunk-18-1.png" width="768" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-18-1">
+Past versions of unnamed-chunk-18-1.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-18-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/heinin/PIPAC_spatial/blob/1ad97ad0fa2f9fcf8a525dbb43ac79573b7b7480/docs/figure/PDX_CAF_scRNAseq_comparative_analysis.Rmd/unnamed-chunk-18-1.png" target="_blank">1ad97ad</a>
+</td>
+<td>
+heinin
+</td>
+<td>
+2026-03-31
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 <pre class="r"><code>h2_genes &lt;- grep(&quot;^H2&quot;, rownames(seurat_data), value = T)
 
 VlnPlot(caf_only,
@@ -1333,6 +2095,43 @@ VlnPlot(caf_only,
   RotatedAxis() &amp;
   xlab(&quot;&quot;)</code></pre>
 <p><img src="figure/PDX_CAF_scRNAseq_comparative_analysis.Rmd/unnamed-chunk-19-1.png" width="768" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-19-1">
+Past versions of unnamed-chunk-19-1.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-19-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/heinin/PIPAC_spatial/blob/1ad97ad0fa2f9fcf8a525dbb43ac79573b7b7480/docs/figure/PDX_CAF_scRNAseq_comparative_analysis.Rmd/unnamed-chunk-19-1.png" target="_blank">1ad97ad</a>
+</td>
+<td>
+heinin
+</td>
+<td>
+2026-03-31
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 </div>
 <div id="macrophagemyeloid" class="section level3">
 <h3>Macrophage/Myeloid</h3>
@@ -1377,6 +2176,43 @@ VlnPlot(myel_only,
   RotatedAxis() &amp;
   xlab(&quot;&quot;)</code></pre>
 <p><img src="figure/PDX_CAF_scRNAseq_comparative_analysis.Rmd/unnamed-chunk-20-1.png" width="768" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-20-1">
+Past versions of unnamed-chunk-20-1.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-20-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/heinin/PIPAC_spatial/blob/1ad97ad0fa2f9fcf8a525dbb43ac79573b7b7480/docs/figure/PDX_CAF_scRNAseq_comparative_analysis.Rmd/unnamed-chunk-20-1.png" target="_blank">1ad97ad</a>
+</td>
+<td>
+heinin
+</td>
+<td>
+2026-03-31
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 </div>
 <div id="t-cells" class="section level3">
 <h3>T cells</h3>
@@ -1413,6 +2249,43 @@ VlnPlot(lymph_only,
   RotatedAxis() &amp;
   xlab(&quot;&quot;)</code></pre>
 <p><img src="figure/PDX_CAF_scRNAseq_comparative_analysis.Rmd/unnamed-chunk-21-1.png" width="768" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-21-1">
+Past versions of unnamed-chunk-21-1.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-21-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/heinin/PIPAC_spatial/blob/1ad97ad0fa2f9fcf8a525dbb43ac79573b7b7480/docs/figure/PDX_CAF_scRNAseq_comparative_analysis.Rmd/unnamed-chunk-21-1.png" target="_blank">1ad97ad</a>
+</td>
+<td>
+heinin
+</td>
+<td>
+2026-03-31
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 </div>
 <div id="tumor" class="section level3">
 <h3>Tumor</h3>
@@ -1457,6 +2330,43 @@ VlnPlot(tumor_only,
   RotatedAxis() &amp;
   xlab(&quot;&quot;)</code></pre>
 <p><img src="figure/PDX_CAF_scRNAseq_comparative_analysis.Rmd/unnamed-chunk-22-1.png" width="768" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-22-1">
+Past versions of unnamed-chunk-22-1.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-22-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/heinin/PIPAC_spatial/blob/1ad97ad0fa2f9fcf8a525dbb43ac79573b7b7480/docs/figure/PDX_CAF_scRNAseq_comparative_analysis.Rmd/unnamed-chunk-22-1.png" target="_blank">1ad97ad</a>
+</td>
+<td>
+heinin
+</td>
+<td>
+2026-03-31
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 <p>More EMT markers<br />
 </p>
 <p>Epithelial (down in EMT): CDH1 (E-cadherin), TACSTD2 (EPCAM),
@@ -1484,6 +2394,43 @@ VlnPlot(tumor_only,
   RotatedAxis() &amp;
   xlab(&quot;&quot;)</code></pre>
 <p><img src="figure/PDX_CAF_scRNAseq_comparative_analysis.Rmd/unnamed-chunk-23-1.png" width="768" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-23-1">
+Past versions of unnamed-chunk-23-1.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-23-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/heinin/PIPAC_spatial/blob/1ad97ad0fa2f9fcf8a525dbb43ac79573b7b7480/docs/figure/PDX_CAF_scRNAseq_comparative_analysis.Rmd/unnamed-chunk-23-1.png" target="_blank">1ad97ad</a>
+</td>
+<td>
+heinin
+</td>
+<td>
+2026-03-31
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 <pre class="r"><code>#Rscript -e &quot;rmarkdown::render(&#39;PDX_CAF_scRNAseq_comparative_analysis.Rmd&#39;)&quot;</code></pre>
 <br>
 <p>

@@ -97,8 +97,7 @@ seurat_arm3 <- seurat_arm3 %>%
   NormalizeData() %>%
   ScaleData()
 
-table(seurat_arm3$Celltype_Final, seurat_arm3$Sample)
-table(seurat_arm3$Celltype_Final, seurat_arm3$Timepoint)
+table(seurat_arm3$Tissue, seurat_arm3$Timepoint)
 
 # pre tumor cells: 3296+3296
 # post: 829
