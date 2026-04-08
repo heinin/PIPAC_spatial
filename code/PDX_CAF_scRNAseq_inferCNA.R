@@ -30,12 +30,14 @@ options(ggrepel.max.overlaps = Inf)
 # Import data
 #==============================================================================
 
-seurat_integrated <- readRDS("/tgen_labs/banovich/PIPAC/CAF_scRNAseq/PDX_CAF_Seurat_annotated.rds")
+seurat_integrated <- readRDS("/tgen_labs/banovich/PIPAC/CAF_scRNAseq/PDX_CAF_Seurat_fulldata_annotated.rds")
 
-sort(as.character(unique(seurat_integrated$Updated_Annotation)))
+sort(as.character(unique(seurat_integrated$Final_Celltype)))
+DefaultAssay(seurat_integrated) <- "RNA"
+seurat_integrated <- JoinLayers(seurat_integrated)
 
-seurat_integrated$Updated_Annotation <- factor(seurat_integrated$Updated_Annotation,
-                                               levels = sort(as.character(unique(seurat_integrated$Updated_Annotation))))
+seurat_integrated$Final_Celltype <- factor(seurat_integrated$Final_Celltype,
+                                           levels = sort(as.character(unique(seurat_integrated$Final_Celltype))))
 
 #==============================================================================
 # Running SCEVAN
@@ -50,8 +52,11 @@ listCountMtx <- lapply(samples, function(xx){
 names(listCountMtx) <- samples 
 
 countmx <- LayerData(seurat_integrated, assay = "RNA", layer = "counts")
+countmx <- as.matrix(countmx)
 
-scevan_res <- pipelineCNA(countmx, organism = "mouse", plotTree = F)
+minidata <- countmx[,1:10000]
+
+scevan_res <- pipelineCNA(minidata, organism = "mouse", plotTree = F)
 
 saveRDS(scevan_res, "/scratch/hnatri/scevan_res.rds")
 

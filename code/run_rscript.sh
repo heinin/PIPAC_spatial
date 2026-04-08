@@ -8,7 +8,7 @@
 #SBATCH -N 1
 #SBATCH --cpus-per-task=1
 #SBATCH --mem=600G
-##SBATCH --part=hmem
+#SBATCH --part=bigmem
 #SBATCH -t 7-0:00:00
 
 export SIMG_FILE_NAME=rstudio-4.3.0-4-with_modules.sif

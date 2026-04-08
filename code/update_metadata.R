@@ -17,7 +17,7 @@ library(plyr)
 # Import data
 #==============================================================================#
 
-seurat_data <- readRDS("/tgen_labs/banovich/PIPAC/Seurat/cell_merged_spatial_filtered_splitsamples_clustered_NN30_PC50_Seurat_denoIST_annotated_updated.rds")
+seurat_data <- readRDS("/tgen_labs/banovich/PIPAC/Seurat/Freeze/cell_merged_spatial_filtered_splitsamples_clustered_NN30_PC50_Seurat_denoIST_annotated_updated.rds")
 
 gs4_deauth()
 metadata  <- gs4_get("https://docs.google.com/spreadsheets/d/1sXXwOreLxjMSUoPt79c6jmaQpluWkaxA5P5HfDsed3I/edit?usp=sharing")
@@ -42,7 +42,8 @@ prgs_scores$Subject <- sprintf("%03d", prgs_scores$Subject)
 # Update annotations
 #==============================================================================#
 
-
+seurat_data$Celltype_Final <- gsub("^Epi1", "Plasma5", seurat_data$Celltype_Final)
+seurat_data$Celltype_Final <- gsub("Epi", "", seurat_data$Celltype_Final)
 
 #==============================================================================#
 # Update metadata
@@ -68,4 +69,4 @@ seurat_data$prgs_avg3 <- mapvalues(x = seurat_data$RPN,
 
 
 # Saving
-saveRDS(seurat_data, "/tgen_labs/banovich/PIPAC/Seurat/cell_merged_spatial_filtered_splitsamples_clustered_NN30_PC50_Seurat_denoIST_annotated_updated.rds")
+saveRDS(seurat_data, "/tgen_labs/banovich/PIPAC/Seurat/Freeze/cell_merged_spatial_filtered_splitsamples_clustered_NN30_PC50_Seurat_denoIST_annotated_updated.rds")

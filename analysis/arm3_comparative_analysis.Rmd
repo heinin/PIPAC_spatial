@@ -194,7 +194,7 @@ ggplot(ct_table, aes(x = Tissue, y = Freq, fill = Celltype)) +
 
 keeps <- table(arm3_tumor$Celltype_Final) %>%
   as.data.frame() %>%
-  filter(Freq > 500)
+  filter(Freq > 300)
 
 arm3_tumor <- subset(arm3_tumor, subset = Celltype_Final %in% keeps$Var1)
 arm3_tumor <- arm3_tumor %>%
@@ -203,7 +203,7 @@ arm3_tumor <- arm3_tumor %>%
 
 keeps <- table(arm3_normal$Celltype_Final) %>%
   as.data.frame() %>%
-  filter(Freq > 500)
+  filter(Freq > 300)
 
 arm3_normal <- subset(arm3_normal, subset = Celltype_Final %in% keeps$Var1)
 arm3_normal <- arm3_normal %>%

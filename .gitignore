@@ -1,3 +1,4 @@
+*.pdf
 *slurm*.err
 *slurm*.out
 .Rproj.user

@@ -37,7 +37,7 @@ source("/home/hnatri/PIPAC_spatial/code/plot_functions.R")
 # Import data
 #==============================================================================#
 
-seurat_data <- readRDS("/tgen_labs/banovich/PIPAC/Seurat/PIPAC_NC50_NN20_PC20_Seurat_annotated_metadata_niches.rds")
+seurat_data <- readRDS("/tgen_labs/banovich/PIPAC/Seurat/Freeze/cell_merged_spatial_filtered_splitsamples_clustered_NN30_PC50_Seurat_denoIST_annotated_updated.rds")
 
 unique(seurat_data$osmonths)
 
@@ -94,6 +94,8 @@ plot_data$`Progress-free Survival (mo)` <- unlist(plot_data$`Progress-free Survi
 #plot_data$`Number of PIPACs` <- as.numeric(plot_data$`Number of PIPACs`)
 plot_data$Age <- as.numeric(plot_data$Age)
 
+plot_data <- plot_data %>% arrange(Arm, Patient_ID)
+
 # ComplexHeatmap
 gender_col <- c("Male" = "wheat3",
                 "Female" = "palegreen3")
@@ -101,11 +103,11 @@ race_col <- c("Caucasian" = "aliceblue",
               "Pac-Isl" = "antiquewhite",
               "Asian" = "aquamarine3",
               "Not disclosed" = "gray80")
-ethnicity_col <- c("Non-Hispanic or Non-Latino" = "lightpink1",
-                   "Hispanic or Latino" = "lemonchiffon2")
+ethnicity_col <- c("Non-Hispanic or Non-Latino" = "aquamarine3",
+                   "Hispanic or Latino" = "purple3")
 site_col <- c("Colorectal" = "darkblue",
               "Appendiceal" = "lightblue3")
-arm_col <- c("Arm2" = "purple1",
+arm_col <- c("Arm2" = "orange2",
              "Arm3" = "steelblue")
 
 age_col <- colorRamp2(c(0, max(as.numeric(plot_data$Age))), c("white", "brown3"))
@@ -116,7 +118,7 @@ names(n_PIPACs_col) <- c("1", "2", "3")
 diagnosis_col <- colorRampPalette(brewer.pal(10, "Paired"))(nb.cols <- length(unique(plot_data$`Histological Diagnosis`)))
 names(diagnosis_col) <- sort(unique(plot_data$`Histological Diagnosis`))
 
-survival_col <- colorRamp2(c(0, 50), c("white", "deeppink3"))
+survival_col <- colorRamp2(c(0, 50), c("white", "deeppink4"))
 
 samples_col <- colorRamp2(c(0, 16), c("white", "forestgreen"))
 

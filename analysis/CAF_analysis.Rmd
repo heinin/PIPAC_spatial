@@ -77,7 +77,7 @@ markers_by_group <- read_sheet(markers_by_group, sheet = "Markers by group")
 
 ```{r, message = F, warning = F, fig.width = 8, fig.height = 4, eval = T}
 
-seurat_data <- readRDS("/tgen_labs/banovich/PIPAC/Seurat/Freeze/cell_merged_spatial_filtered_splitsamples_clustered_NN30_PC50_Seurat_denoIST_annotated_updated.rds")
+#seurat_data <- readRDS("/tgen_labs/banovich/PIPAC/Seurat/Freeze/cell_merged_spatial_filtered_splitsamples_clustered_NN30_PC50_Seurat_denoIST_annotated_updated.rds")
 
 ```
 
@@ -118,9 +118,11 @@ fibro <- fibro %>%
   NormalizeData() %>%
   ScaleData()
 
-fibro$Celltype_Final <- mapvalues(colnames(fibro),
-                                  from = colnames(seurat_data),
-                                  to = seurat_data$Celltype_Final)
+#fibro$Celltype_Final <- mapvalues(colnames(fibro),
+#                                  from = colnames(seurat_data),
+#                                  to = seurat_data$Celltype_Final)
+
+#saveRDS(fibro, "/tgen_labs/banovich/PIPAC/Seurat/fibro_clustered_NN20_PC20_Seurat.rds")
 
 celltype_final <- as.factor(sort(unique(fibro$Celltype_Final)))
 celltype_final_col <- colorRampPalette(brewer.pal(10, "Paired"))(nb.cols <- length(celltype_final))
